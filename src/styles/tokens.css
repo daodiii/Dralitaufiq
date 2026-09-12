@@ -1,0 +1,32 @@
+:root {
+  /* The lamp-lit study */
+  --ink-0: #0b0806;
+  --ink-1: #150f0a;
+  --ink-2: #1d150e;
+  --ink-3: #2a1f15;
+  --ink-4: #3b2d20;
+  --ink-1-rgb: 21 15 10;
+
+  --paper: #f1e8da;
+  --paper-2: #cbbda7;
+  --paper-3: #8d7e68;
+
+  --brass: #c9a55e;
+  --brass-2: #e6cd8f;
+  --brass-rgb: 201 165 94;
+  --lamp: #f2b86a;
+  --ox: #6e1d1a;
+
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'Instrument Sans Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-arabic: 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-cine: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --gutter: clamp(1.25rem, 4.5vw, 4.5rem);
+  --max: 1500px;
+  --nav-h: 5rem;
+  --hairline: 1px solid rgb(var(--brass-rgb) / 0.22);
+}

@@ -1,0 +1,131 @@
+---
+import profile from '../data/profile.json';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer" id="contact">
+  <div class="container">
+    <div class="footer__grid">
+      <div class="footer__brand" data-reveal>
+        <p class="footer__name">Ali Mohamed Salah</p>
+        <p class="footer__ar" lang="ar">{profile.nameArabic}</p>
+        <p class="footer__tag">{profile.tagline}</p>
+      </div>
+
+      <div class="footer__col" data-reveal data-delay="0.1">
+        <p class="footer__h">Contact</p>
+        <p class="footer__text">
+          For author talks, lectures and events, write through the official Facebook page.
+        </p>
+        <a class="link" href={profile.social[0].url} target="_blank" rel="noopener">
+          {profile.social[0].label}
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <path d="M4 12L12 4M6 4h6v6" />
+          </svg>
+        </a>
+      </div>
+
+      <div class="footer__col" data-reveal data-delay="0.2">
+        <p class="footer__h">Navigate</p>
+        <ul class="footer__links">
+          <li><a href="#books">Books</a></li>
+          <li><a href="#library">The library</a></li>
+          <li><a href="#about">About</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer__bottom">
+      <span>© {year} Prof. Dr. Ali Mohamed Salah · Oslo</span>
+      <span>{profile.languages.join(' · ')}</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding-block: clamp(4rem, 8vw, 6rem) 2rem;
+    background: var(--ink-0);
+    border-top: var(--hairline);
+  }
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 0.8fr;
+    gap: 3rem;
+  }
+
+  .footer__name {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+    color: var(--paper);
+    line-height: 1;
+    font-variation-settings:
+      'opsz' 96,
+      'SOFT' 30;
+  }
+
+  .footer__ar {
+    margin-top: 0.7rem;
+    font-size: 1.35rem;
+    color: var(--brass);
+    text-align: left;
+  }
+
+  .footer__tag {
+    margin-top: 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+  }
+
+  .footer__h {
+    font-size: 0.68rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 1.2rem;
+  }
+
+  .footer__text {
+    max-width: 24rem;
+    font-size: 0.95rem;
+    color: var(--paper-2);
+    margin-bottom: 1.2rem;
+  }
+
+  .footer__links {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .footer__links a {
+    color: var(--paper-2);
+    transition: color 0.4s;
+  }
+
+  .footer__links a:hover {
+    color: var(--brass-2);
+  }
+
+  .footer__bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 4rem;
+    padding-top: 1.4rem;
+    border-top: var(--hairline);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--paper-3);
+  }
+
+  @media (max-width: 760px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+  }
+</style>

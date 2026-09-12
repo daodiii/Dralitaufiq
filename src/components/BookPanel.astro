@@ -1,0 +1,302 @@
+---
+import { getImage } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Book3D from './Book3D.astro';
+
+const books = (await getCollection('books')).sort((a, b) => a.data.order - b.data.order);
+const languageLabel = { en: 'English', ar: 'Arabic', so: 'Somali' } as const;
+
+const payload = await Promise.all(
+  books.map(async (b) => {
+    const img = await getImage({ src: b.data.cover, width: 640, format: 'webp' });
+    const d = b.data;
+    const links = [
+      d.links.amazon && { label: 'Amazon', url: d.links.amazon },
+      d.links.bookshop && { label: 'Bookshop.org', url: d.links.bookshop },
+      d.links.barnesNoble && { label: 'Barnes & Noble', url: d.links.barnesNoble },
+      ...d.editions,
+    ].filter(Boolean);
+    return {
+      id: b.id,
+      title: d.title,
+      subtitle: d.subtitle,
+      titleLatin: d.titleLatin,
+      titleEn: d.titleEn,
+      language: d.language,
+      languageLabel: languageLabel[d.language],
+      role: d.role,
+      series: d.series,
+      publisher: d.publisher,
+      year: d.year,
+      badge: d.badge,
+      cover: img.src,
+      ratio: d.coverWidth / d.coverHeight,
+      description: d.description,
+      links,
+    };
+  })
+);
+---
+
+<script type="application/json" id="books-data" set:html={JSON.stringify(payload)} />
+
+<dialog class="panel-dialog" id="book-panel" aria-labelledby="panel-title">
+  <div class="panel">
+    <div class="panel__bar">
+      <div class="panel__nav">
+        <button class="panel__iconbtn panel__prev" type="button" aria-label="Previous book">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M14 8H3M7 4L3 8l4 4" /></svg>
+        </button>
+        <button class="panel__iconbtn panel__next" type="button" aria-label="Next book">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" /></svg>
+        </button>
+        <span class="panel__counter">01 / 18</span>
+      </div>
+      <button class="panel__iconbtn panel__close" type="button" aria-label="Close">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" /></svg>
+      </button>
+    </div>
+
+    <div class="panel__scroll" data-lenis-prevent>
+      <div class="panel__cover">
+        <Book3D ratio={0.667} spine="">
+          <img src="" alt="" width="640" height="960" />
+        </Book3D>
+      </div>
+      <div class="panel__head">
+        <p class="eyebrow panel__badge"></p>
+        <h2 class="panel__title" id="panel-title"></h2>
+        <p class="panel__subtitle"></p>
+        <p class="panel__translit"></p>
+        <dl class="panel__meta"></dl>
+      </div>
+      <div class="panel__body"></div>
+    </div>
+
+    <div class="panel__actions"></div>
+  </div>
+</dialog>
+
+<style>
+  .panel-dialog {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    z-index: 90;
+  }
+
+  .panel-dialog::backdrop {
+    background: rgb(11 8 6 / 0.55);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.7s var(--ease-out);
+  }
+
+  .panel-dialog.is-open::backdrop {
+    opacity: 1;
+  }
+
+  .panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    width: min(620px, 100vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--ink-2);
+    border-left: var(--hairline);
+    box-shadow: -60px 0 120px rgb(0 0 0 / 0.55);
+  }
+
+  .panel__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.5rem 1.1rem 2.5rem;
+    border-bottom: var(--hairline);
+  }
+
+  .panel__nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .panel__counter {
+    margin-left: 0.8rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    color: var(--paper-3);
+  }
+
+  .panel__iconbtn {
+    width: 2.6rem;
+    height: 2.6rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgb(var(--brass-rgb) / 0.3);
+    border-radius: 50%;
+    color: var(--paper-2);
+    transition:
+      background 0.4s,
+      color 0.4s,
+      border-color 0.4s;
+  }
+
+  .panel__iconbtn svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .panel__iconbtn:hover {
+    background: var(--brass);
+    border-color: var(--brass);
+    color: var(--ink-0);
+  }
+
+  .panel__scroll {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 2.4rem 2.5rem 3rem;
+  }
+
+  .panel__cover {
+    width: 42%;
+    max-width: 220px;
+    perspective: 1300px;
+    margin: 0 0 2.2rem 0.6rem;
+  }
+
+  .panel__cover :global(.book3d) {
+    --ry: 16deg;
+    --t: 24px;
+    filter: drop-shadow(0 30px 40px rgb(0 0 0 / 0.6));
+  }
+
+  .panel__badge {
+    margin-bottom: 1.1rem;
+  }
+
+  .panel__title {
+    font-family: var(--font-display);
+    font-weight: 380;
+    font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    color: var(--paper);
+    font-variation-settings:
+      'opsz' 96,
+      'SOFT' 20;
+    text-wrap: balance;
+  }
+
+  .panel__title[lang='ar'] {
+    font-family: var(--font-arabic);
+    font-size: 2.3rem;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  .panel__subtitle {
+    margin-top: 0.6rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--brass-2);
+  }
+
+  .panel__subtitle[lang='ar'] {
+    font-family: var(--font-arabic);
+    font-style: normal;
+    font-size: 1.35rem;
+    text-align: right;
+  }
+
+  .panel__translit {
+    margin-top: 0.7rem;
+    font-size: 0.9rem;
+    color: var(--paper-3);
+    line-height: 1.5;
+  }
+
+  .panel__meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.6rem 1.6rem;
+    margin-top: 1.6rem;
+    padding-block: 1.25rem;
+    border-block: var(--hairline);
+    font-size: 0.88rem;
+  }
+
+  .panel__meta :global(dt) {
+    padding-top: 0.2rem;
+    font-size: 0.64rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+  }
+
+  .panel__meta :global(dd) {
+    margin: 0;
+    color: var(--paper-2);
+  }
+
+  .panel__body {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.6rem;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: var(--paper-2);
+    text-wrap: pretty;
+  }
+
+  .panel__body :global(p[lang='ar']) {
+    font-size: 1.18rem;
+    line-height: 1.95;
+  }
+
+  .panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 1.2rem 2.5rem;
+    border-top: var(--hairline);
+    background: var(--ink-2);
+  }
+
+  @media (max-width: 760px) {
+    .panel {
+      top: auto;
+      bottom: 0;
+      width: 100vw;
+      height: 92dvh;
+      border-left: 0;
+      border-top: var(--hairline);
+      border-radius: 14px 14px 0 0;
+    }
+
+    .panel__bar {
+      padding: 0.9rem 1rem 0.9rem 1.25rem;
+    }
+
+    .panel__scroll {
+      padding: 1.8rem 1.25rem 2.5rem;
+    }
+
+    .panel__actions {
+      padding: 1rem 1.25rem;
+    }
+
+    .panel__cover {
+      width: 46%;
+    }
+  }
+</style>

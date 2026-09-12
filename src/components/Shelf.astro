@@ -1,0 +1,328 @@
+---
+import { getCollection } from 'astro:content';
+import Book from './Book.astro';
+
+const books = (await getCollection('books')).sort((a, b) => a.data.order - b.data.order);
+
+const groups = [
+  { key: 'en', name: 'English', native: 'English', items: books.filter((b) => b.data.language === 'en') },
+  { key: 'ar', name: 'Arabic', native: 'العربية', items: books.filter((b) => b.data.language === 'ar') },
+  { key: 'so', name: 'Somali', native: 'Soomaali', items: books.filter((b) => b.data.language === 'so') },
+];
+
+const numberWords = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty'];
+const countWord = numberWords[books.length] || String(books.length);
+let running = 0;
+---
+
+<section class="library lattice" id="library" aria-labelledby="library-title">
+  <div class="container library__head">
+    <div>
+      <p class="eyebrow" data-reveal>The library</p>
+      <h2 class="display display--lg" id="library-title" data-split>
+        {countWord.charAt(0).toUpperCase() + countWord.slice(1)} works in <em>three</em> languages.
+      </h2>
+    </div>
+    <div class="library__aside" data-reveal data-delay="0.15">
+      <p class="library__note">
+        Scroll to walk along the shelf. Open any volume for the description and where to find it.
+      </p>
+      <div class="library__chips" role="group" aria-label="Jump to a language">
+        <button class="library__chip is-active" type="button" data-go="all">All</button>
+        {groups.map((g) => (
+          <button class="library__chip" type="button" data-go={g.key}>
+            {g.name} <span>{g.items.length}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="library__pin">
+    <div class="library__track" data-lenis-prevent-wheel>
+      {groups.map((g) => {
+        const start = running;
+        running += g.items.length;
+        return (
+          <div class="library__group" data-group={g.key}>
+            <div class="library__label" aria-hidden="true">
+              <span class="library__label-n">{String(g.items.length).padStart(2, '0')}</span>
+              <span class="library__label-name">{g.name}</span>
+              <span class="library__label-native" lang={g.key === 'ar' ? 'ar' : undefined}>
+                {g.native}
+              </span>
+            </div>
+            {g.items.map((book, i) => (
+              <Book book={book} index={start + i} />
+            ))}
+          </div>
+        );
+      })}
+      <div class="library__end" aria-hidden="true">
+        <span class="library__end-mark">✦</span>
+        <span>More in press</span>
+      </div>
+    </div>
+
+    <div class="library__foot container" aria-hidden="true">
+      <span class="library__counter">01</span>
+      <span class="library__total">/ {String(books.length).padStart(2, '0')}</span>
+    </div>
+    <div class="library__progress" aria-hidden="true"><i></i></div>
+  </div>
+</section>
+
+<style>
+  .library {
+    padding-top: clamp(5rem, 12vw, 9rem);
+    background: var(--ink-1);
+    overflow: clip;
+  }
+
+  .library__head {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 2rem 5rem;
+    align-items: end;
+    padding-bottom: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .library__head .eyebrow {
+    margin-bottom: 1.4rem;
+  }
+
+  .library__aside {
+    display: grid;
+    gap: 1.4rem;
+    justify-items: start;
+  }
+
+  .library__note {
+    max-width: 26rem;
+    font-size: 0.95rem;
+    color: var(--paper-3);
+  }
+
+  .library__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .library__chip {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.62rem 1.05rem;
+    border: 1px solid rgb(var(--brass-rgb) / 0.28);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--paper-2);
+    transition:
+      background 0.5s var(--ease-out),
+      color 0.5s var(--ease-out),
+      border-color 0.5s var(--ease-out);
+  }
+
+  .library__chip span {
+    font-size: 0.62rem;
+    color: var(--brass);
+    letter-spacing: 0.1em;
+  }
+
+  .library__chip:hover {
+    border-color: var(--brass);
+    color: var(--paper);
+  }
+
+  .library__chip.is-active {
+    background: var(--brass);
+    border-color: var(--brass);
+    color: var(--ink-0);
+  }
+
+  .library__chip.is-active span {
+    color: var(--ink-0);
+  }
+
+  .library__pin {
+    position: relative;
+    height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .library__track {
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(1.6rem, 3vw, 3.2rem);
+    width: max-content;
+    padding-inline: var(--gutter) 30vw;
+    padding-bottom: 6rem;
+    will-change: transform;
+  }
+
+  .library__group {
+    display: flex;
+    align-items: flex-end;
+    gap: clamp(1.6rem, 3vw, 3.2rem);
+    padding-right: clamp(3rem, 6vw, 7rem);
+  }
+
+  .library__label {
+    flex: none;
+    align-self: center;
+    display: grid;
+    gap: 0.4rem;
+    padding-right: 1.5rem;
+    margin-bottom: 4rem;
+    border-right: 1px solid rgb(var(--brass-rgb) / 0.25);
+    width: 10rem;
+  }
+
+  .library__label-n {
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 6vw, 5.6rem);
+    line-height: 0.9;
+    color: var(--brass-2);
+    font-variation-settings:
+      'opsz' 144,
+      'SOFT' 0;
+    letter-spacing: -0.03em;
+  }
+
+  .library__label-name {
+    font-size: 0.72rem;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+    margin-top: 0.6rem;
+  }
+
+  .library__label-native {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.4rem;
+    color: var(--paper);
+  }
+
+  .library__label-native[lang='ar'] {
+    font-family: var(--font-arabic);
+    font-style: normal;
+    font-size: 1.6rem;
+    text-align: left;
+  }
+
+  .library__end {
+    flex: none;
+    align-self: center;
+    margin-bottom: 4rem;
+    display: grid;
+    gap: 0.6rem;
+    justify-items: start;
+    font-size: 0.7rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+  }
+
+  .library__end-mark {
+    color: var(--brass);
+  }
+
+  .library__foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 3.4rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    pointer-events: none;
+  }
+
+  .library__counter {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    line-height: 1;
+    color: var(--paper);
+    font-variation-settings:
+      'opsz' 96,
+      'SOFT' 0;
+  }
+
+  .library__total {
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    color: var(--paper-3);
+  }
+
+  .library__progress {
+    position: absolute;
+    left: var(--gutter);
+    right: var(--gutter);
+    bottom: 2.4rem;
+    height: 1px;
+    background: rgb(var(--brass-rgb) / 0.18);
+  }
+
+  .library__progress i {
+    display: block;
+    height: 100%;
+    background: var(--brass);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  @media (max-width: 959px), (prefers-reduced-motion: reduce) {
+    .library__head {
+      grid-template-columns: 1fr;
+      gap: 1.6rem;
+    }
+
+    .library__pin {
+      height: auto;
+      display: block;
+      overflow: visible;
+      padding-bottom: 4.5rem;
+    }
+
+    .library__track {
+      width: auto;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+      scroll-padding-inline-start: var(--gutter);
+      padding: 0 var(--gutter) 2.5rem;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .library__label,
+    .library__end {
+      scroll-snap-align: start;
+    }
+
+    .library__track::-webkit-scrollbar {
+      display: none;
+    }
+
+    .library__label {
+      width: 7.5rem;
+      margin-bottom: 5rem;
+    }
+
+    .library__foot {
+      display: none;
+    }
+
+    .library__progress {
+      bottom: 2rem;
+    }
+  }
+</style>

@@ -1,0 +1,302 @@
+---
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import Book3D from './Book3D.astro';
+
+const books = await getCollection('books');
+const featured = books.find((b) => b.data.badge === 'New release') ?? books[0];
+const f = featured.data;
+const links = [
+  f.links.amazon && { label: 'Amazon', url: f.links.amazon },
+  f.links.bookshop && { label: 'Bookshop.org', url: f.links.bookshop },
+  f.links.barnesNoble && { label: 'Barnes & Noble', url: f.links.barnesNoble },
+].filter(Boolean) as { label: string; url: string }[];
+const ratio = f.coverWidth / f.coverHeight;
+---
+
+<section class="spotlight" id="books" aria-labelledby="spotlight-title">
+  <div class="container">
+    <div class="spotlight__grid">
+      <div class="spotlight__cover" data-tilt data-rest-y="20" data-reveal data-y="40">
+        <Book3D ratio={ratio} spine={f.title} class="spotlight__book">
+          <Image
+            src={f.cover}
+            alt={`Cover of ${f.title}`}
+            widths={[400, 640, 900]}
+            sizes="(max-width: 900px) 70vw, 30vw"
+            loading="lazy"
+            decoding="async"
+          />
+        </Book3D>
+        <div class="spotlight__floor" aria-hidden="true"></div>
+      </div>
+
+      <div class="spotlight__body">
+        <p class="eyebrow" data-reveal>{f.badge}{f.year && <span class="spotlight__year">· {f.year}</span>}</p>
+        <h2 class="display display--lg" id="spotlight-title" data-split>{f.title}</h2>
+        {f.subtitle && <p class="spotlight__sub" data-reveal data-delay="0.1">{f.subtitle}</p>}
+        <p class="spotlight__role" data-reveal data-delay="0.15">{f.role}</p>
+        <div class="spotlight__desc" data-reveal data-delay="0.2">
+          {f.description.map((p) => <p>{p}</p>)}
+        </div>
+        <div class="spotlight__actions" data-reveal data-delay="0.25">
+          {links.map((l, i) => (
+            <a class:list={['btn', i === 0 && 'btn--primary']} href={l.url} target="_blank" rel="noopener">
+              {l.label}
+            </a>
+          ))}
+          <button class="link" type="button" data-book={featured.id}>
+            Read more
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M2 8h11M9 4l4 4-4 4" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {f.endorsements && f.endorsements.length > 0 && (
+      <div class="quotes" data-quotes data-reveal>
+        <div class="quotes__mark" aria-hidden="true">“</div>
+        <div>
+          <p class="eyebrow quotes__eyebrow">What scholars say</p>
+          <div class="quotes__stage">
+            {f.endorsements.map((e, i) => (
+              <figure class:list={['quote', i === 0 && 'is-active']}>
+                <blockquote>
+                  <p>{e.quote}</p>
+                </blockquote>
+                <figcaption>
+                  <strong>{e.name}</strong>
+                  {e.title}
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <div class="quotes__dots" role="tablist" aria-label="Endorsements">
+            {f.endorsements.map((e, i) => (
+              <button
+                class="quotes__dot"
+                type="button"
+                role="tab"
+                aria-selected={i === 0 ? 'true' : 'false'}
+                aria-label={`Endorsement by ${e.name}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+</section>
+
+<style>
+  .spotlight {
+    position: relative;
+    padding-block: clamp(6rem, 14vw, 12rem) clamp(4rem, 8vw, 7rem);
+    background:
+      radial-gradient(60% 50% at 20% 30%, rgb(var(--brass-rgb) / 0.06), transparent 70%),
+      var(--ink-1);
+  }
+
+  .spotlight__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(3rem, 7vw, 8rem);
+    align-items: center;
+  }
+
+  .spotlight__cover {
+    position: relative;
+    perspective: 1900px;
+    display: grid;
+    justify-items: center;
+    padding: 2rem 0 3rem;
+  }
+
+  .spotlight__cover :global(.spotlight__book) {
+    --w: min(100%, 380px);
+    --t: 36px;
+    filter: drop-shadow(0 50px 60px rgb(0 0 0 / 0.65));
+    transition: none;
+  }
+
+  .spotlight__floor {
+    position: absolute;
+    left: 10%;
+    right: 10%;
+    bottom: 0.5rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(var(--brass-rgb) / 0.22), transparent);
+    filter: blur(14px);
+  }
+
+  .spotlight__body > * + * {
+    margin-top: 1.4rem;
+  }
+
+  .spotlight__year {
+    color: var(--paper-3);
+    margin-left: 0.3rem;
+  }
+
+  .spotlight__sub {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.2rem, 1.7vw, 1.55rem);
+    color: var(--brass-2);
+    margin-top: 1rem !important;
+  }
+
+  .spotlight__role {
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--paper-3);
+    max-width: 34rem;
+    padding-left: 1.2rem;
+    border-left: 1px solid rgb(var(--brass-rgb) / 0.4);
+  }
+
+  .spotlight__desc {
+    display: grid;
+    gap: 1rem;
+    max-width: 36rem;
+    color: var(--paper-2);
+    text-wrap: pretty;
+  }
+
+  .spotlight__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.4rem;
+    margin-top: 2.2rem !important;
+  }
+
+  .quotes {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1.5rem 3rem;
+    margin-top: clamp(4rem, 9vw, 7rem);
+    padding-top: clamp(2.5rem, 5vw, 4rem);
+    border-top: var(--hairline);
+  }
+
+  .quotes__mark {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 9vw, 8rem);
+    line-height: 0.55;
+    color: var(--brass);
+    font-variation-settings:
+      'opsz' 144,
+      'SOFT' 100;
+  }
+
+  .quotes__eyebrow {
+    margin-bottom: 1.6rem;
+  }
+
+  .quotes__stage {
+    position: relative;
+    display: grid;
+  }
+
+  .quote {
+    grid-area: 1 / 1;
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 1s var(--ease-out),
+      transform 1s var(--ease-out);
+    pointer-events: none;
+    max-width: 58rem;
+  }
+
+  .quote.is-active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .quote blockquote p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 340;
+    font-size: clamp(1.3rem, 2vw, 1.85rem);
+    line-height: 1.35;
+    color: var(--paper);
+    font-variation-settings:
+      'opsz' 72,
+      'SOFT' 60;
+    text-wrap: pretty;
+  }
+
+  .quote figcaption {
+    margin-top: 1.4rem;
+    font-size: 0.86rem;
+    color: var(--paper-3);
+  }
+
+  .quote figcaption strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brass-2);
+  }
+
+  .quotes__dots {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 2rem;
+  }
+
+  .quotes__dot {
+    width: 2.4rem;
+    height: 1.25rem;
+    position: relative;
+  }
+
+  .quotes__dot::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: rgb(var(--brass-rgb) / 0.3);
+    transition: background 0.5s;
+  }
+
+  .quotes__dot[aria-selected='true']::before,
+  .quotes__dot:hover::before {
+    background: var(--brass);
+  }
+
+  @media (max-width: 900px) {
+    .spotlight__grid {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+
+    .spotlight__cover {
+      padding: 1rem 0 2rem;
+    }
+
+    .spotlight__cover :global(.spotlight__book) {
+      --w: min(72%, 320px);
+    }
+
+    .quotes {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+
+    .quotes__mark {
+      line-height: 0.7;
+    }
+  }
+</style>

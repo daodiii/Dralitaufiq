@@ -1,0 +1,140 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import Book3D from './Book3D.astro';
+
+interface Props {
+  book: CollectionEntry<'books'>;
+  index: number;
+}
+
+const { book, index } = Astro.props;
+const b = book.data;
+const lang = b.language === 'ar' ? 'ar' : b.language === 'so' ? 'so' : 'en';
+const ratio = b.coverWidth / b.coverHeight;
+const secondary = b.language === 'ar' ? b.titleEn : b.subtitle || b.titleEn;
+---
+
+<button class="book" type="button" data-book={book.id} aria-haspopup="dialog" style={`--i:${index}`}>
+  <span class="book__obj">
+    <Book3D ratio={ratio} spine={b.titleLatin || b.title}>
+      <Image
+        src={b.cover}
+        alt={`Cover of ${b.title}`}
+        widths={[240, 360, 480]}
+        sizes="(max-width: 960px) 44vw, 15vw"
+        loading="lazy"
+        decoding="async"
+      />
+    </Book3D>
+    <span class="book__shadow" aria-hidden="true"></span>
+  </span>
+  <span class="book__meta">
+    <span class="book__index">{String(index + 1).padStart(2, '0')}</span>
+    <span class="book__title" lang={lang}>{b.title}</span>
+    {secondary && <span class="book__sub">{secondary}</span>}
+  </span>
+</button>
+
+<style>
+  .book {
+    --w: clamp(150px, 15vw, 214px);
+    flex: none;
+    width: var(--w);
+    text-align: left;
+    display: block;
+    perspective: 1500px;
+    padding-top: 1rem;
+  }
+
+  .book__obj {
+    position: relative;
+    display: block;
+    transform-style: preserve-3d;
+  }
+
+  .book :global(.book3d) {
+    --t: 22px;
+    --ry: 0deg;
+    transition:
+      transform 0.9s var(--ease-cine),
+      filter 0.9s var(--ease-cine);
+  }
+
+  .book:hover :global(.book3d),
+  .book:focus-visible :global(.book3d) {
+    --ry: 28deg;
+    transform: rotateY(var(--ry)) translateY(-10px);
+  }
+
+  .book__shadow {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: -1.2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgb(0 0 0 / 0.65), transparent);
+    filter: blur(6px);
+    transform: translateZ(-60px);
+    transition:
+      transform 0.9s var(--ease-cine),
+      opacity 0.9s;
+    opacity: 0.8;
+  }
+
+  .book:hover .book__shadow {
+    transform: translateZ(-60px) scaleX(1.1) translateY(6px);
+    opacity: 1;
+  }
+
+  .book__meta {
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 2.2rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgb(var(--brass-rgb) / 0.18);
+  }
+
+  .book__index {
+    font-size: 0.64rem;
+    letter-spacing: 0.24em;
+    color: var(--brass);
+  }
+
+  .book__title {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    line-height: 1.2;
+    color: var(--paper);
+    font-variation-settings:
+      'opsz' 24,
+      'SOFT' 30;
+    transition: color 0.4s;
+  }
+
+  .book__title[lang='ar'] {
+    font-family: var(--font-arabic);
+    font-size: 1.3rem;
+    text-align: right;
+    direction: rtl;
+    line-height: 1.5;
+  }
+
+  .book:hover .book__title {
+    color: var(--brass-2);
+  }
+
+  .book__sub {
+    font-size: 0.76rem;
+    line-height: 1.4;
+    color: var(--paper-3);
+  }
+
+  @media (max-width: 959px) {
+    .book {
+      --w: clamp(150px, 42vw, 200px);
+      scroll-snap-align: start;
+    }
+  }
+</style>

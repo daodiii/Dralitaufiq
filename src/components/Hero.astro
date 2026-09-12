@@ -1,0 +1,310 @@
+---
+import { Image, getImage } from 'astro:assets';
+import portrait from '../assets/hero/portrait.jpg';
+import portraitMobile from '../assets/hero/portrait-mobile.jpg';
+import calligraphy from '../assets/hero/calligraphy-name.png';
+import profile from '../data/profile.json';
+
+const wide = await getImage({ src: portrait, widths: [1100, 1500, 2256], format: 'webp' });
+const tall = await getImage({ src: portraitMobile, widths: [560, 840, 1200], format: 'webp' });
+const fallback = await getImage({ src: portrait, width: 1500, format: 'jpg' });
+---
+
+<section class="hero" id="top" aria-label="Introduction">
+  <div class="hero__media">
+    <picture>
+      <source media="(max-width: 900px)" srcset={tall.srcSet.attribute} sizes="100vw" type="image/webp" />
+      <source srcset={wide.srcSet.attribute} sizes="104vw" type="image/webp" />
+      <img
+        src={fallback.src}
+        width={portrait.width}
+        height={portrait.height}
+        alt="Prof. Dr. Ali Mohamed Salah recording in a lamp-lit study"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+    <div class="hero__fade" aria-hidden="true"></div>
+    <div class="hero__glow" aria-hidden="true"></div>
+  </div>
+  <div class="hero__dim" aria-hidden="true"></div>
+
+  <div class="container hero__content">
+    <p class="eyebrow" data-hero="eyebrow">{profile.tagline}</p>
+    <div class="hero__calli" data-hero="calli">
+      <Image src={calligraphy} alt={profile.nameArabic} widths={[440, 885]} sizes="(max-width: 900px) 90vw, 520px" loading="eager" />
+    </div>
+    <h1 class="display display--xl hero__name" data-hero="name">
+      Prof. Dr. Ali<br />Mohamed <em>Salah</em>
+    </h1>
+    <p class="lede hero__lede" data-hero="lede">{profile.heroLede}</p>
+    <div class="hero__cta" data-hero="cta">
+      <a class="btn btn--primary" href="#books">
+        Explore the library
+        <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+          <path d="M2 8h11M9 4l4 4-4 4" />
+        </svg>
+      </a>
+      <a class="btn" href="#about">About him</a>
+    </div>
+  </div>
+
+  <div class="container hero__rail" data-hero="rail">
+    <p class="hero__journey">
+      {profile.journey.map((city) => <span>{city}</span>)}
+    </p>
+    <a class="hero__scroll" href="#books"><span>Scroll</span><i aria-hidden="true"></i></a>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    overflow: hidden;
+    isolation: isolate;
+    background: var(--ink-1);
+  }
+
+  .hero__media {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 10vw;
+    right: -14vw;
+    z-index: 0;
+    will-change: transform;
+  }
+
+  .hero__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 66% 12%;
+  }
+
+  .hero__fade {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        90deg,
+        var(--ink-1) 0%,
+        rgb(var(--ink-1-rgb) / 0.96) 22%,
+        rgb(var(--ink-1-rgb) / 0.55) 42%,
+        rgb(var(--ink-1-rgb) / 0) 60%
+      ),
+      linear-gradient(0deg, var(--ink-1) 0%, rgb(var(--ink-1-rgb) / 0) 30%),
+      linear-gradient(180deg, rgb(var(--ink-1-rgb) / 0.55) 0%, rgb(var(--ink-1-rgb) / 0) 26%);
+  }
+
+  .hero__glow {
+    position: absolute;
+    right: -8%;
+    top: -12%;
+    width: 60%;
+    height: 120%;
+    background: radial-gradient(closest-side, rgb(242 184 106 / 0.2), rgb(242 184 106 / 0));
+    filter: blur(20px);
+    mix-blend-mode: screen;
+    animation: breathe 9s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes breathe {
+    0%,
+    100% {
+      opacity: 0.7;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.07);
+    }
+  }
+
+  .hero__dim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: var(--ink-1);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 3;
+    align-self: center;
+    max-width: min(44rem, 50vw);
+    padding-top: calc(var(--nav-h) + 2vh);
+    padding-bottom: 2rem;
+  }
+
+  .hero__name {
+    font-size: clamp(2.8rem, 6.3vw, 6rem);
+  }
+
+  .hero__calli {
+    width: min(460px, 100%);
+    margin: 1.6rem 0 1rem;
+  }
+
+  .hero__calli :global(img) {
+    width: 100%;
+    height: auto;
+    opacity: 0.96;
+    filter: drop-shadow(0 8px 30px rgb(0 0 0 / 0.5));
+  }
+
+  .hero__name :global(.line) {
+    overflow: hidden;
+  }
+
+  .hero__lede {
+    margin-top: 1.5rem;
+    max-width: 32rem;
+    font-size: clamp(1rem, 1.2vw, 1.2rem);
+  }
+
+  .hero__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: 2.2rem;
+  }
+
+  .hero__rail {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 1.6rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+  }
+
+  .hero__journey span + span::before {
+    content: '·';
+    margin: 0 0.9rem;
+    color: var(--brass);
+  }
+
+  .hero__scroll {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .hero__scroll i {
+    display: block;
+    width: 1px;
+    height: 3.5rem;
+    background: linear-gradient(var(--brass), transparent);
+    animation: drop 2.6s var(--ease-in-out) infinite;
+  }
+
+  @keyframes drop {
+    0% {
+      transform: scaleY(0);
+      transform-origin: top;
+    }
+    45% {
+      transform: scaleY(1);
+      transform-origin: top;
+    }
+    55% {
+      transform: scaleY(1);
+      transform-origin: bottom;
+    }
+    100% {
+      transform: scaleY(0);
+      transform-origin: bottom;
+    }
+  }
+
+  @media (max-width: 1200px) and (min-width: 901px) {
+    .hero__content {
+      margin-left: var(--gutter);
+      max-width: 52vw;
+    }
+
+    .hero__media {
+      left: 16vw;
+      right: -20vw;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-rows: auto auto auto;
+      min-height: 0;
+    }
+
+    .hero__media {
+      position: relative;
+      left: 0;
+      right: 0;
+      width: 100%;
+      height: 62svh;
+      min-height: 380px;
+    }
+
+    .hero__media :global(img) {
+      object-position: 48% 100%;
+    }
+
+    .hero__content {
+      max-width: none;
+    }
+
+    .hero__scroll {
+      display: none;
+    }
+
+    .hero__fade {
+      background:
+        linear-gradient(0deg, var(--ink-1) 0%, rgb(var(--ink-1-rgb) / 0.6) 22%, rgb(var(--ink-1-rgb) / 0) 55%),
+        linear-gradient(180deg, rgb(var(--ink-1-rgb) / 0.6), rgb(var(--ink-1-rgb) / 0) 30%);
+    }
+
+    .hero__glow {
+      right: -20%;
+      top: 0;
+      width: 90%;
+      height: 100%;
+    }
+
+    .hero__content {
+      margin-top: -9rem;
+      padding-top: 0;
+      padding-bottom: 2.5rem;
+    }
+
+    .hero__calli {
+      width: min(380px, 88%);
+      margin-top: 1.4rem;
+    }
+
+    .hero__rail {
+      padding-bottom: 1.5rem;
+    }
+
+    .hero__journey span + span::before {
+      margin: 0 0.5rem;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .hero__rail {
+      display: none;
+    }
+  }
+</style>

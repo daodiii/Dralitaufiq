@@ -1,0 +1,53 @@
+{
+  "name": "Prof. Dr. Ali Mohamed Salah",
+  "nameArabic": "الدكتور علي محمد صالح",
+  "nameSomali": "Dr. Cali Maxamed Saalax",
+  "tagline": "Scholar · Author · Translator",
+  "city": "Oslo, Norway",
+  "journey": ["Madinah", "Makkah", "Kuala Lumpur", "Oslo"],
+  "heroLede": "Professor of Comparative Religion, imam of the Tawfiiq Islamic Centre in Oslo, and author of eighteen works in Arabic, English and Somali on faith and doubt, jurisprudence in the West, and dialogue between the Abrahamic faiths.",
+  "aboutHeadline": "Thirty years between the classical text and the modern question.",
+  "aboutLead": [
+    "Prof. Dr. Ali Mohamed Salah is a scholar of Islamic Studies and Comparative Religion with more than three decades in academia, religious leadership and community work. His writing presents Islam in a clear, authentic and intellectually grounded way, attending both to its classical foundations and to the questions Muslims meet in Western societies.",
+    "Educated in Madinah, Makkah and Kuala Lumpur, he has directed language institutes and university programmes in Malaysia, and for nearly twenty-five years has served the Muslim community of Norway as imam, teacher and counsellor. He writes in Arabic, English and Somali, and has recorded more than a hundred courses across the Islamic sciences."
+  ],
+  "mission": "To bridge tradition and modernity: authentic Islamic knowledge that strengthens faith, deepens understanding, and lets Muslims meet contemporary life with confidence and clarity.",
+  "stats": [
+    { "value": 30, "suffix": "+", "label": "Years of scholarship" },
+    { "value": 100, "suffix": "+", "label": "Recorded courses" },
+    { "value": 20, "suffix": "", "label": "Published works" },
+    { "value": 5, "suffix": "", "label": "Languages" }
+  ],
+  "timeline": [
+    { "year": "1991", "title": "B.A. in Ḥadīth and Islamic Studies", "where": "Islamic University of Madinah" },
+    { "year": "1994", "title": "M.A. in Islamic Theology", "where": "Makkah" },
+    { "year": "2000", "title": "Ph.D. in Theology and Philosophy, Comparative Religion", "where": "National University of Malaysia" },
+    { "year": "2012", "title": "Coursework in International Relations", "where": "Norwegian University of Life Sciences, Ås" },
+    { "year": "2020", "title": "Certificate in Conflict Resolution", "where": "Norwegian Centre for Arbitration and Legal Services" },
+    { "year": "Today", "title": "Full Professor of Comparative Religion", "where": "Imam and khaṭīb, Markaz al-Tawfīq al-Islāmī, Oslo" }
+  ],
+  "roles": [
+    { "title": "Imam and Khaṭīb", "org": "Tawfiiq Islamic Centre, Oslo" },
+    { "title": "Director", "org": "Iqra Foundation · co-founder of Iqra Academy" },
+    { "title": "General Manager and Board Chair", "org": "Tasanud Hjelp Organisasjon" },
+    { "title": "Member", "org": "Norwegian Non-Fiction Writers and Translators Association (NFFO)" }
+  ],
+  "past": [
+    "Director of the Arabic Language Institute for Non-Native Speakers, IKIP, Malaysia",
+    "Director of the twinning programme between IKIP and Jordanian universities",
+    "Lecturer, International Islamic University of Malaysia, Kuantan"
+  ],
+  "fields": [
+    { "en": "Tafsīr", "ar": "التفسير" },
+    { "en": "Ḥadīth", "ar": "الحديث" },
+    { "en": "Fiqh", "ar": "الفقه" },
+    { "en": "Uṣūl al-Fiqh", "ar": "أصول الفقه" },
+    { "en": "Qawāʿid Fiqhiyyah", "ar": "القواعد الفقهية" },
+    { "en": "ʿAqīdah", "ar": "العقيدة" },
+    { "en": "Sīrah", "ar": "السيرة" },
+    { "en": "Arabic Grammar", "ar": "النحو" },
+    { "en": "Comparative Religion", "ar": "مقارنة الأديان" }
+  ],
+  "languages": ["Arabic", "English", "Somali", "Norwegian", "Malay"],
+  "social": [{ "label": "Facebook", "url": "https://www.facebook.com/shdralisalah" }]
+}

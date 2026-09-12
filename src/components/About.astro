@@ -1,0 +1,343 @@
+---
+import { Image } from 'astro:assets';
+import portrait from '../assets/about/portrait.jpg';
+import profile from '../data/profile.json';
+---
+
+<section class="about lattice" id="about" aria-labelledby="about-title">
+  <div class="container about__grid">
+    <div class="about__media" data-reveal data-y="40">
+      <figure class="about__frame">
+        <Image
+          src={portrait}
+          alt="Portrait of Prof. Dr. Ali Mohamed Salah"
+          widths={[480, 591]}
+          sizes="(max-width: 900px) 90vw, 36vw"
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="about__outline" aria-hidden="true"></span>
+      </figure>
+      <figcaption class="about__caption">
+        <span lang="ar">{profile.nameArabic}</span>
+        <span>{profile.city}</span>
+      </figcaption>
+    </div>
+
+    <div class="about__body">
+      <p class="eyebrow" data-reveal>About</p>
+      <h2 class="display display--lg" id="about-title" data-split>{profile.aboutHeadline}</h2>
+
+      <div class="about__lead" data-reveal data-delay="0.1">
+        {profile.aboutLead.map((p) => <p class="lede">{p}</p>)}
+      </div>
+
+      <blockquote class="about__mission" data-reveal data-delay="0.15">
+        <p>{profile.mission}</p>
+      </blockquote>
+
+      <ul class="stats" data-stagger>
+        {profile.stats.map((s) => (
+          <li class="stat">
+            <span class="stat__n" data-count={s.value} data-suffix={s.suffix}>
+              0{s.suffix}
+            </span>
+            <span class="stat__l">{s.label}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div class="about__section">
+        <p class="eyebrow" data-reveal>Formation</p>
+        <ol class="timeline">
+          <span class="timeline__line" aria-hidden="true"><i></i></span>
+          {profile.timeline.map((t) => (
+            <li class="timeline__item" data-reveal data-y="18">
+              <span class="timeline__year">{t.year}</span>
+              <span>
+                <span class="timeline__title">{t.title}</span>
+                <span class="timeline__where">{t.where}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div class="about__section">
+        <p class="eyebrow" data-reveal>Today</p>
+        <ul class="roles" data-stagger>
+          {profile.roles.map((r) => (
+            <li class="role">
+              <span class="role__title">{r.title}</span>
+              <span class="role__org">{r.org}</span>
+            </li>
+          ))}
+        </ul>
+        <p class="about__past" data-reveal>
+          Earlier: {profile.past.join('; ')}.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about {
+    padding-block: clamp(6rem, 14vw, 12rem);
+    background: var(--ink-1);
+  }
+
+  .about__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(3rem, 7vw, 8rem);
+    align-items: start;
+  }
+
+  .about__media {
+    position: sticky;
+    top: calc(var(--nav-h) + 2rem);
+  }
+
+  .about__frame {
+    position: relative;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    border-radius: 2px;
+    isolation: isolate;
+  }
+
+  .about__frame :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 15%;
+    will-change: transform;
+  }
+
+  .about__frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 0 1px rgb(var(--brass-rgb) / 0.35);
+    background: linear-gradient(0deg, rgb(var(--ink-1-rgb) / 0.55), transparent 40%);
+    pointer-events: none;
+  }
+
+  .about__outline {
+    position: absolute;
+    inset: 1.4rem -1.4rem -1.4rem 1.4rem;
+    border: 1px solid rgb(var(--brass-rgb) / 0.35);
+    z-index: -1;
+  }
+
+  .about__media {
+    padding-right: 1.4rem;
+    padding-bottom: 1.4rem;
+  }
+
+  .about__caption {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: 1.4rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+  }
+
+  .about__caption [lang='ar'] {
+    font-size: 1.05rem;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--brass-2);
+  }
+
+  .about__body > * + * {
+    margin-top: clamp(1.8rem, 3vw, 2.6rem);
+  }
+
+  .about__body .eyebrow {
+    margin-bottom: 0;
+  }
+
+  .about__body .display {
+    margin-top: 1.4rem;
+  }
+
+  .about__lead {
+    display: grid;
+    gap: 1.2rem;
+  }
+
+  .about__mission {
+    padding-left: 1.6rem;
+    border-left: 1px solid var(--brass);
+  }
+
+  .about__mission p {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 340;
+    font-size: clamp(1.35rem, 2.1vw, 1.9rem);
+    line-height: 1.35;
+    color: var(--paper);
+    font-variation-settings:
+      'opsz' 72,
+      'SOFT' 60;
+    text-wrap: pretty;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1.6rem 2rem;
+    padding-block: 2rem;
+    border-block: var(--hairline);
+  }
+
+  .stat__n {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 3.8vw, 3.8rem);
+    line-height: 1;
+    color: var(--brass-2);
+    letter-spacing: -0.03em;
+    font-variation-settings:
+      'opsz' 144,
+      'SOFT' 0;
+  }
+
+  .stat__l {
+    display: block;
+    margin-top: 0.6rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--paper-3);
+  }
+
+  .about__section > .eyebrow {
+    margin-bottom: 1.8rem;
+  }
+
+  .timeline {
+    position: relative;
+    display: grid;
+    gap: 1.8rem;
+    padding-left: 2.4rem;
+  }
+
+  .timeline__line {
+    position: absolute;
+    left: 0.34rem;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    width: 1px;
+    background: rgb(var(--brass-rgb) / 0.16);
+  }
+
+  .timeline__line i {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--brass);
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .timeline__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.5rem 1fr;
+    gap: 1.4rem;
+    align-items: baseline;
+  }
+
+  .timeline__item::before {
+    content: '';
+    position: absolute;
+    left: -2.4rem;
+    top: 0.45rem;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    border: 1px solid var(--brass);
+    background: var(--ink-1);
+  }
+
+  .timeline__year {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    color: var(--brass-2);
+    font-variation-settings:
+      'opsz' 48,
+      'SOFT' 0;
+  }
+
+  .timeline__title {
+    display: block;
+    color: var(--paper);
+    font-weight: 500;
+    font-size: 1rem;
+  }
+
+  .timeline__where {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.92rem;
+    color: var(--paper-3);
+  }
+
+  .roles {
+    display: grid;
+  }
+
+  .role {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 1rem 2rem;
+    padding-block: 1rem;
+    border-top: var(--hairline);
+  }
+
+  .role:last-child {
+    border-bottom: var(--hairline);
+  }
+
+  .role__title {
+    color: var(--paper);
+    font-weight: 500;
+  }
+
+  .role__org {
+    color: var(--paper-3);
+    font-size: 0.95rem;
+  }
+
+  .about__past {
+    margin-top: 1.4rem;
+    font-size: 0.9rem;
+    color: var(--paper-3);
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 900px) {
+    .about__grid {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+
+    .about__media {
+      position: relative;
+      top: 0;
+      max-width: 420px;
+    }
+
+    .role {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+  }
+</style>

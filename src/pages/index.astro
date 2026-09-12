@@ -1,0 +1,27 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import NewRelease from '../components/NewRelease.astro';
+import Shelf from '../components/Shelf.astro';
+import Marquee from '../components/Marquee.astro';
+import About from '../components/About.astro';
+import Footer from '../components/Footer.astro';
+import BookPanel from '../components/BookPanel.astro';
+---
+
+<Base
+  title="Prof. Dr. Ali Mohamed Salah · Scholar, Author, Translator"
+  description="Official site of Prof. Dr. Ali Mohamed Salah: professor of comparative religion, imam in Oslo, and author of eighteen works in Arabic, English and Somali."
+>
+  <Nav />
+  <main>
+    <Hero />
+    <NewRelease />
+    <Shelf />
+    <Marquee />
+    <About />
+  </main>
+  <Footer />
+  <BookPanel />
+</Base>
