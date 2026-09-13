@@ -77,12 +77,23 @@ The two rejected mockups, "the shelf" (eighteen spines on a plank; the featured 
 and turns) and "the codex" (an open book whose leaves fold over), are gone with their `/mock`
 pages; the tracking shot they replaced is in git history (commit 7de7dd7).
 
-### About
+### About, "the parting" (chosen 2026-09-13 from nine mockups)
 
-Headline, a monochrome plate that blooms to colour on hover, the two-paragraph biography, the
-mission as a large light-weight statement (no quotation glyph), then "Formation": the road from
-Madinah to Oslo drawn as a path that strokes on scroll, each stop lighting up as the line reaches
-it (a vertical list on phones). "Today" is a hairline record of his roles.
+Headline, then a stage pinned for 2.4 viewports: two paper pages fill the viewport and meet at a
+hairline. The left page is "Formation", the 1991-2020 record (year, degree, where) as hairline
+rows set against the seam; the right is "Today", his four posts and the "Earlier" line with the
+languages. Scrolling parts the pages 14vw each and fades the records to 28%; standing between the
+pages is his portrait, in colour and still (26vw, 56svh); then the mission writes itself word by
+word across the foot of both pages with a pool of paper behind it. Below the pin, the two-paragraph
+biography at the reading measure; the mission and the roles are not repeated there. Under 760px or
+with reduced motion the same markup flows stacked, without the pin.
+
+Implementation notes: the parting is three numbers (`gap`, `fade`, `mission`) tweened on a paused
+timeline that a scrubbed ScrollTrigger drives; `gap` and `fade` are written to the pin as custom
+properties the CSS reads, and `mission` sets each word's opacity and lift. The eight rejected
+mockups (atlas, years, orbit, worlds, matn, stamps, between, names) are gone with their `/mock`
+pages and `land-dots.json`; the drawn road from Madinah to Oslo that the parting replaced is in git
+history (commit a3f2d95).
 
 ## Assets
 
@@ -100,7 +111,8 @@ it (a vertical list on phones). "Today" is a hairline record of his roles.
 
 Built with `astro build`, served with `astro preview` (4322). Screenshots at 1440×900 and 390×844
 for the hero (first paint, banner at rest, scroll progress 20/40/55/70/100%, phone at rest and
-mid-pull), the wall at rest, at each of the three stops, mid-flight and pulled out, About, footer.
+mid-pull), the wall at rest, at each of the three stops, mid-flight and pulled out, the parting at
+0/40/70/100% and the biography below it, the About stacked on the phone and with reduced motion, footer.
 No console errors. Note for future sessions: the desktop app's browser pane cannot screenshot pinned/fixed
 layers once scrolled, and the Playwright MCP reorders batched calls; a scripted playwright-core
 runner against the Playwright headless shell is reliable. `motion.ts` exposes `window.ScrollTrigger`

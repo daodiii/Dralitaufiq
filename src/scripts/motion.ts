@@ -1,7 +1,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
-import { reduceMotion, scrollToY } from './smooth';
+import { getLenis, reduceMotion, scrollToY } from './smooth';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 (window as unknown as { ScrollTrigger: typeof ScrollTrigger }).ScrollTrigger = ScrollTrigger;
@@ -346,49 +346,65 @@ function works() {
 }
 
 /* ------------------------------------------------------------------ */
-/* About: the road from Madinah to Oslo                                 */
+/* About: the parting                                                   */
 /* ------------------------------------------------------------------ */
 
 function about() {
-  const journey = $('.journey');
-  const pathEl = journey?.querySelector<SVGPathElement>('.journey__path') ?? null;
-  if (journey && pathEl) {
-    const pts = Array.from(journey.querySelectorAll<SVGCircleElement>('.journey__pt'));
-    const stops = $$('.journey__stop', journey);
-    const light = (p: number, fractions: number[]) => {
-      pts.forEach((c, i) => c.classList.toggle('is-on', p >= fractions[i] - 0.004));
-      stops.forEach((s, i) => s.classList.toggle('is-on', p >= fractions[i] - 0.004));
+  const pin = $('.about__pin');
+  if (!pin) return;
+  const words = $$('.about__w', pin);
+  const n = words.length;
+
+  const mm = gsap.matchMedia();
+
+  mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
+    pin.classList.add('is-live');
+    const state = { gap: 0, fade: 0, mission: 0 };
+
+    /* The pages part and fade by custom properties; the mission writes itself word by word. */
+    const render = () => {
+      pin.style.setProperty('--gap', state.gap.toFixed(4));
+      pin.style.setProperty('--fade', state.fade.toFixed(4));
+      const head = state.mission * (n + 5);
+      words.forEach((w, i) => {
+        const k = Math.max(0, Math.min(1, (head - i) / 5));
+        w.style.opacity = k.toFixed(3);
+        w.style.transform = `translateY(${(0.35 * (1 - k)).toFixed(3)}em)`;
+      });
     };
-    const len = pathEl.getTotalLength();
-    if (!len || reduceMotion) {
-      light(1, pts.map(() => 0));
-    } else {
-      /* The road runs left to right, so a stop's share of the path follows from its x. */
-      const fractions = pts.map((c) => {
-        const cx = parseFloat(c.getAttribute('cx') || '0');
-        let lo = 0;
-        let hi = len;
-        for (let k = 0; k < 24; k++) {
-          const mid = (lo + hi) / 2;
-          if (pathEl.getPointAtLength(mid).x < cx) lo = mid;
-          else hi = mid;
-        }
-        return lo / len;
+
+    const tl = gsap.timeline({ paused: true, onUpdate: render });
+    tl.to({}, { duration: 0.4 });
+    tl.to(state, { gap: 1, duration: 1.1, ease: 'power2.inOut' });
+    tl.to(state, { fade: 1, duration: 0.9, ease: 'power2.inOut' }, '<0.25');
+    tl.to(state, { mission: 1, duration: 0.9, ease: 'none' }, '-=0.35');
+    tl.to({}, { duration: 0.55 });
+
+    const st = ScrollTrigger.create({
+      trigger: pin,
+      start: 'top top',
+      end: () => `+=${Math.round(window.innerHeight * 2.4)}`,
+      pin: true,
+      scrub: 1,
+      animation: tl,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onRefresh: render,
+    });
+    render();
+
+    return () => {
+      st.kill();
+      tl.kill();
+      pin.style.removeProperty('--gap');
+      pin.style.removeProperty('--fade');
+      words.forEach((w) => {
+        w.style.removeProperty('opacity');
+        w.style.removeProperty('transform');
       });
-      gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len });
-      gsap.to(pathEl, {
-        strokeDashoffset: 0,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: journey,
-          start: 'top 78%',
-          end: 'bottom 45%',
-          scrub: 0.5,
-          onUpdate: (self) => light(self.progress, fractions),
-        },
-      });
-    }
-  }
+      pin.classList.remove('is-live');
+    };
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -406,7 +422,10 @@ function landOnHash() {
   const events = ['wheel', 'touchstart', 'keydown'];
   events.forEach((ev) => window.addEventListener(ev, cancel, { passive: true }));
   const land = () => {
-    if (!manual) scrollToY(target.getBoundingClientRect().top + window.scrollY - 24, true);
+    if (manual) return;
+    /* Lenis clamps scrollTo to a limit it re-measures on a debounce, so read the grown pins first. */
+    getLenis()?.resize();
+    scrollToY(target.getBoundingClientRect().top + window.scrollY - 24, true);
   };
   ScrollTrigger.addEventListener('refresh', land);
   land();

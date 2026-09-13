@@ -1,122 +1,128 @@
 ---
 /**
- * The profile. Headline, a monochrome plate that blooms into colour on hover,
- * the biography, his mission, and the road from Madinah to Oslo drawn on scroll.
+ * The profile, "the parting". Two pages fill the viewport and meet at a
+ * hairline: his formation on the left and his posts today on the right, as
+ * hairline records set against the seam. Scrolling parts the pages, and
+ * standing between them is his portrait, still; his mission then writes
+ * itself across the foot of both. Below the pin, the biography. Phones and
+ * reduced motion get the same content stacked, without the pin.
  */
 import { Image } from 'astro:assets';
 import portrait from '../assets/about/portrait-studio.jpg';
 import profile from '../data/profile.json';
 
-const stops = [
-  { city: 'Madinah', year: '1991', note: 'B.A., Ḥadīth and Islamic Studies', x: 70, y: 168 },
-  { city: 'Makkah', year: '1994', note: 'M.A., Islamic Theology', x: 335, y: 92 },
-  { city: 'Kuala Lumpur', year: '2000', note: 'Ph.D., Theology and Comparative Religion', x: 600, y: 158 },
-  { city: 'Ås', year: '2012', note: 'International Relations, NMBU', x: 860, y: 84 },
-  { city: 'Oslo', year: 'Today', note: 'Professor, imam and khaṭīb', x: 1125, y: 132 },
-];
-const d = 'M70 168 C170 168 235 92 335 92 S500 158 600 158 S760 84 860 84 S1025 132 1125 132';
+const formation = profile.timeline.filter((t) => t.year !== 'Today');
+const words = profile.mission.split(' ');
 ---
 
 <section class="about" id="about" aria-labelledby="about-title">
-  <div class="container about__grid">
-    <h2 class="display display--lg about__title" id="about-title" data-split>{profile.aboutHeadline}</h2>
+  <div class="container about__head">
+    <h2 class="display display--lg" id="about-title" data-split>{profile.aboutHeadline}</h2>
+  </div>
 
-    <figure class="about__plate" data-reveal data-y="36">
-      <div class="about__photo">
-        <Image
-          src={portrait}
-          alt="Prof. Dr. Ali Mohamed Salah"
-          widths={[520, 800, 1100]}
-          sizes="(max-width: 900px) 80vw, 28vw"
-          loading="lazy"
-          decoding="async"
-        />
+  <div class="about__pin">
+    <div class="about__stage">
+      <figure class="about__between">
+        <div class="about__photo">
+          <Image
+            src={portrait}
+            alt="Prof. Dr. Ali Mohamed Salah"
+            widths={[520, 800]}
+            sizes="(max-width: 900px) 60vw, 26vw"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <figcaption class="about__caption">
+          <span lang="ar">{profile.nameArabic}</span>
+          <span>{profile.name}</span>
+        </figcaption>
+      </figure>
+
+      <div class="about__page about__page--l">
+        <p class="about__tag">Formation</p>
+        <div class="about__slot">
+          <div class="about__records about__records--l">
+            <dl class="about__rows">
+              {
+                formation.map((t) => (
+                  <div class="about__row">
+                    <dt>{t.year}</dt>
+                    <dd>
+                      <span>{t.title}</span>
+                      <span class="about__where">{t.where}</span>
+                    </dd>
+                  </div>
+                ))
+              }
+            </dl>
+          </div>
+        </div>
       </div>
-      <figcaption class="about__caption">
-        <span lang="ar">{profile.nameArabic}</span>
-        <span>{profile.city}</span>
-      </figcaption>
-    </figure>
 
+      <div class="about__page about__page--r">
+        <p class="about__tag">Today</p>
+        <div class="about__slot">
+          <div class="about__records about__records--r">
+            <dl class="about__rows">
+              {
+                profile.roles.map((r) => (
+                  <div class="about__row about__row--role">
+                    <dt>{r.title}</dt>
+                    <dd>{r.org}</dd>
+                  </div>
+                ))
+              }
+            </dl>
+            <p class="about__past">
+              Earlier: {profile.past.join('; ')}. He writes in Arabic, English and Somali, and teaches also in Norwegian
+              and Malay.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <blockquote class="about__mission">
+        <p>
+          {words.map((w) => (
+            <>
+              <span class="about__w">{w}</span>{' '}
+            </>
+          ))}
+        </p>
+      </blockquote>
+    </div>
+  </div>
+
+  <div class="container about__bio">
     <div class="about__body prose" data-reveal data-delay="0.1">
       {profile.aboutLead.map((p) => <p>{p}</p>)}
-    </div>
-
-    <blockquote class="about__mission" data-reveal data-delay="0.15">
-      <p>{profile.mission}</p>
-    </blockquote>
-
-    <div class="journey">
-      <p class="journey__label" data-reveal>Formation</p>
-      <div class="journey__map">
-        <svg class="journey__svg" viewBox="0 0 1200 240" aria-hidden="true">
-          <path class="journey__track" d={d}></path>
-          <path class="journey__path" d={d}></path>
-          {stops.map((s) => <circle class="journey__pt" cx={s.x} cy={s.y} r="6" />)}
-        </svg>
-        <ol class="journey__stops">
-          {
-            stops.map((s) => (
-              <li
-                class="journey__stop"
-                data-side={s.y < 120 ? 'up' : 'down'}
-                style={`--x:${((s.x / 1200) * 100).toFixed(2)}%; --y:${((s.y / 240) * 100).toFixed(2)}%`}
-              >
-                <span class="journey__city">{s.city}</span>
-                <span class="journey__year">{s.year}</span>
-                <span class="journey__note">{s.note}</span>
-              </li>
-            ))
-          }
-        </ol>
-      </div>
-    </div>
-
-    <div class="about__today">
-      <p class="about__h" data-reveal>Today</p>
-      <dl class="roles" data-stagger>
-        {
-          profile.roles.map((r) => (
-            <div class="role">
-              <dt>{r.title}</dt>
-              <dd>{r.org}</dd>
-            </div>
-          ))
-        }
-      </dl>
-      <p class="small about__past" data-reveal>
-        Earlier: {profile.past.join('; ')}. He writes in Arabic, English and Somali, and teaches also in Norwegian
-        and Malay.
-      </p>
     </div>
   </div>
 </section>
 
 <style>
   .about {
-    padding-block: clamp(6rem, 13vw, 12rem) clamp(5rem, 10vw, 9rem);
+    padding-top: clamp(6rem, 13vw, 12rem);
   }
 
-  .about__grid {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: clamp(1rem, 2vw, 2rem);
-    row-gap: clamp(2.5rem, 4vw, 3.5rem);
-    align-items: start;
+  .about__head {
+    padding-bottom: clamp(2rem, 5vw, 4rem);
   }
 
-  .about__title {
-    grid-column: 1 / 9;
+  .about__head h2 {
+    max-width: 22ch;
   }
 
-  .about__plate {
-    grid-column: 10 / 13;
-    grid-row: 1 / 4;
-    margin: 0;
+  .about__tag {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
   }
 
   .about__photo {
-    aspect-ratio: 4 / 5;
     overflow: hidden;
     border-radius: 3px;
     background: var(--paper-3);
@@ -127,265 +133,252 @@ const d = 'M70 168 C170 168 235 92 335 92 S500 158 600 158 S760 84 860 84 S1025 
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: 50% 12%;
-    filter: grayscale(1) contrast(1.06);
-    transition: filter 1.4s var(--ease-out);
-  }
-
-  .about__plate:hover :global(img) {
-    filter: grayscale(0) contrast(1);
+    object-position: 50% 10%;
   }
 
   .about__caption {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    margin-top: 0.9rem;
-    font-size: 0.78rem;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-top: 0.8rem;
+    font-size: 0.76rem;
     color: var(--ink-3);
   }
 
   .about__caption [lang='ar'] {
     font-size: 1.05rem;
     color: var(--ink);
+    text-align: left;
   }
 
-  .about__body {
-    grid-column: 1 / 8;
-    font-size: 1.08rem;
+  /* ---------- the records ---------- */
+
+  .about__records {
+    display: grid;
+    align-content: center;
+    gap: 1.5rem;
+    height: 100%;
+    max-width: 30rem;
   }
 
-  .about__mission {
-    grid-column: 1 / 9;
-    position: relative;
+  .about__records--l {
+    justify-self: end;
+  }
+
+  .about__rows {
+    display: grid;
+  }
+
+  .about__row {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+    gap: 0.5rem 1.4rem;
+    padding-block: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .about__row:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .about__row--role {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  }
+
+  .about__row dt {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--ink-3);
+    padding-top: 0.15rem;
+  }
+
+  .about__row--role dt {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+    padding-top: 0;
+  }
+
+  .about__row dd {
+    display: grid;
+    gap: 0.2rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+
+  .about__row--role dd {
+    color: var(--ink-3);
+  }
+
+  .about__where {
+    font-size: 0.86rem;
+    color: var(--ink-3);
+  }
+
+  .about__past {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    color: var(--ink-3);
+    text-wrap: pretty;
   }
 
   .about__mission p {
     font-family: var(--font-display);
     font-weight: 300;
-    font-size: clamp(1.5rem, 2.4vw, 2.4rem);
-    line-height: 1.22;
+    font-size: clamp(1.3rem, 2.1vw, 2.1rem);
+    line-height: 1.25;
     letter-spacing: -0.025em;
     color: var(--ink);
     text-wrap: pretty;
   }
 
-  /* ---------- the road ---------- */
+  /* ---------- the biography ---------- */
 
-  .journey {
-    grid-column: 1 / -1;
-    margin-top: clamp(2rem, 5vw, 4rem);
-    padding-top: clamp(2rem, 4vw, 3rem);
-    border-top: 1px solid var(--line);
+  .about__bio {
+    padding-block: clamp(4rem, 8vw, 7rem) clamp(5rem, 10vw, 9rem);
   }
 
-  .journey__label,
-  .about__h {
-    font-size: 0.9rem;
-    color: var(--ink-3);
+  .about__body {
+    font-size: 1.08rem;
   }
 
-  .journey__map {
-    position: relative;
-    aspect-ratio: 1200 / 240;
-    margin: 5.5rem 0 6rem;
-  }
+  /* ---------- flowing layout (small screens, reduced motion) ---------- */
 
-  .journey__svg {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
-
-  .journey__track {
-    fill: none;
-    stroke: var(--line-strong);
-    stroke-width: 1;
-    stroke-dasharray: 2 7;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .journey__path {
-    fill: none;
-    stroke: var(--ink);
-    stroke-width: 1.5;
-    vector-effect: non-scaling-stroke;
-  }
-
-  .journey__pt {
-    fill: var(--paper);
-    stroke: var(--ink);
-    stroke-width: 1.5;
-    transform-box: fill-box;
-    transform-origin: center;
-    transform: scale(0.55);
-    opacity: 0.35;
-    transition:
-      transform 0.7s var(--ease-out),
-      opacity 0.7s,
-      fill 0.7s,
-      stroke 0.7s;
-  }
-
-  .journey__pt.is-on {
-    transform: scale(1);
-    opacity: 1;
-    fill: var(--accent);
-    stroke: var(--accent);
-  }
-
-  .journey__stops {
-    position: absolute;
-    inset: 0;
-  }
-
-  .journey__stop {
-    position: absolute;
-    left: var(--x);
-    top: var(--y);
+  .about__pin:not(.is-live) .about__stage {
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin-inline: auto;
     display: grid;
-    gap: 0.2rem;
-    justify-items: center;
+    gap: 2.5rem;
+  }
+
+  .about__pin:not(.is-live) .about__between {
+    margin: 0;
+    width: min(18rem, 70vw);
+  }
+
+  .about__pin:not(.is-live) .about__photo {
+    aspect-ratio: 4 / 5;
+  }
+
+  .about__pin:not(.is-live) .about__page {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .about__pin:not(.is-live) .about__records {
+    height: auto;
+    justify-self: start;
+  }
+
+  /* ---------- the parting (JS adds .is-live) ---------- */
+
+  .about__pin.is-live {
+    --gap: 0;
+    --fade: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .is-live .about__stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  .is-live .about__between {
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    width: min(26vw, 380px);
+    margin: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .is-live .about__photo {
+    height: min(56svh, 560px);
+  }
+
+  .is-live .about__caption {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  /* The two pages. They cover the portrait, then slide off it. */
+  .is-live .about__page {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    padding: calc(var(--nav-h) + 1rem) var(--gutter) 2rem;
+    background: var(--paper);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 1.6rem;
+    z-index: 2;
+  }
+
+  .is-live .about__page--l {
+    left: 0;
+    border-right: 1px solid var(--line);
+    transform: translateX(calc(var(--gap) * -14vw));
+  }
+
+  .is-live .about__page--r {
+    right: 0;
+    transform: translateX(calc(var(--gap) * 14vw));
+  }
+
+  .is-live .about__page--r .about__tag {
+    text-align: right;
+  }
+
+  .is-live .about__slot {
+    grid-row: 2;
+    min-height: 0;
+    opacity: calc(1 - var(--fade) * 0.72);
+  }
+
+  .is-live .about__mission {
+    position: absolute;
+    left: 50%;
+    bottom: 5svh;
+    z-index: 3;
+    width: min(46rem, 88vw);
+    transform: translateX(-50%);
     text-align: center;
-    opacity: 0.38;
-    transition: opacity 0.7s var(--ease-out);
+    pointer-events: none;
   }
 
-  .journey__stop.is-on {
-    opacity: 1;
+  .is-live .about__mission::before {
+    content: '';
+    position: absolute;
+    inset: -40% -18%;
+    z-index: -1;
+    background: radial-gradient(ellipse at 50% 50%, var(--paper) 40%, transparent 72%);
+    opacity: var(--fade);
   }
 
-  .journey__stop[data-side='down'] {
-    transform: translate(-50%, 0);
-    padding-top: 1.5rem;
-  }
-
-  .journey__stop[data-side='up'] {
-    transform: translate(-50%, -100%);
-    padding-bottom: 1.5rem;
-  }
-
-  .journey__city {
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: 1.35rem;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    color: var(--ink);
-    white-space: nowrap;
-  }
-
-  .journey__year {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--accent);
-  }
-
-  .journey__note {
-    max-width: 13rem;
-    font-size: 0.78rem;
-    line-height: 1.4;
-    color: var(--ink-3);
-  }
-
-  /* ---------- today ---------- */
-
-  .about__today {
-    grid-column: 1 / 10;
-  }
-
-  .roles {
-    display: grid;
-    margin-top: 1.5rem;
-  }
-
-  .role {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
-    gap: 0.5rem 2rem;
-    padding-block: 1.1rem;
-    border-top: 1px solid var(--line);
-  }
-
-  .role:last-child {
-    border-bottom: 1px solid var(--line);
-  }
-
-  .role dt {
-    font-weight: 500;
-    color: var(--ink);
-  }
-
-  .role dd {
-    color: var(--ink-3);
-  }
-
-  .about__past {
-    margin-top: 1.4rem;
-    max-width: 60ch;
+  .is-live .about__w {
+    opacity: 0;
+    display: inline-block;
+    transform: translateY(0.35em);
   }
 
   @media (max-width: 900px) {
-    .about__grid {
-      grid-template-columns: 1fr;
-      row-gap: 2.5rem;
+    .is-live .about__between {
+      width: min(40vw, 300px);
     }
 
-    .about__title,
-    .about__body,
-    .about__mission,
-    .about__today {
-      grid-column: 1;
+    .is-live .about__page--l {
+      transform: translateX(calc(var(--gap) * -22vw));
     }
 
-    .about__plate {
-      grid-column: 1;
-      grid-row: auto;
-      position: relative;
-      top: 0;
-      max-width: 400px;
-    }
-
-    .role {
-      grid-template-columns: 1fr;
-      gap: 0.15rem;
-    }
-  }
-
-  @media (max-width: 760px) {
-    .journey__map {
-      aspect-ratio: auto;
-      margin: 2rem 0 0;
-    }
-
-    .journey__svg {
-      display: none;
-    }
-
-    .journey__stops {
-      position: static;
-      display: grid;
-      gap: 1.6rem;
-      padding-left: 1.4rem;
-      border-left: 1px solid var(--line);
-    }
-
-    .journey__stop,
-    .journey__stop[data-side='up'],
-    .journey__stop[data-side='down'] {
-      position: static;
-      transform: none;
-      padding: 0;
-      justify-items: start;
-      text-align: left;
-      opacity: 1;
-    }
-
-    .journey__note {
-      max-width: none;
+    .is-live .about__page--r {
+      transform: translateX(calc(var(--gap) * 22vw));
     }
   }
 </style>
