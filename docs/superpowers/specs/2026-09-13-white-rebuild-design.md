@@ -102,26 +102,29 @@ mockups (atlas, years, orbit, worlds, matn, stamps, between, names) are gone wit
 pages and `land-dots.json`; the drawn road from Madinah to Oslo that the parting replaced is in git
 history (commit a3f2d95).
 
-## Scrolling, beat by beat (2026-09-14)
+## Scrolling: free between the parts, automatic inside them (2026-09-14)
 
-The wheel and the trackpad scroll freely, so every choreography plays at the reader's own pace;
-140 ms after the input goes quiet the page carries on to the next beat in the direction of travel
-(or back onto a beat it stopped within 24px of), gliding in 0.8-2.4 s depending on the distance.
-Nothing is locked: a new gesture always takes over, and reversing mid-glide returns to the beat
-just left. Down/Up/PageDown/PageUp/Space/Home/End step a beat at a time. Scrollbar drags and touch
-settle on the nearest beat once they stop. Nav links, the wall's rail and deep links land where
-they point. Under 760px and with reduced motion nothing changes: those layouts are stacked and
-unpinned. (The first version moved exactly one beat per gesture and ignored input until the glide
-landed; the user found the first scroll too fast and the lock unresponsive, so it was replaced the
-same day.)
+The wheel and the trackpad scroll freely, and nothing intervenes between the choreographed
+parts. Each part is a zone with its beats: the pull-back (banner at rest, banner pulled back),
+the wall (wide, the three stops, the index) and the parting (pages meeting, mission written).
+Once the input goes quiet (140 ms) with the page inside a zone, it carries on to the zone's next
+beat in the direction of travel, or back onto a beat it stopped within 24px of, in a cubic glide
+of 0.8-2.4 s by distance. So one scroll from the top assembles the page; the reader then scrolls
+freely past the works headline and the wide wall, and scrolling into the zoom-in carries them to
+the first book, then book by book to the whole wall; free again to About, where scrolling into
+the parting plays it to the mission; free to the footer. Scrolling up into a part runs it in
+reverse. Nothing is locked: a new gesture always takes over, and reversing mid-glide returns to
+the beat just left. Down/Up/PageDown/PageUp/Space/Home/End step through every beat and the two
+marks between zones (the works and About headlines; the About mark is set so the "All eighteen
+works" link shows above it). Scrollbar drags and touch settle on the nearest beat of the zone
+they stop in. Under 760px and with reduced motion nothing changes: those layouts are stacked and
+unpinned. Two earlier versions the same day, one beat per gesture with an input lock and then
+carry-on everywhere, were rejected by the user as too fast and unresponsive, and as leaving no
+free scrolling.
 
-The beats, read live from the pins and the layout: the banner at rest; the banner pulled back;
-the "Eighteen works" headline; the wall wide; the three stops; the index; the About headline,
-placed so the "All eighteen works" link shows above it; the pages meeting; the mission written
-(one gesture plays the whole parting); the biography with the footer on the last screen. Beats
-closer than 40px merge. `src/scripts/steps.ts` holds the controller, `smooth.ts` hands it every
-gesture before Lenis through Lenis's `virtualScroll` option, and `beats()` in `motion.ts` lists
-the positions.
+`src/scripts/steps.ts` holds the controller, `smooth.ts` hands it every gesture before Lenis
+through Lenis's `virtualScroll` option, and `beats()` in `motion.ts` lists the zones and marks,
+read live from the pins so they follow resizes and refreshes.
 
 ## Assets
 
@@ -141,10 +144,11 @@ Built with `astro build`, served with `astro preview` (4322). Screenshots at 144
 for the hero (first paint, banner at rest, scroll progress 20/40/55/70/100%, phone at rest and
 mid-pull), the wall at rest, at each of the three stops, mid-flight and pulled out, the parting at
 0/40/70/100% and the biography below it, the About stacked on the phone and with reduced motion, footer.
-Beat scrolling: a headless run fires real wheel and key input and checks every landing both ways,
-a trackpad-shaped burst carries on to the next beat, a fast wheel spin crosses a beat and carries on
-to the one after, reversing mid-glide returns to the beat left, native jumps settle; phones and
-reduced motion still scroll freely.
+Scrolling: a headless run walks the page with real wheel and key input, down and back up: one scroll
+assembles the page, notches below it stay put, scrolling into the wall carries on to book 1 and then
+book by book to the whole wall, free after it, the parting plays through and reverses, keys step
+through beats and marks, reversing mid-glide, native jumps settle only inside a zone, a trackpad
+burst in free space just scrolls; phones and reduced motion still scroll freely.
 No console errors. Note for future sessions: the desktop app's browser pane cannot screenshot pinned/fixed
 layers once scrolled, and the Playwright MCP reorders batched calls; a scripted playwright-core
 runner against the Playwright headless shell is reliable. `motion.ts` exposes `window.ScrollTrigger`

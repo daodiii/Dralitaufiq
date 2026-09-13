@@ -3,20 +3,27 @@ import type Lenis from 'lenis';
 import type { VirtualScrollData } from 'lenis';
 import { getLenis, setGestureHandler } from './smooth';
 
-/* Beat-to-beat scrolling. The wheel and the trackpad scroll freely, so every choreography
-   plays at the reader's own pace; once the input goes quiet the page carries on to the next
-   beat in the direction of travel, or back onto the beat it is nearly on. A new gesture
-   always takes over. Keys step a beat at a time; scrollbar drags and touch settle on the
-   nearest beat once they stop. The beats are read from the provider on every move, so they
-   follow resizes and ScrollTrigger refreshes. Phones and reduced motion keep native
+/* Scrolling that is free between the choreographed parts and automatic inside them. Each
+   part (the pull-back, the wall, the parting) is a zone with its beats; the wheel and the
+   trackpad scroll freely everywhere, and once the input goes quiet inside a zone the page
+   carries on to the zone's next beat in the direction of travel, or back onto the beat it
+   is nearly on. Outside a zone nothing intervenes. A new gesture always takes over. Keys
+   step through every beat and mark; scrollbar drags and touch settle on the nearest beat
+   of the zone they stop in. Everything is read from the provider on each move, so it
+   follows resizes and ScrollTrigger refreshes. Phones and reduced motion keep native
    scrolling: their layouts are stacked and unpinned. */
+
+export interface Beats {
+  zones: number[][]; /* each an ordered run of scroll positions, first to last beat */
+  marks: number[]; /* resting places between zones, for the keys */
+}
 
 const TOL = 40; /* beats closer than this merge; within this of a beat counts as standing on it */
 const SNAP = 24; /* after wheel input, this close to a beat goes back onto it rather than on */
 const QUIET = 140; /* ms without wheel input before the page carries on */
 const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
-export function steps(beatsOf: () => number[]) {
+export function steps(read: () => Beats) {
   const lenis = getLenis();
   if (!lenis) return;
   const mm = gsap.matchMedia();
@@ -27,33 +34,44 @@ export function steps(beatsOf: () => number[]) {
     let wasNative = false;
 
     const limit = () => document.documentElement.scrollHeight - window.innerHeight;
-    const beats = () => {
+    const clean = (list: number[]) => {
       const max = limit();
-      const list = beatsOf()
+      const sorted = list
         .filter((y) => Number.isFinite(y))
         .map((y) => Math.min(Math.max(0, Math.round(y)), max))
         .sort((a, b) => a - b);
       const out: number[] = [];
-      for (const y of list) if (!out.length || y - out[out.length - 1] > TOL) out.push(y);
+      for (const y of sorted) if (!out.length || y - out[out.length - 1] > TOL) out.push(y);
       return out;
     };
-    const next = (d: number, y: number, margin = TOL) => {
-      const list = beats();
-      return d > 0 ? list.find((b) => b > y + margin) : list.reverse().find((b) => b < y - margin);
+    const zones = () => read().zones.map(clean).filter((z) => z.length > 1);
+    const zoneAt = (y: number) => zones().find((z) => y >= z[0] - SNAP && y <= z[z.length - 1] + SNAP);
+    const every = () => {
+      const b = read();
+      return clean([0, limit(), ...b.marks, ...b.zones.flat()]);
     };
-    const nearest = (y: number) => beats().reduce((best, b) => (Math.abs(b - y) < Math.abs(best - y) ? b : best));
+    const nearest = (list: number[], y: number) =>
+      list.reduce((best, b) => (Math.abs(b - y) < Math.abs(best - y) ? b : best));
+    const ahead = (list: number[], d: number, y: number, margin: number) =>
+      d > 0 ? list.find((b) => b > y + margin) : [...list].reverse().find((b) => b < y - margin);
     const go = (y: number | undefined) => {
       if (y === undefined) return;
       const duration = 0.8 + Math.min(1.6, Math.abs(y - lenis.scroll) / 1000);
       lenis.scrollTo(y, { duration, easing: ease });
     };
 
-    /* Wheel and trackpad: let Lenis scroll, note the direction, and carry on once quiet.
-       Touch is left to the browser and settles below. */
+    /* Wheel and trackpad: let Lenis scroll, note the direction, and carry on once quiet
+       if the page is inside a zone. Touch is left to the browser and settles below. */
     const carryOn = () => {
       const y = lenis.targetScroll;
-      const near = nearest(y);
-      go(Math.abs(near - y) <= SNAP ? near : (next(dir, y, SNAP) ?? near));
+      const zone = zoneAt(y);
+      if (!zone) return;
+      const near = nearest(zone, y);
+      if (Math.abs(near - y) <= SNAP) {
+        if (Math.round(near) !== Math.round(y)) go(near);
+        return;
+      }
+      go(ahead(zone, dir, y, SNAP) ?? near);
     };
     setGestureHandler(({ deltaY, event }: VirtualScrollData) => {
       if (event.type.startsWith('touch') || (event as WheelEvent).ctrlKey || !deltaY) return true;
@@ -73,14 +91,14 @@ export function steps(beatsOf: () => number[]) {
       switch (e.key) {
         case 'ArrowDown':
         case 'PageDown':
-          to = next(1, y);
+          to = ahead(every(), 1, y, TOL);
           break;
         case 'ArrowUp':
         case 'PageUp':
-          to = next(-1, y);
+          to = ahead(every(), -1, y, TOL);
           break;
         case ' ':
-          to = next(e.shiftKey ? -1 : 1, y);
+          to = ahead(every(), e.shiftKey ? -1 : 1, y, TOL);
           break;
         case 'Home':
           to = 0;
@@ -98,12 +116,14 @@ export function steps(beatsOf: () => number[]) {
     window.addEventListener('keydown', onKey);
 
     /* Lenis reports a scrollbar drag or a touch scroll as native and clears the state
-       400ms after it stops; that is the moment to settle. */
+       400ms after it stops; that is the moment to settle, if it stopped inside a zone. */
     const onScroll = (l: Lenis) => {
       if (l.isScrolling === 'native') wasNative = true;
       else if (l.isScrolling === false && wasNative) {
         wasNative = false;
-        const b = nearest(l.scroll);
+        const zone = zoneAt(l.scroll);
+        if (!zone) return;
+        const b = nearest(zone, l.scroll);
         if (Math.abs(b - l.scroll) > TOL) go(b);
       }
     };

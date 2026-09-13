@@ -2,7 +2,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import { getLenis, reduceMotion, scrollToY } from './smooth';
-import { steps } from './steps';
+import { steps, type Beats } from './steps';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 (window as unknown as { ScrollTrigger: typeof ScrollTrigger }).ScrollTrigger = ScrollTrigger;
@@ -412,14 +412,15 @@ function about() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Beats: where a scroll gesture lands                                  */
+/* Beats: the choreographed parts and their resting places              */
 /* ------------------------------------------------------------------ */
 
-/* Read live, so they follow resizes and refreshes: the banner at rest and pulled back,
-   the works headline, the wall wide, its stops and the index, the About headline (set so
-   the "all works" link still shows above it), the pages meeting, the mission written,
-   and the biography with the footer on the last screen. */
-function beats() {
+/* Read live, so they follow resizes and refreshes. Three zones the page scrolls through
+   automatically: the pull-back (banner at rest, banner pulled back), the wall (wide, its
+   stops, the index) and the parting (pages meeting, mission written). Between them the
+   scroll is free; the marks are where the keys rest on the way: the works headline and the
+   About headline (set so the "all works" link still shows above it). */
+function beats(): Beats {
   const pins = ScrollTrigger.getAll().filter((t) => t.pin);
   const pin = (sel: string) => pins.find((t) => (t.trigger as Element).matches(sel));
   /* Layout tops rather than client rects: the reveal tweens translate these blocks. */
@@ -434,18 +435,14 @@ function beats() {
   const hero = pin('.hero');
   const wall = pin('.works__pin');
   const parting = pin('.about__pin');
-  return [
-    0,
-    hero ? hero.end : NaN,
-    top('#books'),
-    wall ? wall.start : NaN,
-    ...wallStops(),
-    wall ? wall.end : NaN,
-    Math.min(top('#about'), top('.works__all') - navH - 24),
-    parting ? parting.start : NaN,
-    parting ? parting.end : NaN,
-    document.documentElement.scrollHeight - window.innerHeight,
-  ];
+  return {
+    zones: [
+      hero ? [0, hero.end] : [],
+      wall ? [wall.start, ...wallStops(), wall.end] : [],
+      parting ? [parting.start, parting.end] : [],
+    ],
+    marks: [top('#books'), Math.min(top('#about'), top('.works__all') - navH - 24)],
+  };
 }
 
 /* ------------------------------------------------------------------ */
