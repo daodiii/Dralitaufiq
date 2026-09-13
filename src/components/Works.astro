@@ -1,0 +1,596 @@
+---
+/**
+ * The tracking shot. Six books hang in a white space; scrolling dollies the
+ * camera through them, pausing on each. Each book is a real 3D object: cover,
+ * spine (tinted from the jacket), page edge and a floor shadow.
+ */
+import path from 'node:path';
+import sharp from 'sharp';
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import raw from '../data/books.json';
+
+const all = await getCollection('books');
+const sequence = [0, 1, 3, 2, 11, 15];
+const featured = sequence
+  .map((n) => all.find((b) => b.data.order === n))
+  .filter((b): b is NonNullable<typeof b> => Boolean(b));
+
+const languageLabel = { en: 'English', ar: 'Arabic', so: 'Somali' } as const;
+
+function shortRole(role: string) {
+  if (role.startsWith('Translated, edited')) return 'Translated, edited and annotated';
+  if (role.startsWith('Translated')) return 'Translated';
+  if (role.startsWith('Lectures')) return 'Lectures, compiled';
+  if (role.startsWith('Critical')) return 'Critical edition';
+  return role;
+}
+
+async function spineColour(order: number) {
+  const entry = raw.find((r) => r.order === order);
+  if (!entry) return 'oklch(30% 0.02 60)';
+  const file = path.join(process.cwd(), 'src/assets/covers', path.basename(entry.cover));
+  const { dominant } = await sharp(file).resize(64, 96).stats();
+  return `rgb(${dominant.r} ${dominant.g} ${dominant.b})`;
+}
+
+/* World positions: x in vw, y in vh. The camera pans so each lands on the focal point. */
+const slots = [
+  { x: 0, y: 0, ry: 16 },
+  { x: 30, y: -9, ry: -12 },
+  { x: -12, y: 7, ry: 20 },
+  { x: 26, y: -6, ry: -10 },
+  { x: -6, y: 5, ry: 14 },
+  { x: 32, y: -10, ry: -16 },
+];
+
+const items = await Promise.all(
+  featured.map(async (b, i) => ({
+    entry: b,
+    spine: await spineColour(b.data.order),
+    slot: slots[i % slots.length],
+    secondary: b.data.language === 'ar' ? b.data.titleEn : b.data.subtitle || b.data.titleEn,
+    meta: [shortRole(b.data.role), languageLabel[b.data.language], b.data.publisher, b.data.year]
+      .filter(Boolean)
+      .join(' · '),
+    href: `/books/${b.id}`,
+  }))
+);
+const total = String(items.length).padStart(2, '0');
+---
+
+<section class="works" id="books" aria-labelledby="works-title">
+  <div class="container works__head">
+    <h2 class="display display--lg" id="works-title" data-split>
+      Eighteen works. <em>Three languages.</em>
+    </h2>
+    <p class="works__lede" data-reveal data-delay="0.15">
+      A selection from the library. Scroll to move through it, and open any volume for the full description and
+      where to find it.
+    </p>
+  </div>
+
+  <div class="works__pin">
+    <div class="works__stage">
+      <div class="works__camera">
+        <div class="works__scene">
+          {
+            items.map((it, i) => (
+              <a
+                class="works__book"
+                href={it.href}
+                data-x={it.slot.x}
+                data-y={it.slot.y}
+                aria-label={`${it.entry.data.title}. Open the book`}
+                style={`--i:${i}; --ry0:${it.slot.ry}deg; --ratio:${(it.entry.data.coverWidth / it.entry.data.coverHeight).toFixed(4)}; --spine:${it.spine}; --dur:${6.5 + (i % 3) * 1.1}s; --delay:${-i * 1.7}s`}
+              >
+                <span class="works__obj">
+                  <span class="works__spine" aria-hidden="true">
+                    <span>{it.entry.data.titleLatin || it.entry.data.title}</span>
+                  </span>
+                  <span class="works__pages" aria-hidden="true" />
+                  <span class="works__front">
+                    <Image
+                      src={it.entry.data.cover}
+                      alt=""
+                      widths={[420, 640, 900]}
+                      sizes="(max-width: 760px) 78vw, 30vw"
+                      loading={i < 2 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                  </span>
+                  <span class="works__shadow" aria-hidden="true" />
+                </span>
+                <span class="works__inline" aria-hidden="true">
+                  <span class="works__num">
+                    <span>{String(i + 1).padStart(2, '0')}</span> / {total}
+                  </span>
+                  <span class="works__title" lang={it.entry.data.language}>
+                    {it.entry.data.title}
+                  </span>
+                  {it.secondary && <span class="works__sec">{it.secondary}</span>}
+                  <span class="works__meta">{it.meta}</span>
+                </span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="works__captions container">
+      {
+        items.map((it, i) => (
+          <div class="works__cap" data-cap>
+            <p class="works__num">
+              <span>{String(i + 1).padStart(2, '0')}</span> / {total}
+              {it.entry.data.badge && <em>{it.entry.data.badge}</em>}
+            </p>
+            <h3 class="works__title display display--md" lang={it.entry.data.language}>
+              {it.entry.data.title}
+            </h3>
+            {it.secondary && <p class="works__sec">{it.secondary}</p>}
+            <p class="works__meta">{it.meta}</p>
+            <a class="link" href={it.href}>
+              Open the book
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                <path d="M4 12L12 4M6 4h6v6" />
+              </svg>
+            </a>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="works__rail" aria-label="Jump to a book">
+      <span class="works__rail-line" aria-hidden="true"><i class="works__rail-fill"></i></span>
+      {
+        items.map((it, i) => (
+          <button class="works__dot" type="button" data-go={i} aria-label={`Go to ${it.entry.data.title}`}>
+            {String(i + 1).padStart(2, '0')}
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="container works__all" data-reveal>
+    <a class="btn btn--ghost" href="/books">
+      All eighteen works
+      <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+        <path d="M2 8h11M9 4l4 4-4 4" />
+      </svg>
+    </a>
+  </div>
+</section>
+
+<style is:global>
+  @property --ry {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+  @property --float {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+  }
+</style>
+
+<style>
+  .works {
+    position: relative;
+    padding-top: clamp(6rem, 12vw, 11rem);
+    background: var(--paper);
+  }
+
+  .works__head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 2rem 4rem;
+    align-items: end;
+    padding-bottom: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .works__lede {
+    max-width: 24rem;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-3);
+    text-wrap: pretty;
+  }
+
+  /* ---------- the book object ---------- */
+
+  .works__book {
+    --h: min(58vh, 540px);
+    --t: 30px;
+    display: block;
+    color: inherit;
+  }
+
+  .works__obj {
+    --ry: var(--ry0);
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: translateY(var(--float)) rotateY(var(--ry));
+    transition: --ry 1.1s var(--ease-out-quint);
+    animation: float var(--dur, 7s) ease-in-out infinite alternate;
+    animation-delay: var(--delay, 0s);
+  }
+
+  .works__book:hover .works__obj,
+  .works__book:focus-visible .works__obj {
+    --ry: 2deg;
+  }
+
+  @keyframes float {
+    from {
+      --float: -7px;
+    }
+    to {
+      --float: 7px;
+    }
+  }
+
+  .works__front {
+    position: absolute;
+    inset: 0;
+    transform: translateZ(calc(var(--t) / 2));
+    overflow: hidden;
+    border-radius: 2px 6px 6px 2px;
+    background: var(--paper-3);
+    box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.08);
+  }
+
+  .works__front :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(calc(var(--d, 0) * 10px));
+    transform: scale(calc(1 + var(--d, 0) * 0.05));
+  }
+
+  .works__front::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      90deg,
+      rgb(0 0 0 / 0.24) 0,
+      rgb(255 255 255 / 0.14) 2.4%,
+      rgb(0 0 0 / 0.07) 5%,
+      transparent 11%
+    );
+    pointer-events: none;
+  }
+
+  .works__front::after,
+  .works__spine::after,
+  .works__pages::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: var(--paper);
+    opacity: calc(var(--d, 0) * 0.94);
+    pointer-events: none;
+  }
+
+  .works__spine {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--t);
+    transform-origin: left center;
+    transform: translateZ(calc(var(--t) / -2)) rotateY(-90deg);
+    background:
+      linear-gradient(90deg, rgb(0 0 0 / 0.35), transparent 30%, rgb(255 255 255 / 0.08) 60%, rgb(0 0 0 / 0.25)),
+      color-mix(in oklab, var(--spine) 80%, black);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+  }
+
+  .works__spine span {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    max-height: 84%;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 0.56rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: oklch(96% 0.01 80 / 0.85);
+  }
+
+  .works__pages {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    right: 0;
+    width: var(--t);
+    transform-origin: right center;
+    transform: translateZ(calc(var(--t) / -2)) rotateY(90deg);
+    background: repeating-linear-gradient(90deg, #f4ede0 0 1px, #d8cdb9 1px 2px, #ece3d2 2px 3px);
+    overflow: hidden;
+  }
+
+  .works__shadow {
+    position: absolute;
+    left: 2%;
+    right: -8%;
+    bottom: -9%;
+    height: 16%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, oklch(19% 0.012 60 / 0.42), transparent);
+    filter: blur(12px);
+    transform: translateZ(-50px);
+    opacity: calc(1 - var(--d, 0));
+    pointer-events: none;
+  }
+
+  /* ---------- captions ---------- */
+
+  .works__num {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--ink-4);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .works__num > span {
+    color: var(--ink);
+  }
+
+  .works__num em {
+    margin-left: 0.8rem;
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .works__cap .works__title {
+    margin-top: 1rem;
+    max-width: 22ch;
+  }
+
+  .works__cap .works__title[lang='ar'] {
+    font-family: var(--font-arabic);
+    font-weight: 400;
+    font-size: clamp(2rem, 3.4vw, 3.3rem);
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-align: left;
+  }
+
+  .works__sec {
+    margin-top: 0.7rem;
+    font-weight: 300;
+    font-size: 1.12rem;
+    line-height: 1.35;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .works__meta {
+    margin-top: 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--ink-3);
+  }
+
+  .works__cap .link {
+    margin-top: 1.5rem;
+  }
+
+  /* ---------- rail ---------- */
+
+  .works__rail {
+    display: none;
+  }
+
+  .works__rail-line {
+    position: absolute;
+    right: 0.35rem;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    width: 1px;
+    background: var(--line);
+  }
+
+  .works__rail-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--ink);
+    transform: scaleY(0);
+    transform-origin: top;
+  }
+
+  .works__dot {
+    position: relative;
+    padding-right: 1.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--ink-4);
+    transition: color 0.4s;
+  }
+
+  .works__dot::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--paper);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+    transform: translate(0.05rem, -50%);
+    transition:
+      background 0.4s,
+      box-shadow 0.4s;
+  }
+
+  .works__dot:hover,
+  .works__dot.is-active {
+    color: var(--ink);
+  }
+
+  .works__dot.is-active::after {
+    background: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+
+  .works__all {
+    display: flex;
+    justify-content: center;
+    padding-block: clamp(3rem, 7vw, 6rem) 0;
+  }
+
+  /* ---------- flowing layout (small screens, reduced motion) ---------- */
+
+  .works__pin:not(.is-3d) .works__scene {
+    display: grid;
+    gap: clamp(3.5rem, 9vw, 6rem);
+    padding-block: 1rem 2rem;
+  }
+
+  .works__pin:not(.is-3d) .works__book {
+    width: min(72vw, 320px);
+    margin-inline: auto;
+    perspective: 1100px;
+  }
+
+  .works__pin:not(.is-3d) .works__obj {
+    height: auto;
+    aspect-ratio: var(--ratio, 0.667);
+  }
+
+  .works__pin:not(.is-3d) .works__inline {
+    display: grid;
+    gap: 0.35rem;
+    margin-top: 1.8rem;
+  }
+
+  .works__pin:not(.is-3d) .works__inline .works__title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    margin-top: 0.5rem;
+  }
+
+  .works__pin:not(.is-3d) .works__inline .works__title[lang='ar'] {
+    font-family: var(--font-arabic);
+    font-size: 1.8rem;
+    line-height: 1.4;
+    letter-spacing: 0;
+    text-align: left;
+  }
+
+  .works__pin:not(.is-3d) .works__inline .works__sec {
+    margin-top: 0.2rem;
+    font-size: 1.02rem;
+  }
+
+  .works__pin:not(.is-3d) .works__captions {
+    display: none;
+  }
+
+  .works__inline {
+    display: none;
+  }
+
+  /* ---------- the tracking shot (JS adds .is-3d) ---------- */
+
+  .works__pin.is-3d {
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .is-3d .works__stage {
+    position: absolute;
+    inset: 0;
+    perspective: 1200px;
+    perspective-origin: 50% 46%;
+  }
+
+  .is-3d .works__camera,
+  .is-3d .works__scene {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+
+  .is-3d .works__book {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    height: var(--h);
+    width: calc(var(--h) * var(--ratio, 0.667));
+    transform-style: preserve-3d;
+    visibility: hidden;
+  }
+
+  .is-3d .works__captions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8vh;
+    display: grid;
+    pointer-events: none;
+  }
+
+  .is-3d .works__cap {
+    grid-area: 1 / 1;
+    max-width: 26rem;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .is-3d .works__cap.is-active {
+    pointer-events: auto;
+  }
+
+  .is-3d .works__rail {
+    position: absolute;
+    right: var(--gutter);
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    gap: 0.9rem;
+    justify-items: end;
+  }
+
+  @media (max-width: 900px) {
+    .works__head {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .is-3d .works__captions {
+      bottom: 5vh;
+    }
+
+    .is-3d .works__cap {
+      max-width: 20rem;
+    }
+
+    .is-3d .works__book {
+      --h: min(48vh, 420px);
+      top: 40%;
+    }
+  }
+</style>

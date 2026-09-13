@@ -4,6 +4,8 @@ import { SplitText } from 'gsap/SplitText';
 import { reduceMotion, scrollToY } from './smooth';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
+(window as unknown as { ScrollTrigger: typeof ScrollTrigger }).ScrollTrigger = ScrollTrigger;
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const finePointer = window.matchMedia('(pointer: fine)').matches;
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) =>
@@ -12,48 +14,33 @@ const $$ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode =
   Array.from(root.querySelectorAll<T>(sel));
 
 /* ------------------------------------------------------------------ */
-/* Navigation chrome                                                    */
+/* Navigation                                                           */
 /* ------------------------------------------------------------------ */
 
 function nav() {
   const bar = $('.nav');
   if (!bar) return;
 
-  ScrollTrigger.create({
-    start: 60,
-    onUpdate: (self) => bar.classList.toggle('is-scrolled', self.scroll() > 60),
-    onRefresh: (self) => bar.classList.toggle('is-scrolled', self.scroll() > 60),
-  });
-
-  const progress = $('.nav__progress i');
-  if (progress) {
-    gsap.to(progress, {
-      scaleX: 1,
-      ease: 'none',
-      scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 0.4 },
-    });
-  }
+  const sync = (self: ScrollTrigger) => bar.classList.toggle('is-scrolled', self.scroll() > 40);
+  ScrollTrigger.create({ start: 40, onUpdate: sync, onRefresh: sync });
 
   const toggle = $('.nav__toggle');
   const menu = $('.nav__menu');
   if (toggle && menu) {
+    const close = () => {
+      bar.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    };
     toggle.addEventListener('click', () => {
       const open = bar.classList.toggle('is-open');
       toggle.setAttribute('aria-expanded', String(open));
-      document.documentElement.classList.toggle('menu-open', open);
     });
     menu.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).closest('a')) {
-        bar.classList.remove('is-open');
-        toggle.setAttribute('aria-expanded', 'false');
-        document.documentElement.classList.remove('menu-open');
-      }
+      if ((e.target as HTMLElement).closest('a')) close();
     });
   }
 
-  /* Active section highlighting */
-  const links = $$<HTMLAnchorElement>('.nav__menu a[href^="#"]');
-  links.forEach((link) => {
+  $$<HTMLAnchorElement>('.nav__menu a[href^="#"]').forEach((link) => {
     const id = link.getAttribute('href')!.slice(1);
     const section = document.getElementById(id);
     if (!section) return;
@@ -64,81 +51,6 @@ function nav() {
       onToggle: (self) => link.classList.toggle('is-active', self.isActive),
     });
   });
-}
-
-/* ------------------------------------------------------------------ */
-/* Hero: the opening shot                                               */
-/* ------------------------------------------------------------------ */
-
-function hero() {
-  const root = $('.hero');
-  if (!root) return;
-  const media = $('.hero__media', root);
-  const glow = $('.hero__glow', root);
-  const eyebrow = $('[data-hero="eyebrow"]', root);
-  const calli = $('[data-hero="calli"]', root);
-  const name = $('[data-hero="name"]', root);
-  const lede = $('[data-hero="lede"]', root);
-  const cta = $('[data-hero="cta"]', root);
-  const rail = $('[data-hero="rail"]', root);
-  const bar = $('.nav');
-
-  const all = [media, glow, eyebrow, calli, name, lede, cta, rail, bar].filter(Boolean) as HTMLElement[];
-
-  if (reduceMotion) {
-    gsap.set(all, { autoAlpha: 1, clearProps: 'transform,clipPath' });
-    return;
-  }
-
-  const split = name ? new SplitText(name, { type: 'lines', mask: 'lines', linesClass: 'line' }) : null;
-
-  const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.15 });
-
-  tl.fromTo(media, { autoAlpha: 0, scale: 1.09 }, { autoAlpha: 1, scale: 1, duration: 3.2, ease: 'power2.out' }, 0)
-    .fromTo(glow, { autoAlpha: 0 }, { autoAlpha: 1, duration: 2.4, ease: 'sine.out' }, 0.5)
-    .fromTo(eyebrow, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 1 }, 0.9)
-    .fromTo(
-      calli,
-      { autoAlpha: 1, clipPath: 'inset(0 0 0 100%)' },
-      { clipPath: 'inset(0 0 0 0%)', duration: 1.5, ease: 'power3.inOut' },
-      1.05
-    );
-
-  if (split && name) {
-    tl.set(name, { autoAlpha: 1 }, 1.3).from(
-      split.lines,
-      { yPercent: 115, duration: 1.2, stagger: 0.1, ease: 'power4.out' },
-      1.3
-    );
-  }
-
-  tl.fromTo(lede, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 1 }, 1.85)
-    .fromTo(cta, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 1 }, 2.0)
-    .fromTo([rail, bar].filter(Boolean), { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.2 }, 2.2);
-
-  /* Scroll: the camera drifts, the room dims. */
-  gsap.to(media, {
-    yPercent: 12,
-    ease: 'none',
-    scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: true },
-  });
-  const dim = $('.hero__dim', root);
-  if (dim) {
-    gsap.to(dim, {
-      opacity: 0.92,
-      ease: 'none',
-      scrollTrigger: { trigger: root, start: 'top top', end: 'bottom top', scrub: true },
-    });
-  }
-  const content = $('.hero__content', root);
-  if (content) {
-    gsap.to(content, {
-      yPercent: -10,
-      autoAlpha: 0,
-      ease: 'none',
-      scrollTrigger: { trigger: root, start: '15% top', end: '75% top', scrub: true },
-    });
-  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -154,7 +66,7 @@ function reveals() {
 
   $$('[data-reveal]').forEach((el) => {
     const delay = parseFloat(el.dataset.delay || '0');
-    const y = parseFloat(el.dataset.y || '28');
+    const y = parseFloat(el.dataset.y || '26');
     gsap.fromTo(
       el,
       { autoAlpha: 0, y },
@@ -174,7 +86,7 @@ function reveals() {
     gsap.set(el, { visibility: 'visible' });
     gsap.from(split.lines, {
       yPercent: 110,
-      duration: 1.25,
+      duration: 1.3,
       stagger: 0.09,
       ease: 'power4.out',
       scrollTrigger: { trigger: el, start: 'top 86%', once: true },
@@ -185,7 +97,7 @@ function reveals() {
     const items = Array.from(group.children) as HTMLElement[];
     gsap.fromTo(
       items,
-      { autoAlpha: 0, y: 24 },
+      { autoAlpha: 0, y: 20 },
       {
         autoAlpha: 1,
         y: 0,
@@ -196,253 +108,212 @@ function reveals() {
       }
     );
   });
-
-  $$('[data-line]').forEach((el) => {
-    gsap.fromTo(
-      el,
-      { scaleX: 0 },
-      {
-        scaleX: 1,
-        duration: 1.6,
-        ease: 'power3.inOut',
-        transformOrigin: 'left center',
-        scrollTrigger: { trigger: el, start: 'top 92%', once: true },
-      }
-    );
-  });
 }
 
 /* ------------------------------------------------------------------ */
-/* Spotlight: pointer tilt and rotating endorsements                   */
+/* Works: the tracking shot                                             */
 /* ------------------------------------------------------------------ */
 
-function spotlight() {
-  const tilt = $('[data-tilt]');
-  if (tilt && finePointer && !reduceMotion) {
-    const obj = $('.book3d', tilt) || tilt;
-    const glare = $('.book3d__glare', tilt);
-    const rest = { rotateY: parseFloat(tilt.dataset.restY || '18'), rotateX: 0 };
-    gsap.set(obj, rest);
-    const move = (e: PointerEvent) => {
-      const r = tilt.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      gsap.to(obj, {
-        rotateY: rest.rotateY + x * 22,
-        rotateX: -y * 14,
-        duration: 0.8,
-        ease: 'power2.out',
-      });
-      if (glare) gsap.to(glare, { x: `${x * 60}%`, y: `${y * 60}%`, opacity: 0.55, duration: 0.8 });
-    };
-    tilt.addEventListener('pointermove', move);
-    tilt.addEventListener('pointerleave', () => {
-      gsap.to(obj, { ...rest, duration: 1.2, ease: 'power3.out' });
-      if (glare) gsap.to(glare, { opacity: 0.25, x: '0%', y: '0%', duration: 1.2 });
-    });
-  }
+function works() {
+  const pin = $('.works__pin');
+  if (!pin) return;
+  const camera = $('.works__camera', pin);
+  const scene = $('.works__scene', pin);
+  const books = $$('.works__book', pin);
+  const caps = $$('.works__cap', pin);
+  const dots = $$<HTMLButtonElement>('.works__dot', pin);
+  const fill = $('.works__rail-fill', pin);
+  const n = books.length;
+  if (!camera || !scene || !n) return;
 
-  const quotes = $('[data-quotes]');
-  if (!quotes) return;
-  const items = $$('.quote', quotes);
-  const dots = $$('.quotes__dot', quotes);
-  if (items.length < 2) return;
-  let index = 0;
-  let timer = 0;
-
-  const show = (n: number) => {
-    index = (n + items.length) % items.length;
-    items.forEach((it, k) => it.classList.toggle('is-active', k === index));
-    dots.forEach((d, k) => d.setAttribute('aria-selected', String(k === index)));
-  };
-  const start = () => {
-    stop();
-    if (reduceMotion) return;
-    timer = window.setInterval(() => show(index + 1), 7500);
-  };
-  const stop = () => window.clearInterval(timer);
-
-  dots.forEach((d, k) =>
-    d.addEventListener('click', () => {
-      show(k);
-      start();
-    })
-  );
-  quotes.addEventListener('pointerenter', stop);
-  quotes.addEventListener('pointerleave', start);
-  show(0);
-  start();
-}
-
-/* ------------------------------------------------------------------ */
-/* The library shelf: a dolly along the bookcase                       */
-/* ------------------------------------------------------------------ */
-
-function shelf() {
-  const pin = $('.library__pin');
-  const track = $('.library__track');
-  if (!pin || !track) return;
-  const bar = $('.library__progress i', pin);
-  const chips = $$<HTMLButtonElement>('.library__chip');
-  const groups = $$('.library__group', track);
-  const counter = $('.library__counter', pin);
-  const books = $$('.book', track);
-
-  const setActiveChip = (key: string) => chips.forEach((c) => c.classList.toggle('is-active', c.dataset.go === key));
+  /* Distance between stations, in px of depth, and where the focal book sits (vw, vh). */
+  const D = 900;
+  const focal = { x: 12, y: -3 };
+  const slots = books.map((b) => ({
+    x: parseFloat(b.dataset.x || '0'),
+    y: parseFloat(b.dataset.y || '0'),
+  }));
 
   const mm = gsap.matchMedia();
 
-  mm.add('(min-width: 960px) and (prefers-reduced-motion: no-preference)', () => {
-    const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
-    const tween = gsap.to(track, {
-      x: () => -distance(),
-      ease: 'none',
-      scrollTrigger: {
-        trigger: pin,
-        start: 'top top',
-        end: () => `+=${distance()}`,
-        pin: true,
-        scrub: 0.8,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          if (bar) gsap.set(bar, { scaleX: self.progress });
-          const viewX = self.progress * distance() + window.innerWidth * 0.5;
-          let current = groups[0];
-          groups.forEach((g) => {
-            if (g.offsetLeft <= viewX) current = g;
-          });
-          if (current) setActiveChip(current.dataset.group || 'all');
-          if (counter) {
-            /* The reading line drifts from centre to the right edge as the shelf ends,
-               so the first book reads 01 at rest and the last one is reached at the end. */
-            const line = self.progress * distance() + window.innerWidth * (0.5 + 0.25 * self.progress);
-            let n = 0;
-            books.forEach((b) => {
-              if (b.offsetLeft + b.offsetWidth <= line) n += 1;
-            });
-            counter.textContent = String(Math.max(1, Math.min(books.length, n))).padStart(2, '0');
-          }
-        },
-      },
-    });
+  mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
+    pin.classList.add('is-3d');
+    const cam = { x: focal.x - slots[0].x, y: focal.y - slots[0].y, z: 0 };
+    let active = -1;
 
-    /* Individual books lean in as the camera passes. */
-    books.forEach((book) => {
-      const obj = $('.book__obj', book);
-      if (!obj) return;
-      gsap.fromTo(
-        obj,
-        { rotateY: 34, y: 20, autoAlpha: 0.6 },
-        {
-          rotateY: 0,
-          y: 0,
-          autoAlpha: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: book,
-            containerAnimation: tween,
-            start: 'left 110%',
-            end: 'left 60%',
-            scrub: true,
-          },
+    const setActive = (i: number) => {
+      const first = active < 0;
+      active = i;
+      caps.forEach((c, k) => {
+        const kids = Array.from(c.children) as HTMLElement[];
+        if (k === i) {
+          c.classList.add('is-active');
+          gsap.killTweensOf([c, ...kids]);
+          gsap.set(c, { autoAlpha: 1 });
+          gsap.fromTo(
+            kids,
+            { autoAlpha: 0, y: 18 },
+            { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.06, ease: 'power3.out', delay: first ? 0 : 0.12 }
+          );
+        } else if (c.classList.contains('is-active')) {
+          c.classList.remove('is-active');
+          gsap.killTweensOf([c, ...kids]);
+          gsap.to(c, { autoAlpha: 0, duration: 0.3, ease: 'power2.in' });
         }
-      );
-    });
-
-    const jump = (key: string) => {
-      const st = tween.scrollTrigger!;
-      let x = 0;
-      if (key !== 'all') {
-        const g = groups.find((el) => el.dataset.group === key);
-        if (g) x = Math.max(0, g.offsetLeft - parseFloat(getComputedStyle(track).paddingLeft || '0'));
-      }
-      const d = distance();
-      const y = st.start + (d ? (Math.min(x, d) / d) * (st.end - st.start) : 0);
-      scrollToY(y);
-    };
-    const handler = (e: Event) => jump((e.currentTarget as HTMLElement).dataset.go || 'all');
-    chips.forEach((c) => c.addEventListener('click', handler));
-
-    return () => {
-      chips.forEach((c) => c.removeEventListener('click', handler));
-    };
-  });
-
-  mm.add('(max-width: 959px), (prefers-reduced-motion: reduce)', () => {
-    const handler = (e: Event) => {
-      const key = (e.currentTarget as HTMLElement).dataset.go || 'all';
-      const g = key === 'all' ? groups[0] : groups.find((el) => el.dataset.group === key);
-      if (g) track.scrollTo({ left: g.offsetLeft - 16, behavior: reduceMotion ? 'auto' : 'smooth' });
-      setActiveChip(key);
-    };
-    chips.forEach((c) => c.addEventListener('click', handler));
-    const onScroll = () => {
-      const viewX = track.scrollLeft + track.clientWidth * 0.4;
-      let current = groups[0];
-      groups.forEach((g) => {
-        if (g.offsetLeft <= viewX) current = g;
       });
-      if (current) setActiveChip(current.dataset.group || 'all');
-      if (bar) gsap.set(bar, { scaleX: track.scrollLeft / Math.max(1, track.scrollWidth - track.clientWidth) });
+      dots.forEach((d, k) => d.classList.toggle('is-active', k === i));
     };
-    track.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
+
+    const render = () => {
+      const vw = window.innerWidth / 100;
+      const vh = window.innerHeight / 100;
+      gsap.set(scene, { x: cam.x * vw, y: cam.y * vh, z: cam.z });
+      books.forEach((b, i) => {
+        const rel = cam.z - i * D; /* < 0: still ahead of the camera, > 0: already passed */
+        const far = rel < 0 ? Math.min(1, -rel / (1.7 * D)) : 0;
+        const passed = rel > 0 ? Math.min(1, rel / (0.5 * D)) : 0;
+        const d = Math.max(far, passed);
+        b.style.setProperty('--d', d.toFixed(3));
+        const hidden = rel < -2.7 * D || passed >= 1;
+        gsap.set(b, {
+          x: slots[i].x * vw,
+          y: slots[i].y * vh,
+          z: -i * D,
+          xPercent: -50,
+          yPercent: -50,
+          visibility: hidden ? 'hidden' : 'visible',
+        });
+      });
+      const idx = Math.max(0, Math.min(n - 1, Math.round(cam.z / D)));
+      if (idx !== active) setActive(idx);
+      if (fill) gsap.set(fill, { scaleY: cam.z / ((n - 1) * D) });
+    };
+
+    const tl = gsap.timeline({ paused: true, onUpdate: render });
+    for (let i = 0; i < n; i++) {
+      if (i > 0) {
+        tl.to(cam, {
+          x: focal.x - slots[i].x,
+          y: focal.y - slots[i].y,
+          z: i * D,
+          duration: 1,
+          ease: 'power2.inOut',
+        });
+      }
+      tl.addLabel(`s${i}`);
+      tl.to({}, { duration: i === 0 || i === n - 1 ? 0.4 : 0.55 });
+    }
+
+    const st = ScrollTrigger.create({
+      trigger: pin,
+      start: 'top top',
+      end: () => `+=${Math.round(window.innerHeight * n * 0.95)}`,
+      pin: true,
+      scrub: 1,
+      animation: tl,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onRefresh: render,
+    });
+    render();
+
+    const jump = (i: number) => {
+      const t = tl.labels[`s${i}`] ?? 0;
+      scrollToY(st.start + (t / tl.duration()) * (st.end - st.start) + 2);
+    };
+    const onDot = (e: Event) => jump(parseInt((e.currentTarget as HTMLElement).dataset.go || '0', 10));
+    dots.forEach((d) => d.addEventListener('click', onDot));
+
+    let onMove: ((e: PointerEvent) => void) | null = null;
+    let onLeave: (() => void) | null = null;
+    if (finePointer) {
+      const rx = gsap.quickTo(camera, 'rotationX', { duration: 1.4, ease: 'power3.out' });
+      const ry = gsap.quickTo(camera, 'rotationY', { duration: 1.4, ease: 'power3.out' });
+      onMove = (e) => {
+        const nx = e.clientX / window.innerWidth - 0.5;
+        const ny = e.clientY / window.innerHeight - 0.5;
+        ry(nx * 7);
+        rx(-ny * 5);
+      };
+      onLeave = () => {
+        rx(0);
+        ry(0);
+      };
+      pin.addEventListener('pointermove', onMove);
+      pin.addEventListener('pointerleave', onLeave);
+    }
+
     return () => {
-      chips.forEach((c) => c.removeEventListener('click', handler));
-      track.removeEventListener('scroll', onScroll);
+      st.kill();
+      tl.kill();
+      dots.forEach((d) => d.removeEventListener('click', onDot));
+      if (onMove) pin.removeEventListener('pointermove', onMove);
+      if (onLeave) pin.removeEventListener('pointerleave', onLeave);
+      gsap.set([scene, camera, ...books], { clearProps: 'all' });
+      books.forEach((b) => b.style.removeProperty('--d'));
+      caps.forEach((c) => {
+        c.classList.remove('is-active');
+        gsap.set([c, ...Array.from(c.children)], { clearProps: 'all' });
+      });
+      dots.forEach((d) => d.classList.remove('is-active'));
+      pin.classList.remove('is-3d');
     };
   });
 }
 
 /* ------------------------------------------------------------------ */
-/* About: counters and the drawn timeline                              */
+/* About: the road from Madinah to Oslo                                 */
 /* ------------------------------------------------------------------ */
 
 function about() {
-  $$('[data-count]').forEach((el) => {
-    const target = parseFloat(el.dataset.count || '0');
-    const suffix = el.dataset.suffix || '';
-    if (reduceMotion) {
-      el.textContent = `${target}${suffix}`;
-      return;
-    }
-    const state = { n: 0 };
-    gsap.to(state, {
-      n: target,
-      duration: 2,
-      ease: 'power3.out',
-      snap: { n: 1 },
-      onUpdate: () => {
-        el.textContent = `${Math.round(state.n)}${suffix}`;
-      },
-      scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-    });
-  });
-
-  const line = $('.timeline__line i');
-  const timeline = $('.timeline');
-  if (line && timeline && !reduceMotion) {
-    gsap.fromTo(
-      line,
-      { scaleY: 0 },
-      {
-        scaleY: 1,
+  const journey = $('.journey');
+  const pathEl = journey?.querySelector<SVGPathElement>('.journey__path') ?? null;
+  if (journey && pathEl) {
+    const pts = Array.from(journey.querySelectorAll<SVGCircleElement>('.journey__pt'));
+    const stops = $$('.journey__stop', journey);
+    const light = (p: number, fractions: number[]) => {
+      pts.forEach((c, i) => c.classList.toggle('is-on', p >= fractions[i] - 0.004));
+      stops.forEach((s, i) => s.classList.toggle('is-on', p >= fractions[i] - 0.004));
+    };
+    const len = pathEl.getTotalLength();
+    if (!len || reduceMotion) {
+      light(1, pts.map(() => 0));
+    } else {
+      /* The road runs left to right, so a stop's share of the path follows from its x. */
+      const fractions = pts.map((c) => {
+        const cx = parseFloat(c.getAttribute('cx') || '0');
+        let lo = 0;
+        let hi = len;
+        for (let k = 0; k < 24; k++) {
+          const mid = (lo + hi) / 2;
+          if (pathEl.getPointAtLength(mid).x < cx) lo = mid;
+          else hi = mid;
+        }
+        return lo / len;
+      });
+      gsap.set(pathEl, { strokeDasharray: len, strokeDashoffset: len });
+      gsap.to(pathEl, {
+        strokeDashoffset: 0,
         ease: 'none',
-        transformOrigin: 'top center',
-        scrollTrigger: { trigger: timeline, start: 'top 70%', end: 'bottom 55%', scrub: 0.6 },
-      }
-    );
+        scrollTrigger: {
+          trigger: journey,
+          start: 'top 78%',
+          end: 'bottom 45%',
+          scrub: 0.5,
+          onUpdate: (self) => light(self.progress, fractions),
+        },
+      });
+    }
   }
 
-  const media = $('.about__media img');
-  if (media && !reduceMotion) {
+  const img = $('.about__photo img');
+  if (img && !reduceMotion) {
     gsap.fromTo(
-      media,
-      { yPercent: -6, scale: 1.12 },
+      img,
+      { yPercent: -5, scale: 1.1 },
       {
-        yPercent: 6,
-        scale: 1.12,
+        yPercent: 5,
+        scale: 1.1,
         ease: 'none',
         scrollTrigger: { trigger: '.about', start: 'top bottom', end: 'bottom top', scrub: true },
       }
@@ -453,12 +324,9 @@ function about() {
 /* ------------------------------------------------------------------ */
 
 function init() {
-  document.documentElement.classList.add('js');
   nav();
-  hero();
   reveals();
-  spotlight();
-  shelf();
+  works();
   about();
   ScrollTrigger.refresh();
 }

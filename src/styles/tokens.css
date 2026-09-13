@@ -1,32 +1,34 @@
 :root {
-  /* The lamp-lit study */
-  --ink-0: #0b0806;
-  --ink-1: #150f0a;
-  --ink-2: #1d150e;
-  --ink-3: #2a1f15;
-  --ink-4: #3b2d20;
-  --ink-1-rgb: 21 15 10;
+  /* North light: warm paper, warm ink, one madder-red accent. */
+  --paper: oklch(98.6% 0.004 85);
+  --paper-2: oklch(96.4% 0.006 85);
+  --paper-3: oklch(93% 0.008 80);
+  --ink: oklch(19% 0.012 60);
+  --ink-2: oklch(36% 0.012 60);
+  --ink-3: oklch(52% 0.012 60);
+  --ink-4: oklch(68% 0.01 60);
+  --accent: oklch(46% 0.15 28);
+  --accent-2: oklch(56% 0.16 32);
+  --gold: oklch(61% 0.125 82);
+  --gold-2: oklch(84% 0.12 92);
+  --gold-3: oklch(45% 0.1 76);
+  --line: color-mix(in oklab, var(--ink) 12%, transparent);
+  --line-strong: color-mix(in oklab, var(--ink) 28%, transparent);
 
-  --paper: #f1e8da;
-  --paper-2: #cbbda7;
-  --paper-3: #8d7e68;
-
-  --brass: #c9a55e;
-  --brass-2: #e6cd8f;
-  --brass-rgb: 201 165 94;
-  --lamp: #f2b86a;
-  --ox: #6e1d1a;
-
-  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
-  --font-body: 'Instrument Sans Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Geist Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Geist Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-arabic: 'Amiri', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-cine: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
 
-  --gutter: clamp(1.25rem, 4.5vw, 4.5rem);
-  --max: 1500px;
-  --nav-h: 5rem;
-  --hairline: 1px solid rgb(var(--brass-rgb) / 0.22);
+  --gutter: clamp(1.25rem, 4.5vw, 5rem);
+  --max: 1560px;
+  --nav-h: 5.25rem;
+  --shadow-plate:
+    0 1px 2px oklch(19% 0.012 60 / 0.06),
+    0 30px 60px -20px oklch(19% 0.012 60 / 0.28);
 }

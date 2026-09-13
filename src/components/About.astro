@@ -1,343 +1,393 @@
 ---
+/**
+ * The profile. Headline, a monochrome plate that blooms into colour on hover,
+ * the biography, his mission, and the road from Madinah to Oslo drawn on scroll.
+ */
 import { Image } from 'astro:assets';
-import portrait from '../assets/about/portrait.jpg';
+import portrait from '../assets/about/portrait-studio.jpg';
 import profile from '../data/profile.json';
+
+const stops = [
+  { city: 'Madinah', year: '1991', note: 'B.A., Ḥadīth and Islamic Studies', x: 70, y: 168 },
+  { city: 'Makkah', year: '1994', note: 'M.A., Islamic Theology', x: 335, y: 92 },
+  { city: 'Kuala Lumpur', year: '2000', note: 'Ph.D., Theology and Comparative Religion', x: 600, y: 158 },
+  { city: 'Ås', year: '2012', note: 'International Relations, NMBU', x: 860, y: 84 },
+  { city: 'Oslo', year: 'Today', note: 'Professor, imam and khaṭīb', x: 1125, y: 132 },
+];
+const d = 'M70 168 C170 168 235 92 335 92 S500 158 600 158 S760 84 860 84 S1025 132 1125 132';
 ---
 
-<section class="about lattice" id="about" aria-labelledby="about-title">
+<section class="about" id="about" aria-labelledby="about-title">
   <div class="container about__grid">
-    <div class="about__media" data-reveal data-y="40">
-      <figure class="about__frame">
+    <h2 class="display display--lg about__title" id="about-title" data-split>{profile.aboutHeadline}</h2>
+
+    <figure class="about__plate" data-reveal data-y="36">
+      <div class="about__photo">
         <Image
           src={portrait}
-          alt="Portrait of Prof. Dr. Ali Mohamed Salah"
-          widths={[480, 591]}
-          sizes="(max-width: 900px) 90vw, 36vw"
+          alt="Prof. Dr. Ali Mohamed Salah"
+          widths={[520, 800, 1100]}
+          sizes="(max-width: 900px) 80vw, 28vw"
           loading="lazy"
           decoding="async"
         />
-        <span class="about__outline" aria-hidden="true"></span>
-      </figure>
+      </div>
       <figcaption class="about__caption">
         <span lang="ar">{profile.nameArabic}</span>
         <span>{profile.city}</span>
       </figcaption>
+    </figure>
+
+    <div class="about__body prose" data-reveal data-delay="0.1">
+      {profile.aboutLead.map((p) => <p>{p}</p>)}
     </div>
 
-    <div class="about__body">
-      <p class="eyebrow" data-reveal>About</p>
-      <h2 class="display display--lg" id="about-title" data-split>{profile.aboutHeadline}</h2>
+    <blockquote class="about__mission" data-reveal data-delay="0.15">
+      <p>{profile.mission}</p>
+    </blockquote>
 
-      <div class="about__lead" data-reveal data-delay="0.1">
-        {profile.aboutLead.map((p) => <p class="lede">{p}</p>)}
-      </div>
-
-      <blockquote class="about__mission" data-reveal data-delay="0.15">
-        <p>{profile.mission}</p>
-      </blockquote>
-
-      <ul class="stats" data-stagger>
-        {profile.stats.map((s) => (
-          <li class="stat">
-            <span class="stat__n" data-count={s.value} data-suffix={s.suffix}>
-              0{s.suffix}
-            </span>
-            <span class="stat__l">{s.label}</span>
-          </li>
-        ))}
-      </ul>
-
-      <div class="about__section">
-        <p class="eyebrow" data-reveal>Formation</p>
-        <ol class="timeline">
-          <span class="timeline__line" aria-hidden="true"><i></i></span>
-          {profile.timeline.map((t) => (
-            <li class="timeline__item" data-reveal data-y="18">
-              <span class="timeline__year">{t.year}</span>
-              <span>
-                <span class="timeline__title">{t.title}</span>
-                <span class="timeline__where">{t.where}</span>
-              </span>
-            </li>
-          ))}
+    <div class="journey">
+      <p class="journey__label" data-reveal>Formation</p>
+      <div class="journey__map">
+        <svg class="journey__svg" viewBox="0 0 1200 240" aria-hidden="true">
+          <path class="journey__track" d={d}></path>
+          <path class="journey__path" d={d}></path>
+          {stops.map((s) => <circle class="journey__pt" cx={s.x} cy={s.y} r="6" />)}
+        </svg>
+        <ol class="journey__stops">
+          {
+            stops.map((s) => (
+              <li
+                class="journey__stop"
+                data-side={s.y < 120 ? 'up' : 'down'}
+                style={`--x:${((s.x / 1200) * 100).toFixed(2)}%; --y:${((s.y / 240) * 100).toFixed(2)}%`}
+              >
+                <span class="journey__city">{s.city}</span>
+                <span class="journey__year">{s.year}</span>
+                <span class="journey__note">{s.note}</span>
+              </li>
+            ))
+          }
         </ol>
       </div>
+    </div>
 
-      <div class="about__section">
-        <p class="eyebrow" data-reveal>Today</p>
-        <ul class="roles" data-stagger>
-          {profile.roles.map((r) => (
-            <li class="role">
-              <span class="role__title">{r.title}</span>
-              <span class="role__org">{r.org}</span>
-            </li>
-          ))}
-        </ul>
-        <p class="about__past" data-reveal>
-          Earlier: {profile.past.join('; ')}.
-        </p>
-      </div>
+    <div class="about__today">
+      <p class="about__h" data-reveal>Today</p>
+      <dl class="roles" data-stagger>
+        {
+          profile.roles.map((r) => (
+            <div class="role">
+              <dt>{r.title}</dt>
+              <dd>{r.org}</dd>
+            </div>
+          ))
+        }
+      </dl>
+      <p class="small about__past" data-reveal>
+        Earlier: {profile.past.join('; ')}. He writes in Arabic, English and Somali, and teaches also in Norwegian
+        and Malay.
+      </p>
     </div>
   </div>
 </section>
 
 <style>
   .about {
-    padding-block: clamp(6rem, 14vw, 12rem);
-    background: var(--ink-1);
+    padding-block: clamp(6rem, 13vw, 12rem) clamp(5rem, 10vw, 9rem);
   }
 
   .about__grid {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    gap: clamp(3rem, 7vw, 8rem);
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(1rem, 2vw, 2rem);
+    row-gap: clamp(2.5rem, 4vw, 3.5rem);
     align-items: start;
   }
 
-  .about__media {
-    position: sticky;
-    top: calc(var(--nav-h) + 2rem);
+  .about__title {
+    grid-column: 1 / 9;
   }
 
-  .about__frame {
-    position: relative;
+  .about__plate {
+    grid-column: 10 / 13;
+    grid-row: 1 / 4;
+    position: sticky;
+    top: calc(var(--nav-h) + 1rem);
+    margin: 0;
+  }
+
+  .about__photo {
     aspect-ratio: 4 / 5;
     overflow: hidden;
-    border-radius: 2px;
-    isolation: isolate;
+    border-radius: 3px;
+    background: var(--paper-3);
+    box-shadow: var(--shadow-plate);
   }
 
-  .about__frame :global(img) {
+  .about__photo :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 15%;
-    will-change: transform;
+    object-position: 50% 12%;
+    filter: grayscale(1) contrast(1.06);
+    transition: filter 1.4s var(--ease-out);
   }
 
-  .about__frame::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    box-shadow: inset 0 0 0 1px rgb(var(--brass-rgb) / 0.35);
-    background: linear-gradient(0deg, rgb(var(--ink-1-rgb) / 0.55), transparent 40%);
-    pointer-events: none;
-  }
-
-  .about__outline {
-    position: absolute;
-    inset: 1.4rem -1.4rem -1.4rem 1.4rem;
-    border: 1px solid rgb(var(--brass-rgb) / 0.35);
-    z-index: -1;
-  }
-
-  .about__media {
-    padding-right: 1.4rem;
-    padding-bottom: 1.4rem;
+  .about__plate:hover :global(img) {
+    filter: grayscale(0) contrast(1);
   }
 
   .about__caption {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-top: 1.4rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--paper-3);
+    gap: 1rem;
+    margin-top: 0.9rem;
+    font-size: 0.78rem;
+    color: var(--ink-3);
   }
 
   .about__caption [lang='ar'] {
     font-size: 1.05rem;
-    letter-spacing: 0;
-    text-transform: none;
-    color: var(--brass-2);
+    color: var(--ink);
   }
 
-  .about__body > * + * {
-    margin-top: clamp(1.8rem, 3vw, 2.6rem);
-  }
-
-  .about__body .eyebrow {
-    margin-bottom: 0;
-  }
-
-  .about__body .display {
-    margin-top: 1.4rem;
-  }
-
-  .about__lead {
-    display: grid;
-    gap: 1.2rem;
+  .about__body {
+    grid-column: 1 / 8;
+    font-size: 1.08rem;
   }
 
   .about__mission {
-    padding-left: 1.6rem;
-    border-left: 1px solid var(--brass);
+    grid-column: 1 / 9;
+    position: relative;
   }
 
   .about__mission p {
     font-family: var(--font-display);
-    font-style: italic;
-    font-weight: 340;
-    font-size: clamp(1.35rem, 2.1vw, 1.9rem);
-    line-height: 1.35;
-    color: var(--paper);
-    font-variation-settings:
-      'opsz' 72,
-      'SOFT' 60;
+    font-weight: 300;
+    font-size: clamp(1.5rem, 2.4vw, 2.4rem);
+    line-height: 1.22;
+    letter-spacing: -0.025em;
+    color: var(--ink);
     text-wrap: pretty;
   }
 
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 1.6rem 2rem;
-    padding-block: 2rem;
-    border-block: var(--hairline);
+  /* ---------- the road ---------- */
+
+  .journey {
+    grid-column: 1 / -1;
+    margin-top: clamp(2rem, 5vw, 4rem);
+    padding-top: clamp(2rem, 4vw, 3rem);
+    border-top: 1px solid var(--line);
   }
 
-  .stat__n {
-    display: block;
-    font-family: var(--font-display);
-    font-size: clamp(2.4rem, 3.8vw, 3.8rem);
-    line-height: 1;
-    color: var(--brass-2);
-    letter-spacing: -0.03em;
-    font-variation-settings:
-      'opsz' 144,
-      'SOFT' 0;
+  .journey__label,
+  .about__h {
+    font-size: 0.9rem;
+    color: var(--ink-3);
   }
 
-  .stat__l {
-    display: block;
-    margin-top: 0.6rem;
-    font-size: 0.7rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--paper-3);
-  }
-
-  .about__section > .eyebrow {
-    margin-bottom: 1.8rem;
-  }
-
-  .timeline {
+  .journey__map {
     position: relative;
-    display: grid;
-    gap: 1.8rem;
-    padding-left: 2.4rem;
+    aspect-ratio: 1200 / 240;
+    margin: 5.5rem 0 6rem;
   }
 
-  .timeline__line {
+  .journey__svg {
     position: absolute;
-    left: 0.34rem;
-    top: 0.6rem;
-    bottom: 0.6rem;
-    width: 1px;
-    background: rgb(var(--brass-rgb) / 0.16);
-  }
-
-  .timeline__line i {
-    display: block;
+    inset: 0;
     width: 100%;
     height: 100%;
-    background: var(--brass);
-    transform: scaleY(0);
-    transform-origin: top;
+    overflow: visible;
   }
 
-  .timeline__item {
-    position: relative;
-    display: grid;
-    grid-template-columns: 4.5rem 1fr;
-    gap: 1.4rem;
-    align-items: baseline;
+  .journey__track {
+    fill: none;
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    stroke-dasharray: 2 7;
+    vector-effect: non-scaling-stroke;
   }
 
-  .timeline__item::before {
-    content: '';
+  .journey__path {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .journey__pt {
+    fill: var(--paper);
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0.55);
+    opacity: 0.35;
+    transition:
+      transform 0.7s var(--ease-out),
+      opacity 0.7s,
+      fill 0.7s,
+      stroke 0.7s;
+  }
+
+  .journey__pt.is-on {
+    transform: scale(1);
+    opacity: 1;
+    fill: var(--accent);
+    stroke: var(--accent);
+  }
+
+  .journey__stops {
     position: absolute;
-    left: -2.4rem;
-    top: 0.45rem;
-    width: 0.7rem;
-    height: 0.7rem;
-    border-radius: 50%;
-    border: 1px solid var(--brass);
-    background: var(--ink-1);
+    inset: 0;
   }
 
-  .timeline__year {
+  .journey__stop {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    display: grid;
+    gap: 0.2rem;
+    justify-items: center;
+    text-align: center;
+    opacity: 0.38;
+    transition: opacity 0.7s var(--ease-out);
+  }
+
+  .journey__stop.is-on {
+    opacity: 1;
+  }
+
+  .journey__stop[data-side='down'] {
+    transform: translate(-50%, 0);
+    padding-top: 1.5rem;
+  }
+
+  .journey__stop[data-side='up'] {
+    transform: translate(-50%, -100%);
+    padding-bottom: 1.5rem;
+  }
+
+  .journey__city {
     font-family: var(--font-display);
-    font-size: 1.2rem;
-    color: var(--brass-2);
-    font-variation-settings:
-      'opsz' 48,
-      'SOFT' 0;
-  }
-
-  .timeline__title {
-    display: block;
-    color: var(--paper);
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 1.35rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    white-space: nowrap;
   }
 
-  .timeline__where {
-    display: block;
-    margin-top: 0.15rem;
-    font-size: 0.92rem;
-    color: var(--paper-3);
+  .journey__year {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+  }
+
+  .journey__note {
+    max-width: 13rem;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--ink-3);
+  }
+
+  /* ---------- today ---------- */
+
+  .about__today {
+    grid-column: 1 / 10;
   }
 
   .roles {
     display: grid;
+    margin-top: 1.5rem;
   }
 
   .role {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    gap: 1rem 2rem;
-    padding-block: 1rem;
-    border-top: var(--hairline);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+    gap: 0.5rem 2rem;
+    padding-block: 1.1rem;
+    border-top: 1px solid var(--line);
   }
 
   .role:last-child {
-    border-bottom: var(--hairline);
+    border-bottom: 1px solid var(--line);
   }
 
-  .role__title {
-    color: var(--paper);
+  .role dt {
     font-weight: 500;
+    color: var(--ink);
   }
 
-  .role__org {
-    color: var(--paper-3);
-    font-size: 0.95rem;
+  .role dd {
+    color: var(--ink-3);
   }
 
   .about__past {
     margin-top: 1.4rem;
-    font-size: 0.9rem;
-    color: var(--paper-3);
-    text-wrap: pretty;
+    max-width: 60ch;
   }
 
   @media (max-width: 900px) {
     .about__grid {
       grid-template-columns: 1fr;
-      gap: 3rem;
+      row-gap: 2.5rem;
     }
 
-    .about__media {
+    .about__title,
+    .about__body,
+    .about__mission,
+    .about__today {
+      grid-column: 1;
+    }
+
+    .about__plate {
+      grid-column: 1;
+      grid-row: auto;
       position: relative;
       top: 0;
-      max-width: 420px;
+      max-width: 400px;
     }
 
     .role {
       grid-template-columns: 1fr;
-      gap: 0.2rem;
+      gap: 0.15rem;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .journey__map {
+      aspect-ratio: auto;
+      margin: 2rem 0 0;
+    }
+
+    .journey__svg {
+      display: none;
+    }
+
+    .journey__stops {
+      position: static;
+      display: grid;
+      gap: 1.6rem;
+      padding-left: 1.4rem;
+      border-left: 1px solid var(--line);
+    }
+
+    .journey__stop,
+    .journey__stop[data-side='up'],
+    .journey__stop[data-side='down'] {
+      position: static;
+      transform: none;
+      padding: 0;
+      justify-items: start;
+      text-align: left;
+      opacity: 1;
+    }
+
+    .journey__note {
+      max-width: none;
     }
   }
 </style>

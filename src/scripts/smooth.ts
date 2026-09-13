@@ -22,6 +22,13 @@ if (!reduceMotion) {
   gsap.ticker.lagSmoothing(0);
 }
 
+declare global {
+  interface Window {
+    __lenis: Lenis | null;
+  }
+}
+window.__lenis = lenis;
+
 export function getLenis() {
   return lenis;
 }
