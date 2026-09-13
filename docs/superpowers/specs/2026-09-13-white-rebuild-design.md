@@ -51,17 +51,31 @@ appears. Reduced motion shows the banner as a still with the page below it.
 The source generator lives in the session scratchpad (`banner.mjs`); the two rejected hero mockups
 (Letterbox and Strip) and the once-per-session gate are gone.
 
-### Books, "the tracking shot"
+### Books, "the wall" (chosen 2026-09-13 from three mockups)
 
-Six featured covers (Arab Culture, Jurisprudence in the Western Diaspora, The Abrahamic Paradigm,
-Deal Breakers in Marriage, Fiqh al-Mahjar, Dawada Nafta) hang in a white 3D space. The section
-pins for about six viewports; scrolling dollies the camera through them with a hold at each book.
-Each book is a real object: cover, spine tinted from the jacket's dominant colour, page edge,
-floor shadow, idle float. Distance is expressed with a white veil and a blur on the cover image
-only (blur on a 3D parent would flatten the faces). The caption (mono counter, title, subtitle,
-record line, "Open the book") crossfades at each station; a numbered rail on the right jumps to
-stations; the pointer tilts the whole camera. Under 760px or with reduced motion the same markup
-flows as a vertical list with inline captions. Book links go to `/books/<id>` (pages not built yet).
+All eighteen covers hang as one 6 x 3 mosaic that fills the viewport, veiled and monochrome like
+an archive. The section pins for about 4.7 viewports; scrolling flies the camera into the wall and
+through three stops, one per row and one per language: Arab Culture (the new release), Fiqh
+al-Mahjar (Arabic), Dawada Nafta (Somali). At a stop the featured cover blooms to colour at two
+thirds of the viewport height, the rest of the wall recedes into paper and the caption (mono
+counter, title, subtitle, record line, "Open the book") appears in a pool of light beside it.
+Between stops the camera lifts and settles the way a map flies, and a torch of colour follows the
+focal point across the wall. At the end the camera pulls out to the whole library in colour with
+a numbered label under every cover, so the wall doubles as the index; every tile links to
+`/books/<id>`. A numbered rail on the left jumps to stops; the pointer tilts the camera a few
+degrees.
+
+Implementation notes: the grid is laid out at 380 x 570 px tiles and only ever scaled down, so no
+raster is upscaled. The camera is stored as the grid point under the focal spot plus a scale, so
+travel and zoom are independent; targets are function-based and the trigger uses
+`invalidateOnRefresh`. Shared book helpers (featured list, captions, dominant jacket colour via
+sharp) live in `src/lib/books.ts`. Under 760px or with reduced motion the same markup flows as a
+labelled index grid. Deep links (`/#books`) re-land after each ScrollTrigger refresh for four
+seconds because the pinned hero grows its spacer after the browser's own jump.
+
+The two rejected mockups, "the shelf" (eighteen spines on a plank; the featured book slides out
+and turns) and "the codex" (an open book whose leaves fold over), are gone with their `/mock`
+pages; the tracking shot they replaced is in git history (commit 7de7dd7).
 
 ### About
 
@@ -86,7 +100,7 @@ it (a vertical list on phones). "Today" is a hairline record of his roles.
 
 Built with `astro build`, served with `astro preview` (4322). Screenshots at 1440×900 and 390×844
 for the hero (first paint, banner at rest, scroll progress 20/40/55/70/100%, phone at rest and
-mid-pull), the tracking shot at stations 1, 5 and 6 and mid-move, About, footer.
+mid-pull), the wall at rest, at each of the three stops, mid-flight and pulled out, About, footer.
 No console errors. Note for future sessions: the desktop app's browser pane cannot screenshot pinned/fixed
 layers once scrolled, and the Playwright MCP reorders batched calls; a scripted playwright-core
 runner against the Playwright headless shell is reliable. `motion.ts` exposes `window.ScrollTrigger`

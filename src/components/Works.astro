@@ -1,62 +1,42 @@
 ---
 /**
- * The tracking shot. Six books hang in a white space; scrolling dollies the
- * camera through them, pausing on each. Each book is a real 3D object: cover,
- * spine (tinted from the jacket), page edge and a floor shadow.
+ * The wall. All eighteen covers hang as one mosaic that fills the viewport,
+ * veiled and monochrome like an archive. Scrolling flies the camera into the
+ * wall, stop by stop: the featured cover blooms to colour at full height with
+ * its caption beside it, the camera lifts and crosses the wall to the next,
+ * and at the end pulls all the way out to the whole library, lit and labelled.
+ * The flight itself lives in scripts/motion.ts (works()).
  */
-import path from 'node:path';
-import sharp from 'sharp';
 import { Image } from 'astro:assets';
-import { getCollection } from 'astro:content';
-import raw from '../data/books.json';
+import { allBooks, featuredBooks, caption, dominantColour, pad } from '../lib/books';
 
-const all = await getCollection('books');
-const sequence = [0, 1, 3, 2, 11, 15];
-const featured = sequence
-  .map((n) => all.find((b) => b.data.order === n))
-  .filter((b): b is NonNullable<typeof b> => Boolean(b));
+const all = await allBooks();
+/* Three stops, one per row and one per language (see FEATURED in lib/books). */
+const featured = featuredBooks(all);
 
-const languageLabel = { en: 'English', ar: 'Arabic', so: 'Somali' } as const;
-
-function shortRole(role: string) {
-  if (role.startsWith('Translated, edited')) return 'Translated, edited and annotated';
-  if (role.startsWith('Translated')) return 'Translated';
-  if (role.startsWith('Lectures')) return 'Lectures, compiled';
-  if (role.startsWith('Critical')) return 'Critical edition';
-  return role;
-}
-
-async function spineColour(order: number) {
-  const entry = raw.find((r) => r.order === order);
-  if (!entry) return 'oklch(30% 0.02 60)';
-  const file = path.join(process.cwd(), 'src/assets/covers', path.basename(entry.cover));
-  const { dominant } = await sharp(file).resize(64, 96).stats();
-  return `rgb(${dominant.r} ${dominant.g} ${dominant.b})`;
-}
-
-/* World positions: x in vw, y in vh. The camera pans so each lands on the focal point. */
-const slots = [
-  { x: 0, y: 0, ry: 16 },
-  { x: 30, y: -9, ry: -12 },
-  { x: -12, y: 7, ry: 20 },
-  { x: 26, y: -6, ry: -10 },
-  { x: -6, y: 5, ry: 14 },
-  { x: 32, y: -10, ry: -16 },
+/* The wall, row by row (book order numbers). The stops sit so the camera zig-zags. */
+const layout = [
+  [0, 4, 5, 6, 2, 7],
+  [8, 9, 1, 10, 12, 11],
+  [13, 3, 14, 16, 15, 17],
 ];
+const cols = layout[0].length;
 
-const items = await Promise.all(
-  featured.map(async (b, i) => ({
-    entry: b,
-    spine: await spineColour(b.data.order),
-    slot: slots[i % slots.length],
-    secondary: b.data.language === 'ar' ? b.data.titleEn : b.data.subtitle || b.data.titleEn,
-    meta: [shortRole(b.data.role), languageLabel[b.data.language], b.data.publisher, b.data.year]
-      .filter(Boolean)
-      .join(' · '),
-    href: `/books/${b.id}`,
-  }))
+const tiles = await Promise.all(
+  layout.flat().map(async (order) => {
+    const entry = all.find((b) => b.data.order === order)!;
+    return {
+      entry,
+      order,
+      stop: featured.indexOf(entry),
+      tint: await dominantColour(order),
+      ...caption(entry),
+    };
+  })
 );
-const total = String(items.length).padStart(2, '0');
+
+const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
+const total = pad(caps.length);
 ---
 
 <section class="works" id="books" aria-labelledby="works-title">
@@ -65,51 +45,37 @@ const total = String(items.length).padStart(2, '0');
       Eighteen works. <em>Three languages.</em>
     </h2>
     <p class="works__lede" data-reveal data-delay="0.15">
-      A selection from the library. Scroll to move through it, and open any volume for the full description and
-      where to find it.
+      The whole library on one wall. Scroll to walk up to it: three volumes come forward in turn, and at the end the
+      wall lights up entire.
     </p>
   </div>
 
-  <div class="works__pin">
+  <div class="works__pin" style={`--cols:${cols}`}>
     <div class="works__stage">
       <div class="works__camera">
-        <div class="works__scene">
+        <div class="works__grid">
           {
-            items.map((it, i) => (
+            tiles.map((t) => (
               <a
-                class="works__book"
-                href={it.href}
-                data-x={it.slot.x}
-                data-y={it.slot.y}
-                aria-label={`${it.entry.data.title}. Open the book`}
-                style={`--i:${i}; --ry0:${it.slot.ry}deg; --ratio:${(it.entry.data.coverWidth / it.entry.data.coverHeight).toFixed(4)}; --spine:${it.spine}; --dur:${6.5 + (i % 3) * 1.1}s; --delay:${-i * 1.7}s`}
+                class="works__tile"
+                href={t.href}
+                data-stop={t.stop}
+                aria-label={`${t.entry.data.title}. Open the book`}
+                style={`--tint:${t.tint}`}
               >
-                <span class="works__obj">
-                  <span class="works__spine" aria-hidden="true">
-                    <span>{it.entry.data.titleLatin || it.entry.data.title}</span>
-                  </span>
-                  <span class="works__pages" aria-hidden="true" />
-                  <span class="works__front">
-                    <Image
-                      src={it.entry.data.cover}
-                      alt=""
-                      widths={[420, 640, 900]}
-                      sizes="(max-width: 760px) 78vw, 30vw"
-                      loading={i < 2 ? 'eager' : 'lazy'}
-                      decoding="async"
-                    />
-                  </span>
-                  <span class="works__shadow" aria-hidden="true" />
+                <span class="works__img">
+                  <Image
+                    src={t.entry.data.cover}
+                    alt=""
+                    widths={[420, 640]}
+                    sizes="(max-width: 760px) 44vw, 380px"
+                    loading={t.stop >= 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
                 </span>
-                <span class="works__inline" aria-hidden="true">
-                  <span class="works__num">
-                    <span>{String(i + 1).padStart(2, '0')}</span> / {total}
-                  </span>
-                  <span class="works__title" lang={it.entry.data.language}>
-                    {it.entry.data.title}
-                  </span>
-                  {it.secondary && <span class="works__sec">{it.secondary}</span>}
-                  <span class="works__meta">{it.meta}</span>
+                <span class="works__lbl" aria-hidden="true">
+                  <b>{pad(t.order + 1)}</b>
+                  <span>{t.label}</span>
                 </span>
               </a>
             ))
@@ -118,20 +84,20 @@ const total = String(items.length).padStart(2, '0');
       </div>
     </div>
 
-    <div class="works__captions container">
+    <div class="works__caps">
       {
-        items.map((it, i) => (
+        caps.map((c) => (
           <div class="works__cap" data-cap>
             <p class="works__num">
-              <span>{String(i + 1).padStart(2, '0')}</span> / {total}
-              {it.entry.data.badge && <em>{it.entry.data.badge}</em>}
+              <span>{pad(c.i + 1)}</span> / {total}
+              {c.entry.data.badge && <em>{c.entry.data.badge}</em>}
             </p>
-            <h3 class="works__title display display--md" lang={it.entry.data.language}>
-              {it.entry.data.title}
+            <h3 class="works__title display display--md" lang={c.entry.data.language}>
+              {c.entry.data.title}
             </h3>
-            {it.secondary && <p class="works__sec">{it.secondary}</p>}
-            <p class="works__meta">{it.meta}</p>
-            <a class="link" href={it.href}>
+            {c.secondary && <p class="works__sec">{c.secondary}</p>}
+            <p class="works__meta">{c.meta}</p>
+            <a class="link" href={c.href}>
               Open the book
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
                 <path d="M4 12L12 4M6 4h6v6" />
@@ -145,9 +111,9 @@ const total = String(items.length).padStart(2, '0');
     <div class="works__rail" aria-label="Jump to a book">
       <span class="works__rail-line" aria-hidden="true"><i class="works__rail-fill"></i></span>
       {
-        items.map((it, i) => (
-          <button class="works__dot" type="button" data-go={i} aria-label={`Go to ${it.entry.data.title}`}>
-            {String(i + 1).padStart(2, '0')}
+        caps.map((c) => (
+          <button class="works__dot" type="button" data-go={c.i} aria-label={`Go to ${c.entry.data.title}`}>
+            {pad(c.i + 1)}
           </button>
         ))
       }
@@ -163,19 +129,6 @@ const total = String(items.length).padStart(2, '0');
     </a>
   </div>
 </section>
-
-<style is:global>
-  @property --ry {
-    syntax: '<angle>';
-    inherits: false;
-    initial-value: 0deg;
-  }
-  @property --float {
-    syntax: '<length>';
-    inherits: false;
-    initial-value: 0px;
-  }
-</style>
 
 <style>
   .works {
@@ -200,140 +153,76 @@ const total = String(items.length).padStart(2, '0');
     text-wrap: pretty;
   }
 
-  /* ---------- the book object ---------- */
+  /* ---------- a tile ---------- */
 
-  .works__book {
-    --h: min(58vh, 540px);
-    --t: 30px;
+  .works__tile {
+    --lit: 1;
     display: block;
     color: inherit;
   }
 
-  .works__obj {
-    --ry: var(--ry0);
+  .works__img {
     position: relative;
     display: block;
-    width: 100%;
-    height: 100%;
-    transform-style: preserve-3d;
-    transform: translateY(var(--float)) rotateY(var(--ry));
-    transition: --ry 1.1s var(--ease-out-quint);
-    animation: float var(--dur, 7s) ease-in-out infinite alternate;
-    animation-delay: var(--delay, 0s);
-  }
-
-  .works__book:hover .works__obj,
-  .works__book:focus-visible .works__obj {
-    --ry: 2deg;
-  }
-
-  @keyframes float {
-    from {
-      --float: -7px;
-    }
-    to {
-      --float: 7px;
-    }
-  }
-
-  .works__front {
-    position: absolute;
-    inset: 0;
-    transform: translateZ(calc(var(--t) / 2));
+    aspect-ratio: 2 / 3;
     overflow: hidden;
-    border-radius: 2px 6px 6px 2px;
-    background: var(--paper-3);
-    box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.08);
+    border-radius: 2px;
+    background: var(--tint);
+    box-shadow:
+      inset 0 0 0 1px oklch(0% 0 0 / 0.06),
+      0 24px 50px -28px oklch(19% 0.012 60 / 0.55);
   }
 
-  .works__front :global(img) {
+  .works__img :global(img) {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: blur(calc(var(--d, 0) * 10px));
-    transform: scale(calc(1 + var(--d, 0) * 0.05));
+    filter: grayscale(calc(1 - var(--lit)));
   }
 
-  .works__front::before {
+  /* Distance is a veil of paper, like a print not yet lit. */
+  .works__img::after {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: 1;
-    background: linear-gradient(
-      90deg,
-      rgb(0 0 0 / 0.24) 0,
-      rgb(255 255 255 / 0.14) 2.4%,
-      rgb(0 0 0 / 0.07) 5%,
-      transparent 11%
-    );
-    pointer-events: none;
-  }
-
-  .works__front::after,
-  .works__spine::after,
-  .works__pages::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 2;
     background: var(--paper);
-    opacity: calc(var(--d, 0) * 0.94);
+    opacity: calc((1 - var(--lit)) * var(--veil, 0.5));
     pointer-events: none;
   }
 
-  .works__spine {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    width: var(--t);
-    transform-origin: left center;
-    transform: translateZ(calc(var(--t) / -2)) rotateY(-90deg);
-    background:
-      linear-gradient(90deg, rgb(0 0 0 / 0.35), transparent 30%, rgb(255 255 255 / 0.08) 60%, rgb(0 0 0 / 0.25)),
-      color-mix(in oklab, var(--spine) 80%, black);
-    display: grid;
-    place-items: center;
-    overflow: hidden;
+  .works__tile:hover .works__img :global(img),
+  .works__tile:focus-visible .works__img :global(img) {
+    filter: none;
+    transition: filter 0.45s var(--ease-out);
   }
 
-  .works__spine span {
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    max-height: 84%;
-    overflow: hidden;
+  .works__tile:hover .works__img::after,
+  .works__tile:focus-visible .works__img::after {
+    opacity: 0;
+    transition: opacity 0.45s var(--ease-out);
+  }
+
+  .works__lbl {
+    display: flex;
+    gap: 0.6em;
+    align-items: baseline;
+    margin-top: 0.7rem;
     font-family: var(--font-mono);
-    font-size: 0.56rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.72rem;
+    line-height: 1.3;
+    color: var(--ink-3);
     white-space: nowrap;
-    color: oklch(96% 0.01 80 / 0.85);
-  }
-
-  .works__pages {
-    position: absolute;
-    top: 3px;
-    bottom: 3px;
-    right: 0;
-    width: var(--t);
-    transform-origin: right center;
-    transform: translateZ(calc(var(--t) / -2)) rotateY(90deg);
-    background: repeating-linear-gradient(90deg, #f4ede0 0 1px, #d8cdb9 1px 2px, #ece3d2 2px 3px);
     overflow: hidden;
   }
 
-  .works__shadow {
-    position: absolute;
-    left: 2%;
-    right: -8%;
-    bottom: -9%;
-    height: 16%;
-    border-radius: 50%;
-    background: radial-gradient(closest-side, oklch(19% 0.012 60 / 0.42), transparent);
-    filter: blur(12px);
-    transform: translateZ(-50px);
-    opacity: calc(1 - var(--d, 0));
-    pointer-events: none;
+  .works__lbl b {
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .works__lbl > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* ---------- captions ---------- */
@@ -401,7 +290,7 @@ const total = String(items.length).padStart(2, '0');
 
   .works__rail-line {
     position: absolute;
-    right: 0.35rem;
+    left: 0.35rem;
     top: 0.6rem;
     bottom: 0.6rem;
     width: 1px;
@@ -419,7 +308,7 @@ const total = String(items.length).padStart(2, '0');
 
   .works__dot {
     position: relative;
-    padding-right: 1.4rem;
+    padding-left: 1.4rem;
     font-family: var(--font-mono);
     font-size: 0.7rem;
     color: var(--ink-4);
@@ -429,14 +318,14 @@ const total = String(items.length).padStart(2, '0');
   .works__dot::after {
     content: '';
     position: absolute;
-    right: 0;
+    left: 0;
     top: 50%;
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
     background: var(--paper);
     box-shadow: inset 0 0 0 1px var(--line-strong);
-    transform: translate(0.05rem, -50%);
+    transform: translate(0.1rem, -50%);
     transition:
       background 0.4s,
       box-shadow 0.4s;
@@ -458,62 +347,22 @@ const total = String(items.length).padStart(2, '0');
     padding-block: clamp(3rem, 7vw, 6rem) 0;
   }
 
-  /* ---------- flowing layout (small screens, reduced motion) ---------- */
+  /* ---------- flowing layout (small screens, reduced motion): the index ---------- */
 
-  .works__pin:not(.is-3d) .works__scene {
+  .works__pin:not(.is-3d) .works__grid {
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin-inline: auto;
     display: grid;
-    gap: clamp(3.5rem, 9vw, 6rem);
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 2.2rem 1.2rem;
     padding-block: 1rem 2rem;
   }
 
-  .works__pin:not(.is-3d) .works__book {
-    width: min(72vw, 320px);
-    margin-inline: auto;
-    perspective: 1100px;
-  }
-
-  .works__pin:not(.is-3d) .works__obj {
-    height: auto;
-    aspect-ratio: var(--ratio, 0.667);
-  }
-
-  .works__pin:not(.is-3d) .works__inline {
-    display: grid;
-    gap: 0.35rem;
-    margin-top: 1.8rem;
-  }
-
-  .works__pin:not(.is-3d) .works__inline .works__title {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    font-weight: 500;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-    margin-top: 0.5rem;
-  }
-
-  .works__pin:not(.is-3d) .works__inline .works__title[lang='ar'] {
-    font-family: var(--font-arabic);
-    font-size: 1.8rem;
-    line-height: 1.4;
-    letter-spacing: 0;
-    text-align: left;
-  }
-
-  .works__pin:not(.is-3d) .works__inline .works__sec {
-    margin-top: 0.2rem;
-    font-size: 1.02rem;
-  }
-
-  .works__pin:not(.is-3d) .works__captions {
+  .works__pin:not(.is-3d) .works__caps {
     display: none;
   }
 
-  .works__inline {
-    display: none;
-  }
-
-  /* ---------- the tracking shot (JS adds .is-3d) ---------- */
+  /* ---------- the flight (JS adds .is-3d) ---------- */
 
   .works__pin.is-3d {
     height: 100svh;
@@ -523,34 +372,76 @@ const total = String(items.length).padStart(2, '0');
   .is-3d .works__stage {
     position: absolute;
     inset: 0;
-    perspective: 1200px;
-    perspective-origin: 50% 46%;
+    perspective: 1800px;
+    perspective-origin: 50% 50%;
   }
 
-  .is-3d .works__camera,
-  .is-3d .works__scene {
+  .is-3d .works__camera {
     position: absolute;
     inset: 0;
     transform-style: preserve-3d;
   }
 
-  .is-3d .works__book {
-    position: absolute;
-    left: 50%;
-    top: 46%;
-    height: var(--h);
-    width: calc(var(--h) * var(--ratio, 0.667));
-    transform-style: preserve-3d;
-    visibility: hidden;
-  }
-
-  .is-3d .works__captions {
+  /* The wall is laid out big and scaled down, so zooming in never upscales a raster. */
+  .is-3d .works__grid {
+    --lbl: 0;
+    --veil: 0.38;
     position: absolute;
     left: 0;
-    right: 0;
-    bottom: 8vh;
+    top: 0;
     display: grid;
+    grid-template-columns: repeat(var(--cols), 380px);
+    grid-auto-rows: 614px;
+    gap: 26px;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  .is-3d .works__tile {
+    --lit: 0;
+    width: 380px;
+  }
+
+  .is-3d .works__img {
+    height: 570px;
+    box-shadow:
+      inset 0 0 0 1px oklch(0% 0 0 / 0.06),
+      0 40px 80px -40px oklch(19% 0.012 60 / 0.6);
+    transition: box-shadow 1.2s var(--ease-out-quint);
+  }
+
+  /* The cover the camera has come to: its shadow deepens as if it had come off the wall. */
+  .is-3d .works__tile.is-focus .works__img {
+    box-shadow:
+      inset 0 0 0 1px oklch(0% 0 0 / 0.06),
+      0 70px 120px -50px oklch(19% 0.012 60 / 0.75);
+  }
+
+  .is-3d .works__lbl {
+    margin-top: 14px;
+    font-size: 1.15rem;
+    opacity: var(--lbl);
+  }
+
+  .is-3d .works__caps {
+    position: absolute;
+    left: 60%;
+    right: var(--gutter);
+    top: 50%;
+    display: grid;
+    transform: translateY(-50%);
     pointer-events: none;
+    isolation: isolate;
+  }
+
+  /* A pool of light on the wall behind the label, so it never fights a ghosted cover. */
+  .is-3d .works__caps::before {
+    content: '';
+    position: absolute;
+    inset: -34% -30% -34% -22%;
+    z-index: -1;
+    background: radial-gradient(ellipse at 42% 50%, var(--paper) 38%, transparent 72%);
+    opacity: var(--spot, 0);
   }
 
   .is-3d .works__cap {
@@ -566,12 +457,12 @@ const total = String(items.length).padStart(2, '0');
 
   .is-3d .works__rail {
     position: absolute;
-    right: var(--gutter);
+    left: var(--gutter);
     top: 50%;
     transform: translateY(-50%);
     display: grid;
     gap: 0.9rem;
-    justify-items: end;
+    justify-items: start;
   }
 
   @media (max-width: 900px) {
@@ -580,17 +471,8 @@ const total = String(items.length).padStart(2, '0');
       gap: 1.5rem;
     }
 
-    .is-3d .works__captions {
-      bottom: 5vh;
-    }
-
-    .is-3d .works__cap {
-      max-width: 20rem;
-    }
-
-    .is-3d .works__book {
-      --h: min(48vh, 420px);
-      top: 40%;
+    .is-3d .works__caps {
+      left: 56%;
     }
   }
 </style>

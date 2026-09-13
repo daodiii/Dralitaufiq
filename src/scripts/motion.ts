@@ -111,34 +111,83 @@ function reveals() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Works: the tracking shot                                             */
+/* Works: the wall                                                      */
 /* ------------------------------------------------------------------ */
+
+/* Grid units, matching Works.astro: tile, cell (tile + label), gap. */
+const TW = 380;
+const TH = 570;
+const CELL = 614;
+const GAP = 26;
+const HOLD = 0.55;
+/* Where the featured cover sits on screen (fractions of the stage). */
+const FX = 0.4;
+const FY = 0.5;
 
 function works() {
   const pin = $('.works__pin');
   if (!pin) return;
   const camera = $('.works__camera', pin);
-  const scene = $('.works__scene', pin);
-  const books = $$('.works__book', pin);
+  const grid = $('.works__grid', pin);
+  const tiles = $$('.works__tile', pin);
   const caps = $$('.works__cap', pin);
+  const capsBox = $('.works__caps', pin);
   const dots = $$<HTMLButtonElement>('.works__dot', pin);
   const fill = $('.works__rail-fill', pin);
-  const n = books.length;
-  if (!camera || !scene || !n) return;
+  const cols = parseInt(getComputedStyle(pin).getPropertyValue('--cols') || '6', 10);
+  if (!camera || !grid || !tiles.length) return;
 
-  /* Distance between stations, in px of depth, and where the focal book sits (vw, vh). */
-  const D = 900;
-  const focal = { x: 12, y: -3 };
-  const slots = books.map((b) => ({
-    x: parseFloat(b.dataset.x || '0'),
-    y: parseFloat(b.dataset.y || '0'),
-  }));
+  const rows = Math.ceil(tiles.length / cols);
+  const GW = cols * TW + (cols - 1) * GAP;
+  const GH = rows * CELL + (rows - 1) * GAP;
+  const stops: number[] = [];
+  tiles.forEach((t, i) => {
+    const s = parseInt(t.dataset.stop ?? '-1', 10);
+    if (s >= 0) stops[s] = i;
+  });
+  const n = stops.length;
+  const centre = (i: number) => ({
+    x: (i % cols) * (TW + GAP) + TW / 2,
+    y: Math.floor(i / cols) * (CELL + GAP) + TH / 2,
+  });
 
   const mm = gsap.matchMedia();
 
   mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
     pin.classList.add('is-3d');
-    const cam = { x: focal.x - slots[0].x, y: focal.y - slots[0].y, z: 0 };
+    let sw = pin.clientWidth;
+    let sh = pin.clientHeight;
+    const measure = () => {
+      sw = pin.clientWidth;
+      sh = pin.clientHeight;
+    };
+    const gutter = () => Math.max(20, Math.min(80, sw * 0.045));
+
+    /* The camera is the grid point under the focal spot plus a scale, so travel and
+       zoom are independent and the flight can lift between stops. */
+    const fit = (s: number, x: number, y: number) => ({ s, gx: (FX * sw - x) / s, gy: (FY * sh - y) / s });
+    const wide = () => {
+      const s = Math.max(sw / GW, sh / GH) * 1.04;
+      return fit(s, (sw - GW * s) / 2, (sh - GH * s) / 2);
+    };
+    const index = () => {
+      const g = gutter();
+      const s = Math.min((sw - 2 * g) / GW, (sh - 2 * g - 48) / GH);
+      return fit(s, (sw - GW * s) / 2, (sh - GH * s) / 2 + 28);
+    };
+    const stop = (k: number) => {
+      const c = centre(stops[k]);
+      return { s: (0.66 * sh) / TH, gx: c.x, gy: c.y };
+    };
+    const steps = (a: number, b: number) => {
+      const ca = stops[a];
+      const cb = stops[b];
+      return Math.abs((ca % cols) - (cb % cols)) + Math.abs(Math.floor(ca / cols) - Math.floor(cb / cols));
+    };
+
+    const cam = { ...wide() };
+    const light = { amb: 0, out: 0, dim: 0 };
+    const marks: number[] = [];
     let active = -1;
 
     const setActive = (i: number) => {
@@ -162,52 +211,80 @@ function works() {
         }
       });
       dots.forEach((d, k) => d.classList.toggle('is-active', k === i));
+      tiles.forEach((t, k) => t.classList.toggle('is-focus', i >= 0 && k === stops[i]));
     };
 
     const render = () => {
-      const vw = window.innerWidth / 100;
-      const vh = window.innerHeight / 100;
-      gsap.set(scene, { x: cam.x * vw, y: cam.y * vh, z: cam.z });
-      books.forEach((b, i) => {
-        const rel = cam.z - i * D; /* < 0: still ahead of the camera, > 0: already passed */
-        const far = rel < 0 ? Math.min(1, -rel / (1.7 * D)) : 0;
-        const passed = rel > 0 ? Math.min(1, rel / (0.5 * D)) : 0;
-        const d = Math.max(far, passed);
-        b.style.setProperty('--d', d.toFixed(3));
-        const hidden = rel < -2.7 * D || passed >= 1;
-        gsap.set(b, {
-          x: slots[i].x * vw,
-          y: slots[i].y * vh,
-          z: -i * D,
-          xPercent: -50,
-          yPercent: -50,
-          visibility: hidden ? 'hidden' : 'visible',
-        });
-      });
-      const idx = Math.max(0, Math.min(n - 1, Math.round(cam.z / D)));
+      const tx = FX * sw - cam.gx * cam.s;
+      const ty = FY * sh - cam.gy * cam.s;
+      gsap.set(grid, { x: tx, y: ty, scale: cam.s });
+      /* A torch of colour around the focal point; at a stop the rest of the wall recedes
+         into paper so the caption reads; at the end the whole wall is lit. */
+      const R = 0.62 * sh;
+      const fx = FX * sw;
+      const fy = FY * sh;
+      const focus = active >= 0 ? stops[active] : -1;
+      for (let i = 0; i < tiles.length; i++) {
+        const c = centre(i);
+        const d = Math.hypot(tx + c.x * cam.s - fx, ty + c.y * cam.s - fy);
+        let t = Math.max(0, 1 - d / R);
+        t = t * t * (3 - 2 * t) * light.amb;
+        if (i === focus) t = Math.max(t, light.dim);
+        tiles[i].style.setProperty('--lit', Math.max(t, light.out).toFixed(3));
+      }
+      grid.style.setProperty('--lbl', light.out.toFixed(3));
+      grid.style.setProperty('--veil', (0.38 + 0.5 * light.dim).toFixed(3));
+      capsBox?.style.setProperty('--spot', light.dim.toFixed(3));
+
+      const time = tl.time();
+      let idx = -1;
+      for (let k = 0; k < n; k++) {
+        if (time >= marks[k] - 0.3 && time <= marks[k] + HOLD + 0.12) idx = k;
+      }
       if (idx !== active) setActive(idx);
-      if (fill) gsap.set(fill, { scaleY: cam.z / ((n - 1) * D) });
+      if (fill && n > 1) {
+        const p = (time - marks[0]) / (marks[n - 1] - marks[0]);
+        gsap.set(fill, { scaleY: Math.max(0, Math.min(1, p)) });
+      }
     };
 
     const tl = gsap.timeline({ paused: true, onUpdate: render });
-    for (let i = 0; i < n; i++) {
-      if (i > 0) {
-        tl.to(cam, {
-          x: focal.x - slots[i].x,
-          y: focal.y - slots[i].y,
-          z: i * D,
-          duration: 1,
-          ease: 'power2.inOut',
-        });
+    tl.to({}, { duration: 0.35 });
+    for (let k = 0; k < n; k++) {
+      const at = tl.duration();
+      if (k === 0) {
+        tl.fromTo(
+          cam,
+          { gx: () => wide().gx, gy: () => wide().gy, s: () => wide().s },
+          { gx: () => stop(0).gx, gy: () => stop(0).gy, s: () => stop(0).s, duration: 1.1, ease: 'power2.inOut' },
+          at
+        );
+        tl.to(light, { amb: 1, duration: 0.8, ease: 'power2.out' }, at + 0.2);
+        tl.to(light, { dim: 1, duration: 0.4, ease: 'power2.inOut' }, at + 0.6);
+      } else {
+        /* Between stops the camera lifts and settles, the way a map flies. */
+        const dip = 1 - Math.min(0.45, 0.1 + 0.07 * steps(k - 1, k));
+        tl.to(light, { dim: 0, duration: 0.35, ease: 'power2.inOut' }, at);
+        tl.to(cam, { gx: () => stop(k).gx, gy: () => stop(k).gy, duration: 1, ease: 'power2.inOut' }, at);
+        tl.to(cam, { s: () => stop(k).s * dip, duration: 0.5, ease: 'power2.out' }, at);
+        tl.to(cam, { s: () => stop(k).s, duration: 0.5, ease: 'power2.in' }, at + 0.5);
+        tl.to(light, { dim: 1, duration: 0.4, ease: 'power2.inOut' }, at + 0.55);
       }
-      tl.addLabel(`s${i}`);
-      tl.to({}, { duration: i === 0 || i === n - 1 ? 0.4 : 0.55 });
+      marks[k] = tl.duration();
+      tl.addLabel(`s${k}`);
+      tl.to({}, { duration: HOLD });
     }
+    const out = tl.duration();
+    tl.to(light, { dim: 0, duration: 0.5, ease: 'power2.inOut' }, out);
+    tl.to(cam, { gx: () => index().gx, gy: () => index().gy, s: () => index().s, duration: 1.3, ease: 'power2.inOut' }, out);
+    tl.to(light, { out: 1, duration: 0.9, ease: 'power2.inOut' }, out + 0.3);
+    tl.to({}, { duration: 0.45 });
 
+    ScrollTrigger.addEventListener('refreshInit', measure);
     const st = ScrollTrigger.create({
       trigger: pin,
       start: 'top top',
-      end: () => `+=${Math.round(window.innerHeight * n * 0.95)}`,
+      end: () => `+=${Math.round(window.innerHeight * (n + 1.7))}`,
       pin: true,
       scrub: 1,
       animation: tl,
@@ -232,8 +309,8 @@ function works() {
       onMove = (e) => {
         const nx = e.clientX / window.innerWidth - 0.5;
         const ny = e.clientY / window.innerHeight - 0.5;
-        ry(nx * 7);
-        rx(-ny * 5);
+        ry(nx * 4);
+        rx(-ny * 3);
       };
       onLeave = () => {
         rx(0);
@@ -244,13 +321,20 @@ function works() {
     }
 
     return () => {
+      ScrollTrigger.removeEventListener('refreshInit', measure);
       st.kill();
       tl.kill();
       dots.forEach((d) => d.removeEventListener('click', onDot));
       if (onMove) pin.removeEventListener('pointermove', onMove);
       if (onLeave) pin.removeEventListener('pointerleave', onLeave);
-      gsap.set([scene, camera, ...books], { clearProps: 'all' });
-      books.forEach((b) => b.style.removeProperty('--d'));
+      gsap.set([grid, camera], { clearProps: 'all' });
+      grid.style.removeProperty('--lbl');
+      grid.style.removeProperty('--veil');
+      capsBox?.style.removeProperty('--spot');
+      tiles.forEach((t) => {
+        t.style.removeProperty('--lit');
+        t.classList.remove('is-focus');
+      });
       caps.forEach((c) => {
         c.classList.remove('is-active');
         gsap.set([c, ...Array.from(c.children)], { clearProps: 'all' });
@@ -322,6 +406,31 @@ function about() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Deep links                                                           */
+/* ------------------------------------------------------------------ */
+
+/* The browser jumps to a hash before the pinned hero has grown its spacer, so land
+   again after each refresh in the first seconds, unless the reader has started scrolling. */
+function landOnHash() {
+  const id = location.hash.slice(1);
+  const target = id ? document.getElementById(id) : null;
+  if (!target) return;
+  let manual = false;
+  const cancel = () => (manual = true);
+  const events = ['wheel', 'touchstart', 'keydown'];
+  events.forEach((ev) => window.addEventListener(ev, cancel, { passive: true }));
+  const land = () => {
+    if (!manual) scrollToY(target.getBoundingClientRect().top + window.scrollY - 24, true);
+  };
+  ScrollTrigger.addEventListener('refresh', land);
+  land();
+  window.setTimeout(() => {
+    ScrollTrigger.removeEventListener('refresh', land);
+    events.forEach((ev) => window.removeEventListener(ev, cancel));
+  }, 4000);
+}
+
+/* ------------------------------------------------------------------ */
 
 function init() {
   nav();
@@ -329,6 +438,7 @@ function init() {
   works();
   about();
   ScrollTrigger.refresh();
+  landOnHash();
 }
 
 if (document.fonts && document.fonts.ready) {
