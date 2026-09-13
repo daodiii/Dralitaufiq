@@ -389,20 +389,6 @@ function about() {
       });
     }
   }
-
-  const img = $('.about__photo img');
-  if (img && !reduceMotion) {
-    gsap.fromTo(
-      img,
-      { yPercent: -5, scale: 1.1 },
-      {
-        yPercent: 5,
-        scale: 1.1,
-        ease: 'none',
-        scrollTrigger: { trigger: '.about', start: 'top bottom', end: 'bottom top', scrub: true },
-      }
-    );
-  }
 }
 
 /* ------------------------------------------------------------------ */
