@@ -42,7 +42,14 @@ lines arrive).
 Scrolling drives the pull-back the user chose: the hero pins for 1.3 viewports while the banner's
 lines lift away, the room shrinks around his face and lands exactly on the printed plate, the gold
 flies to its place above the name, and the page assembles (name, lede, link, record; the plate
-tilts, its shadow deepens, a lamp-coloured glow spills onto the paper). Both images come from the
+tilts, its shadow deepens, a lamp-coloured glow spills onto the paper). Since 2026-09-14 the
+assembled page is a card: warmer paper (`--paper-2`), hairline border, 22px radius, a soft
+shadow, inset from the viewport by the gutter, which the banner uncovers as it shrinks into the
+plate. The record (Field, Post, Works, Formed in) sits as a 2x2 block under the link, and the text
+column and the plate are bottom-aligned and centred in the card. The card is sized by viewport
+height too (calligraphy, gaps, lede, record and the plate's width follow `vh`, tighter under
+700px tall) so the whole of it is on screen while pinned, on laptop screens included; on phones
+the same card holds the stacked order. Both images come from the
 user's 4x Upscayl of the banner, downsampled to 2x: `portrait-open.jpg` (4096x1588, text region
 reconstructed from the wall, 140px replicated headroom) and `portrait-plate.jpg` cut from it, so
 plate (x, y) = banner (x + 2720, y). The nav is light over the banner and turns to ink as the paper
