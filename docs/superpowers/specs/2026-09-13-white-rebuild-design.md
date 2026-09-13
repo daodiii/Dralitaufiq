@@ -104,12 +104,16 @@ history (commit a3f2d95).
 
 ## Scrolling, beat by beat (2026-09-14)
 
-The page moves one beat per gesture. A wheel or trackpad flick, or Down/Up/PageDown/PageUp/Space/
-Home/End, glides to the next beat in 0.8-1.6 s (longer moves take longer) and ignores input until
-it lands plus a short tail; a gesture only counts while its delta is not shrinking, which is how
-trackpad momentum is told from a fresh flick. Scrollbar drags and touch scroll freely and settle on
-the nearest beat when they stop. Nav links, the wall's rail and deep links land where they point.
-Under 760px and with reduced motion nothing changes: those layouts are stacked and unpinned.
+The wheel and the trackpad scroll freely, so every choreography plays at the reader's own pace;
+140 ms after the input goes quiet the page carries on to the next beat in the direction of travel
+(or back onto a beat it stopped within 24px of), gliding in 0.8-2.4 s depending on the distance.
+Nothing is locked: a new gesture always takes over, and reversing mid-glide returns to the beat
+just left. Down/Up/PageDown/PageUp/Space/Home/End step a beat at a time. Scrollbar drags and touch
+settle on the nearest beat once they stop. Nav links, the wall's rail and deep links land where
+they point. Under 760px and with reduced motion nothing changes: those layouts are stacked and
+unpinned. (The first version moved exactly one beat per gesture and ignored input until the glide
+landed; the user found the first scroll too fast and the lock unresponsive, so it was replaced the
+same day.)
 
 The beats, read live from the pins and the layout: the banner at rest; the banner pulled back;
 the "Eighteen works" headline; the wall wide; the three stops; the index; the About headline,
@@ -137,9 +141,10 @@ Built with `astro build`, served with `astro preview` (4322). Screenshots at 144
 for the hero (first paint, banner at rest, scroll progress 20/40/55/70/100%, phone at rest and
 mid-pull), the wall at rest, at each of the three stops, mid-flight and pulled out, the parting at
 0/40/70/100% and the biography below it, the About stacked on the phone and with reduced motion, footer.
-Beat stepping: a headless run fires real wheel and key input and checks every landing both ways, a
-trackpad-shaped burst and a fast wheel spin each move one beat, and native jumps settle; phones
-and reduced motion still scroll freely.
+Beat scrolling: a headless run fires real wheel and key input and checks every landing both ways,
+a trackpad-shaped burst carries on to the next beat, a fast wheel spin crosses a beat and carries on
+to the one after, reversing mid-glide returns to the beat left, native jumps settle; phones and
+reduced motion still scroll freely.
 No console errors. Note for future sessions: the desktop app's browser pane cannot screenshot pinned/fixed
 layers once scrolled, and the Playwright MCP reorders batched calls; a scripted playwright-core
 runner against the Playwright headless shell is reliable. `motion.ts` exposes `window.ScrollTrigger`

@@ -3,16 +3,18 @@ import type Lenis from 'lenis';
 import type { VirtualScrollData } from 'lenis';
 import { getLenis, setGestureHandler } from './smooth';
 
-/* Beat-to-beat scrolling. A wheel or trackpad gesture, or a key, moves the page one beat
-   and glides there; input is ignored until the glide lands. Scrollbar drags and touch
-   scroll freely and settle on the nearest beat once they stop. The beats are read from
-   the provider on every move, so they follow resizes and ScrollTrigger refreshes. Phones
-   and reduced motion keep native scrolling: their layouts are stacked and unpinned. */
+/* Beat-to-beat scrolling. The wheel and the trackpad scroll freely, so every choreography
+   plays at the reader's own pace; once the input goes quiet the page carries on to the next
+   beat in the direction of travel, or back onto the beat it is nearly on. A new gesture
+   always takes over. Keys step a beat at a time; scrollbar drags and touch settle on the
+   nearest beat once they stop. The beats are read from the provider on every move, so they
+   follow resizes and ScrollTrigger refreshes. Phones and reduced motion keep native
+   scrolling: their layouts are stacked and unpinned. */
 
-const TOL = 40; /* within this many px of a beat counts as standing on it */
-const MIN_DELTA = 4; /* smaller wheel deltas are jitter or the tail of trackpad momentum */
-const TAIL = 260; /* ms after a glide lands during which input is still ignored */
-const ease = (t: number) => 1 - Math.pow(1 - t, 4);
+const TOL = 40; /* beats closer than this merge; within this of a beat counts as standing on it */
+const SNAP = 24; /* after wheel input, this close to a beat goes back onto it rather than on */
+const QUIET = 140; /* ms without wheel input before the page carries on */
+const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 export function steps(beatsOf: () => number[]) {
   const lenis = getLenis();
@@ -20,13 +22,11 @@ export function steps(beatsOf: () => number[]) {
   const mm = gsap.matchMedia();
 
   mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
-    let lockUntil = 0;
-    let lastDelta = 0;
-    let lastTime = 0;
+    let dir = 1;
+    let quiet = 0;
     let wasNative = false;
 
     const limit = () => document.documentElement.scrollHeight - window.innerHeight;
-    const here = () => lenis.scroll;
     const beats = () => {
       const max = limit();
       const list = beatsOf()
@@ -37,36 +37,30 @@ export function steps(beatsOf: () => number[]) {
       for (const y of list) if (!out.length || y - out[out.length - 1] > TOL) out.push(y);
       return out;
     };
-    const next = (dir: number) => {
-      const y = here();
+    const next = (d: number, y: number, margin = TOL) => {
       const list = beats();
-      return dir > 0 ? list.find((b) => b > y + TOL) : list.reverse().find((b) => b < y - TOL);
+      return d > 0 ? list.find((b) => b > y + margin) : list.reverse().find((b) => b < y - margin);
     };
-    const nearest = () => {
-      const y = here();
-      return beats().reduce((best, b) => (Math.abs(b - y) < Math.abs(best - y) ? b : best));
-    };
-    const locked = () => performance.now() < lockUntil;
+    const nearest = (y: number) => beats().reduce((best, b) => (Math.abs(b - y) < Math.abs(best - y) ? b : best));
     const go = (y: number | undefined) => {
       if (y === undefined) return;
-      const duration = 0.8 + Math.min(0.8, Math.abs(y - here()) / 2000);
-      lockUntil = performance.now() + duration * 1000 + TAIL;
+      const duration = 0.8 + Math.min(1.6, Math.abs(y - lenis.scroll) / 1000);
       lenis.scrollTo(y, { duration, easing: ease });
     };
 
-    /* Wheel and trackpad. A gesture counts when its delta is not shrinking: momentum
-       decays, a fresh flick rises. Touch is left to the browser and settles below. */
+    /* Wheel and trackpad: let Lenis scroll, note the direction, and carry on once quiet.
+       Touch is left to the browser and settles below. */
+    const carryOn = () => {
+      const y = lenis.targetScroll;
+      const near = nearest(y);
+      go(Math.abs(near - y) <= SNAP ? near : (next(dir, y, SNAP) ?? near));
+    };
     setGestureHandler(({ deltaY, event }: VirtualScrollData) => {
-      if (event.type.startsWith('touch') || (event as WheelEvent).ctrlKey) return true;
-      if (event.cancelable) event.preventDefault();
-      const now = performance.now();
-      const d = Math.abs(deltaY);
-      const fresh = d >= lastDelta || now - lastTime > 200;
-      lastDelta = d;
-      lastTime = now;
-      if (locked() || d < MIN_DELTA || !fresh) return false;
-      go(next(Math.sign(deltaY)));
-      return false;
+      if (event.type.startsWith('touch') || (event as WheelEvent).ctrlKey || !deltaY) return true;
+      dir = Math.sign(deltaY);
+      window.clearTimeout(quiet);
+      quiet = window.setTimeout(carryOn, QUIET);
+      return true;
     });
 
     const onKey = (e: KeyboardEvent) => {
@@ -74,30 +68,32 @@ export function steps(beatsOf: () => number[]) {
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
       if (e.key === ' ' && t && /^(a|button)$/i.test(t.tagName)) return; /* space activates it */
-      let y: number | undefined;
+      const y = lenis.scroll;
+      let to: number | undefined;
       switch (e.key) {
         case 'ArrowDown':
         case 'PageDown':
-          y = next(1);
+          to = next(1, y);
           break;
         case 'ArrowUp':
         case 'PageUp':
-          y = next(-1);
+          to = next(-1, y);
           break;
         case ' ':
-          y = next(e.shiftKey ? -1 : 1);
+          to = next(e.shiftKey ? -1 : 1, y);
           break;
         case 'Home':
-          y = 0;
+          to = 0;
           break;
         case 'End':
-          y = limit();
+          to = limit();
           break;
         default:
           return;
       }
       e.preventDefault();
-      if (!locked()) go(y);
+      window.clearTimeout(quiet);
+      go(to);
     };
     window.addEventListener('keydown', onKey);
 
@@ -107,13 +103,14 @@ export function steps(beatsOf: () => number[]) {
       if (l.isScrolling === 'native') wasNative = true;
       else if (l.isScrolling === false && wasNative) {
         wasNative = false;
-        const b = nearest();
-        if (!locked() && Math.abs(b - here()) > TOL) go(b);
+        const b = nearest(l.scroll);
+        if (Math.abs(b - l.scroll) > TOL) go(b);
       }
     };
     lenis.on('scroll', onScroll);
 
     return () => {
+      window.clearTimeout(quiet);
       setGestureHandler(null);
       window.removeEventListener('keydown', onKey);
       lenis.off('scroll', onScroll);
