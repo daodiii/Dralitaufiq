@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import Lenis, { type VirtualScrollData } from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -8,12 +8,22 @@ export const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)'
 
 let lenis: Lenis | null = null;
 
+/* Installed by steps.ts once the page's beats are known: it sees every wheel and touch
+   gesture before Lenis does, and returning false drops the gesture. */
+export type GestureHandler = (data: VirtualScrollData) => boolean;
+let gesture: GestureHandler | null = null;
+
+export function setGestureHandler(fn: GestureHandler | null) {
+  gesture = fn;
+}
+
 if (!reduceMotion) {
   lenis = new Lenis({
     lerp: 0.085,
     smoothWheel: true,
     wheelMultiplier: 1,
     touchMultiplier: 1.4,
+    virtualScroll: (data) => (gesture ? gesture(data) : true),
   });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => {

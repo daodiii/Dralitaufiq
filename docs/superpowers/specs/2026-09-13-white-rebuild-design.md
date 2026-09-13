@@ -95,6 +95,23 @@ mockups (atlas, years, orbit, worlds, matn, stamps, between, names) are gone wit
 pages and `land-dots.json`; the drawn road from Madinah to Oslo that the parting replaced is in git
 history (commit a3f2d95).
 
+## Scrolling, beat by beat (2026-09-14)
+
+The page moves one beat per gesture. A wheel or trackpad flick, or Down/Up/PageDown/PageUp/Space/
+Home/End, glides to the next beat in 0.8-1.6 s (longer moves take longer) and ignores input until
+it lands plus a short tail; a gesture only counts while its delta is not shrinking, which is how
+trackpad momentum is told from a fresh flick. Scrollbar drags and touch scroll freely and settle on
+the nearest beat when they stop. Nav links, the wall's rail and deep links land where they point.
+Under 760px and with reduced motion nothing changes: those layouts are stacked and unpinned.
+
+The beats, read live from the pins and the layout: the banner at rest; the banner pulled back;
+the "Eighteen works" headline; the wall wide; the three stops; the index; the About headline,
+placed so the "All eighteen works" link shows above it; the pages meeting; the mission written
+(one gesture plays the whole parting); the biography with the footer on the last screen. Beats
+closer than 40px merge. `src/scripts/steps.ts` holds the controller, `smooth.ts` hands it every
+gesture before Lenis through Lenis's `virtualScroll` option, and `beats()` in `motion.ts` lists
+the positions.
+
 ## Assets
 
 - `src/assets/hero/portrait-open.jpg` (4096×1588) and `portrait-plate.jpg` (1180×1448): built from
@@ -113,6 +130,9 @@ Built with `astro build`, served with `astro preview` (4322). Screenshots at 144
 for the hero (first paint, banner at rest, scroll progress 20/40/55/70/100%, phone at rest and
 mid-pull), the wall at rest, at each of the three stops, mid-flight and pulled out, the parting at
 0/40/70/100% and the biography below it, the About stacked on the phone and with reduced motion, footer.
+Beat stepping: a headless run fires real wheel and key input and checks every landing both ways, a
+trackpad-shaped burst and a fast wheel spin each move one beat, and native jumps settle; phones
+and reduced motion still scroll freely.
 No console errors. Note for future sessions: the desktop app's browser pane cannot screenshot pinned/fixed
 layers once scrolled, and the Playwright MCP reorders batched calls; a scripted playwright-core
 runner against the Playwright headless shell is reliable. `motion.ts` exposes `window.ScrollTrigger`

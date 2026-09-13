@@ -2,6 +2,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import { getLenis, reduceMotion, scrollToY } from './smooth';
+import { steps } from './steps';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 (window as unknown as { ScrollTrigger: typeof ScrollTrigger }).ScrollTrigger = ScrollTrigger;
@@ -123,6 +124,9 @@ const HOLD = 0.55;
 /* Where the featured cover sits on screen (fractions of the stage). */
 const FX = 0.4;
 const FY = 0.5;
+
+/* Scroll positions of the wall's stops, for the beats; set while the wall is live. */
+let wallStops: () => number[] = () => [];
 
 function works() {
   const pin = $('.works__pin');
@@ -294,10 +298,9 @@ function works() {
     });
     render();
 
-    const jump = (i: number) => {
-      const t = tl.labels[`s${i}`] ?? 0;
-      scrollToY(st.start + (t / tl.duration()) * (st.end - st.start) + 2);
-    };
+    const at = (i: number) => st.start + ((tl.labels[`s${i}`] ?? 0) / tl.duration()) * (st.end - st.start);
+    const jump = (i: number) => scrollToY(at(i) + 2);
+    wallStops = () => stops.map((_, i) => at(i));
     const onDot = (e: Event) => jump(parseInt((e.currentTarget as HTMLElement).dataset.go || '0', 10));
     dots.forEach((d) => d.addEventListener('click', onDot));
 
@@ -322,6 +325,7 @@ function works() {
 
     return () => {
       ScrollTrigger.removeEventListener('refreshInit', measure);
+      wallStops = () => [];
       st.kill();
       tl.kill();
       dots.forEach((d) => d.removeEventListener('click', onDot));
@@ -408,6 +412,43 @@ function about() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Beats: where a scroll gesture lands                                  */
+/* ------------------------------------------------------------------ */
+
+/* Read live, so they follow resizes and refreshes: the banner at rest and pulled back,
+   the works headline, the wall wide, its stops and the index, the About headline (set so
+   the "all works" link still shows above it), the pages meeting, the mission written,
+   and the biography with the footer on the last screen. */
+function beats() {
+  const pins = ScrollTrigger.getAll().filter((t) => t.pin);
+  const pin = (sel: string) => pins.find((t) => (t.trigger as Element).matches(sel));
+  /* Layout tops rather than client rects: the reveal tweens translate these blocks. */
+  const top = (sel: string) => {
+    const el = $(sel);
+    if (!el) return NaN;
+    let y = 0;
+    for (let e: HTMLElement | null = el; e; e = e.offsetParent as HTMLElement | null) y += e.offsetTop;
+    return y;
+  };
+  const navH = $('.nav')?.getBoundingClientRect().height ?? 0;
+  const hero = pin('.hero');
+  const wall = pin('.works__pin');
+  const parting = pin('.about__pin');
+  return [
+    0,
+    hero ? hero.end : NaN,
+    top('#books'),
+    wall ? wall.start : NaN,
+    ...wallStops(),
+    wall ? wall.end : NaN,
+    Math.min(top('#about'), top('.works__all') - navH - 24),
+    parting ? parting.start : NaN,
+    parting ? parting.end : NaN,
+    document.documentElement.scrollHeight - window.innerHeight,
+  ];
+}
+
+/* ------------------------------------------------------------------ */
 /* Deep links                                                           */
 /* ------------------------------------------------------------------ */
 
@@ -444,6 +485,7 @@ function init() {
   about();
   ScrollTrigger.refresh();
   landOnHash();
+  steps(beats);
 }
 
 if (document.fonts && document.fonts.ready) {
