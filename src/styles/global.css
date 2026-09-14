@@ -120,13 +120,6 @@ button {
   color: var(--ink-3);
 }
 
-.mono {
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  letter-spacing: 0.01em;
-  color: var(--ink-3);
-  font-variant-numeric: tabular-nums;
-}
 
 .display--xl {
   font-size: clamp(3.4rem, 11.5vw, 12.5rem);

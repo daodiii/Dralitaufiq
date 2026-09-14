@@ -9,6 +9,10 @@
  */
 import { Image } from 'astro:assets';
 import { allBooks, featuredBooks, caption, dominantColour } from '../lib/books';
+import profile from '../data/profile.json';
+
+/* The bookstore link waits on its address; until profile.bookstore is set, nothing shows. */
+const store = profile.bookstore;
 
 const all = await allBooks();
 /* Three stops, one per row and one per language (see FEATURED in lib/books). */
@@ -44,8 +48,8 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
       Eighteen works. <em>Three languages.</em>
     </h2>
     <p class="works__lede" data-reveal data-delay="0.15">
-      The whole library on one wall. Scroll to walk up to it: three volumes come forward in turn, and at the end the
-      wall lights up entire.
+      Jurisprudence for Muslims in the West, dialogue between the Abrahamic faiths, the family and the unseen, in
+      Arabic, English and Somali.
     </p>
   </div>
 
@@ -92,12 +96,24 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
             </h3>
             {c.secondary && <p class="works__sec">{c.secondary}</p>}
             <p class="works__meta">{c.meta}</p>
-            <a class="link" href={c.href}>
-              Open the book
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-                <path d="M4 12L12 4M6 4h6v6" />
-              </svg>
-            </a>
+            <p class="works__links">
+              <a class="link" href={c.href}>
+                Open the book
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                  <path d="M4 12L12 4M6 4h6v6" />
+                </svg>
+              </a>
+              {
+                store && (
+                  <a class="link" href={store} target="_blank" rel="noopener">
+                    Visit the bookstore
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                      <path d="M4 12L12 4M6 4h6v6" />
+                    </svg>
+                  </a>
+                )
+              }
+            </p>
           </div>
         ))
       }
@@ -114,12 +130,23 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
   </div>
 
   <div class="container works__all" data-reveal>
-    <a class="btn btn--ghost" href="/books">
-      All eighteen works
-      <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-        <path d="M2 8h11M9 4l4 4-4 4" />
-      </svg>
-    </a>
+    {
+      store ? (
+        <a class="btn btn--ghost" href={store} target="_blank" rel="noopener">
+          Visit the bookstore
+          <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <path d="M2 8h11M9 4l4 4-4 4" />
+          </svg>
+        </a>
+      ) : (
+        <a class="btn btn--ghost" href="/books">
+          All eighteen works
+          <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <path d="M2 8h11M9 4l4 4-4 4" />
+          </svg>
+        </a>
+      )
+    }
   </div>
 </section>
 
@@ -243,13 +270,15 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
 
   .works__meta {
     margin-top: 0.9rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     line-height: 1.5;
     color: var(--ink-3);
   }
 
-  .works__cap .link {
+  .works__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.6rem;
     margin-top: 1.5rem;
   }
 

@@ -8,8 +8,8 @@ Supersedes the 2026-09-12 "lamp-lit study" spec, which is kept for reference.
 Scrap the dark site but keep it as a reference. The new page is white, very professional, very
 modern, and cinematic: three sections only (hero, books, about), motion everywhere, and it must
 represent the scholar's standing. The portrait is soft (a 2048×724 banner), so the hero must not
-blow it up. Typeface: the Geist family (Geist Sans for everything, Geist Mono for small labels),
-Amiri for Arabic. No template-looking parts.
+blow it up. Typeface: the Geist family (Geist Sans for everything; Geist Mono was used for small
+labels until 2026-09-14), Amiri for Arabic. No template-looking parts.
 
 ## Direction: "north light"
 
@@ -20,8 +20,11 @@ small marks (dots on the journey, the "New release" tag, focus rings, hover fill
 - Paper `oklch(98.6% 0.004 85)`, ink `oklch(19% 0.012 60)`, accent `oklch(46% 0.15 28)`. No pure
   black or white. Hairlines at 12% ink.
 - Geist Variable 500 for display with tight tracking (−0.035em to −0.06em); weight contrast
-  (500 vs 300) instead of italics for emphasis. Geist Mono at 0.72–0.74rem for captions, counters,
-  record labels and the rail.
+  (500 vs 300) instead of italics for emphasis. Small labels (record headings, captions, the pages'
+  tags, years) are Geist Sans at 0.8-0.86rem in ink-3, sentence case. On 2026-09-14 the user asked
+  for "all the AI things" to go: the "01 / 03" counters, the numbered rail and index labels, the
+  "Scroll" cue, every mono label, and copy that narrates the interaction. Geist Mono is no longer
+  loaded.
 - Motion: GSAP 3.15 (ScrollTrigger, SplitText) + Lenis. One orchestrated opening per hero, then
   scroll-driven work. Scroll tweens are created only after the intro completes so they never
   fight it. Everything respects `prefers-reduced-motion` and degrades without JS.
@@ -64,8 +67,11 @@ All eighteen covers hang as one 6 x 3 mosaic that fills the viewport, veiled and
 an archive. The section pins for about 4.7 viewports; scrolling flies the camera into the wall and
 through three stops, one per row and one per language: Arab Culture (the new release), Fiqh
 al-Mahjar (Arabic), Dawada Nafta (Somali). At a stop the featured cover blooms to colour at two
-thirds of the viewport height, the rest of the wall recedes into paper and the caption (mono
-counter, title, subtitle, record line, "Open the book") appears in a pool of light beside it.
+thirds of the viewport height, the rest of the wall recedes into paper and the caption ("New
+release" where it applies, title, subtitle, record line, "Open the book" and, once its address is
+set in `profile.bookstore`, "Visit the bookstore") appears in a pool of light beside it. The
+button after the wall becomes "Visit the bookstore" the same way; until then it stays "All
+eighteen works".
 Between stops the camera lifts and settles the way a map flies, and a torch of colour follows the
 focal point across the wall. At the end the camera pulls out to the whole library in colour with
 a numbered label under every cover, so the wall doubles as the index; every tile links to

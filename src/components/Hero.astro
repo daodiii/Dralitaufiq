@@ -57,8 +57,6 @@ const facebook = profile.social[0];
         </span>
       </a>
     </div>
-
-    <p class="hero__cue mono" data-open-cue><span class="in">Scroll<i aria-hidden="true"></i></span></p>
   </div>
   <div class="hero__calli hero__calli--open" data-open-calli aria-hidden="true"></div>
 
@@ -66,7 +64,7 @@ const facebook = profile.social[0];
     <div class="hero__lead" data-hero-lead>
       <div class="hero__calli hero__calli--page" data-hero="calli" role="img" aria-label={profile.nameArabic}></div>
       <h1 class="hero__name" data-hero="name">
-        <span class="hero__pre mono" data-hero-pre>Prof. Dr.</span>
+        <span class="hero__pre" data-hero-pre>Prof. Dr.</span>
         <span class="hero__mask"><span class="hero__line">Ali Mohamed</span></span>
         <span class="hero__mask"><span class="hero__line">Salah</span></span>
       </h1>
@@ -80,19 +78,19 @@ const facebook = profile.social[0];
 
       <dl class="hero__meta" data-hero="meta">
         <div>
-          <dt class="mono">Field</dt>
+          <dt>Field</dt>
           <dd>Comparative Religion</dd>
         </div>
         <div>
-          <dt class="mono">Post</dt>
+          <dt>Post</dt>
           <dd>Imam and khaṭīb, Oslo</dd>
         </div>
         <div>
-          <dt class="mono">Works</dt>
+          <dt>Works</dt>
           <dd>Eighteen, in three languages</dd>
         </div>
         <div class="hero__journey">
-          <dt class="mono">Formed in</dt>
+          <dt>Formed in</dt>
           <dd>{profile.journey.join(' · ')}</dd>
         </div>
       </dl>
@@ -114,7 +112,7 @@ const facebook = profile.social[0];
           <span class="hero__grain" aria-hidden="true"></span>
         </div>
       </div>
-      <figcaption class="hero__cap mono">
+      <figcaption class="hero__cap">
         <span>Prof. Dr. Ali Mohamed Salah</span>
         <span>{profile.city}</span>
       </figcaption>
@@ -278,46 +276,6 @@ const facebook = profile.social[0];
     display: block;
   }
 
-  .hero__cue {
-    position: absolute;
-    left: var(--gutter);
-    bottom: 2rem;
-    color: oklch(92% 0.01 80);
-    text-shadow: 0 1px 12px rgb(0 0 0 / 0.5);
-  }
-
-  .hero__cue .in {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.8rem;
-  }
-
-  .hero__cue i {
-    display: block;
-    width: 2.6rem;
-    height: 1px;
-    background: currentColor;
-    animation: sweep 2.6s var(--ease-in-out) infinite;
-  }
-
-  @keyframes sweep {
-    0% {
-      transform: scaleX(0);
-      transform-origin: left;
-    }
-    45% {
-      transform: scaleX(1);
-      transform-origin: left;
-    }
-    55% {
-      transform: scaleX(1);
-      transform-origin: right;
-    }
-    100% {
-      transform: scaleX(0);
-      transform-origin: right;
-    }
-  }
 
   /* ---------- gilded calligraphy ---------- */
 
@@ -414,7 +372,10 @@ const facebook = profile.social[0];
   .hero__pre {
     display: block;
     margin-bottom: clamp(0.5rem, 1.2vh, 0.9rem);
-    letter-spacing: 0.04em;
+    font-size: 0.82rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--ink-3);
   }
 
   .hero__mask {
@@ -539,6 +500,8 @@ const facebook = profile.social[0];
     justify-content: space-between;
     gap: 1rem;
     margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--ink-3);
   }
 
   /* ---------- record ---------- */
@@ -555,6 +518,8 @@ const facebook = profile.social[0];
 
   .hero__meta dt {
     margin-bottom: clamp(0.2rem, 0.5vh, 0.4rem);
+    font-size: 0.8rem;
+    color: var(--ink-3);
   }
 
   .hero__meta dd {
@@ -664,12 +629,6 @@ const facebook = profile.social[0];
       font-size: clamp(1.05rem, 4.6vw, 1.4rem);
     }
 
-    .hero__cue {
-      right: auto;
-      left: var(--gutter);
-      bottom: 3vh;
-    }
-
     .hero__plate {
       max-width: none;
     }
@@ -686,8 +645,7 @@ const facebook = profile.social[0];
       margin-top: calc(-1 * var(--nav-h));
     }
 
-    .hero__calli--open,
-    .hero__cue {
+    .hero__calli--open {
       display: none;
     }
 
@@ -717,8 +675,7 @@ const facebook = profile.social[0];
   const sub = q('[data-open-sub]');
   const latin = q('[data-open-latin]');
   const handle = q('[data-open-handle]');
-  const cue = q('[data-open-cue]');
-  const inner = root ? Array.from(root.querySelectorAll<HTMLElement>('.hero__title .in, .hero__cue .in')) : [];
+  const inner = root ? Array.from(root.querySelectorAll<HTMLElement>('.hero__title .in')) : [];
   const calli = q('[data-hero="calli"]');
   const lead = q('[data-hero-lead]');
   const name = q('[data-hero="name"]');
@@ -814,7 +771,7 @@ const facebook = profile.social[0];
     scrub = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
     scrub
       .set(plate, { autoAlpha: 1 }, 0)
-      .to([sub, latin, handle, cue].filter(Boolean), { autoAlpha: 0, y: -12, duration: 0.18, stagger: 0.02 }, 0.05)
+      .to([sub, latin, handle].filter(Boolean), { autoAlpha: 0, y: -12, duration: 0.18, stagger: 0.02 }, 0.05)
       .fromTo(
         open,
         { clipPath: 'inset(0px 0px 0px 0px round 0px)' },
@@ -858,7 +815,7 @@ const facebook = profile.social[0];
     scrub?.kill();
     st = null;
     scrub = null;
-    const targets = [open, openMedia, openCalli, sub, latin, handle, cue, calli, name, pre, lede, cta, plate, stack, bloom, meta, ...lines]
+    const targets = [open, openMedia, openCalli, sub, latin, handle, calli, name, pre, lede, cta, plate, stack, bloom, meta, ...lines]
       .filter(Boolean) as HTMLElement[];
     gsap.set(targets, { clearProps: 'all' });
     if (meta) gsap.set(Array.from(meta.children), { clearProps: 'all' });
@@ -873,7 +830,6 @@ const facebook = profile.social[0];
     const subIn = sub?.querySelector<HTMLElement>('.in');
     const latinIn = latin?.querySelector<HTMLElement>('.in');
     const handleIn = handle?.querySelector<HTMLElement>('.in');
-    const cueIn = cue?.querySelector<HTMLElement>('.in');
     if (subIn) tl.fromTo(subIn, { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 1 }, 0.5);
     tl.fromTo(
       openCalli,
@@ -883,7 +839,6 @@ const facebook = profile.social[0];
     );
     if (latinIn) tl.fromTo(latinIn, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 1 }, 1.4);
     if (handleIn) tl.fromTo(handleIn, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9 }, 1.7);
-    if (cueIn) tl.fromTo(cueIn, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9 }, 2.0);
     if (bar) tl.fromTo(bar, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1 }, 0.8);
   }
 
