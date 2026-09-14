@@ -4,7 +4,8 @@
  * official-page line, his name in gilded calligraphy, the Latin name and the
  * handle, all live layers over the text-free photograph. Scrolling pulls the
  * camera back: the room shrinks around his face and lands on a printed plate,
- * the gold flies with it onto the paper, and the page assembles.
+ * the gold flies with it onto the paper, and the page assembles as a folio:
+ * a card ruled in gold with corner marks, his gilded name as its heading.
  */
 import { Image, getImage } from 'astro:assets';
 import banner from '../assets/hero/portrait-open.jpg';
@@ -61,6 +62,11 @@ const facebook = profile.social[0];
   <div class="hero__calli hero__calli--open" data-open-calli aria-hidden="true"></div>
 
   <div class="container hero__grid">
+    <span class="hero__frame" aria-hidden="true"></span>
+    <span class="hero__corner hero__corner--tl" aria-hidden="true"></span>
+    <span class="hero__corner hero__corner--tr" aria-hidden="true"></span>
+    <span class="hero__corner hero__corner--bl" aria-hidden="true"></span>
+    <span class="hero__corner hero__corner--br" aria-hidden="true"></span>
     <div class="hero__lead" data-hero-lead>
       <div class="hero__calli hero__calli--page" data-hero="calli" role="img" aria-label={profile.nameArabic}></div>
       <h1 class="hero__name" data-hero="name">
@@ -305,7 +311,9 @@ const facebook = profile.social[0];
   }
 
   .hero__calli--page {
-    width: min(250px, 62%, 28vh);
+    width: min(100%, 58vh, 560px);
+    margin-bottom: 0.4rem;
+    filter: drop-shadow(0 12px 22px oklch(61% 0.125 82 / 0.22));
   }
 
   /* ---------- the page: a card on the paper ---------- */
@@ -321,8 +329,11 @@ const facebook = profile.social[0];
     column-gap: clamp(1rem, 2vw, 2rem);
     align-content: center;
     align-items: end;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     margin-block: 2vh 2.5vh;
-    padding: var(--card-pad);
+    padding: calc(var(--card-pad) + 12px);
     background: var(--paper-2);
     border: 1px solid var(--line);
     border-radius: 22px;
@@ -334,9 +345,11 @@ const facebook = profile.social[0];
   .hero__lead {
     grid-column: 1 / 7;
     grid-row: 1;
+    position: relative;
+    z-index: 1;
     align-self: end;
     display: grid;
-    gap: clamp(0.7rem, 2vh, 1.4rem);
+    gap: clamp(0.7rem, 1.8vh, 1.2rem);
     justify-items: start;
   }
 
@@ -402,10 +415,12 @@ const facebook = profile.social[0];
   .hero__plate {
     grid-column: 8 / 13;
     grid-row: 1;
+    position: relative;
+    z-index: 1;
     align-self: end;
     justify-self: end;
     width: 100%;
-    max-width: min(560px, calc((100svh - var(--nav-h) - 4.5vh - 2 * var(--card-pad) - 2.5rem) * 0.815));
+    max-width: min(560px, calc((100svh - var(--nav-h) - 4.5vh - 2 * var(--card-pad) - 24px - 2.5rem) * 0.815));
     margin: 0;
     perspective: 1300px;
   }
@@ -485,10 +500,66 @@ const facebook = profile.social[0];
     color: var(--ink-3);
   }
 
+  /* ---------- the folio: a double gold rule inside the card, corner marks ---------- */
+
+  .hero__frame {
+    position: absolute;
+    inset: 14px;
+    border: 1px solid oklch(61% 0.125 82 / 0.55);
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-out);
+  }
+
+  .hero__frame::after {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border: 1px solid oklch(61% 0.125 82 / 0.3);
+    border-radius: 8px;
+  }
+
+  .hero__corner {
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    background: linear-gradient(135deg, var(--gold-2), var(--gold-3));
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 1.2s var(--ease-out);
+    pointer-events: none;
+  }
+
+  .hero__corner--tl {
+    left: 10px;
+    top: 10px;
+  }
+
+  .hero__corner--tr {
+    right: 10px;
+    top: 10px;
+  }
+
+  .hero__corner--bl {
+    left: 10px;
+    bottom: 10px;
+  }
+
+  .hero__corner--br {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .hero.is-page .hero__frame,
+  .hero.is-page .hero__corner {
+    opacity: 1;
+  }
+
   /* Short laptop screens: a little less air so the card still fits. */
   @media (min-width: 1001px) and (max-height: 700px) {
     .hero__calli--page {
-      width: min(250px, 62%, 24vh);
+      width: min(100%, 48vh, 560px);
     }
 
     .hero__lead {
@@ -580,7 +651,7 @@ const facebook = profile.social[0];
     }
 
     .hero__grid {
-      padding: 1.25rem;
+      padding: calc(1.25rem + 12px);
       border-radius: 16px;
     }
   }
@@ -747,6 +818,7 @@ const facebook = profile.social[0];
         const p = self.progress;
         bar?.classList.toggle('is-light', p < 0.32);
         stack.classList.toggle('is-set', p > 0.66);
+        root.classList.toggle('is-page', p > 0.5);
       },
     });
     bar?.classList.add('is-light');
@@ -808,6 +880,7 @@ const facebook = profile.social[0];
       const all = [calli, name, lede, cta, plate, bar].filter(Boolean) as HTMLElement[];
       gsap.set(all, { autoAlpha: 1, clearProps: 'transform,clipPath' });
       stack?.classList.add('is-set');
+      root.classList.add('is-page');
       if (bloom) gsap.set(bloom, { autoAlpha: 1 });
       return;
     }

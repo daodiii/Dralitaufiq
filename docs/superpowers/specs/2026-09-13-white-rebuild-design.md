@@ -48,9 +48,13 @@ flies to its place above the name, and the page assembles (name, lede, link, rec
 tilts, its shadow deepens, a lamp-coloured glow spills onto the paper). Since 2026-09-14 the
 assembled page is a card: warmer paper (`--paper-2`), hairline border, 22px radius, a soft
 shadow, inset from the viewport by the gutter, which the banner uncovers as it shrinks into the
-plate. The text column (calligraphy, name, lede, link) and the plate are bottom-aligned and centred
-in the card; the Field/Post/Works/Formed-in record that sat under the link was dropped the same
-day as a label grid, its facts being in the lede. The card is sized by viewport
+plate. Later that day the card became a folio (chosen from three mockups: a monumental gold relief
+of the name behind the content, this folio, and a "lantern" of lamp light with a girih pattern): a
+double gold rule inside the card's edge with gold corner marks, fading in as the page assembles,
+and the gilded name set large as the heading of the text column (up to 58vh wide, 48vh on short
+screens), casting a soft gold glow. The text column (calligraphy, name, lede, link) and the plate are
+bottom-aligned and centred in the card; the Field/Post/Works/Formed-in record that sat under the
+link was dropped the same day as a label grid, its facts being in the lede. The card is sized by viewport
 height too (calligraphy, gaps, lede, record and the plate's width follow `vh`, tighter under
 700px tall) so the whole of it is on screen while pinned, on laptop screens included; on phones
 the same card holds the stacked order. Both images come from the
