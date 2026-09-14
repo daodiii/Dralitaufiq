@@ -218,10 +218,19 @@ function works() {
       tiles.forEach((t, k) => t.classList.toggle('is-focus', i >= 0 && k === stops[i]));
     };
 
-    /* While the wall is in flight the covers ignore the pointer, or each one would flash to
-       colour as it slid under a still cursor; hover returns once the wall has settled. */
+    /* Hover is done by hand: Chrome's :hover flickers on covers inside the tilting camera,
+       while hit-testing is steady. While the wall is in flight the covers ignore the pointer,
+       or each one would flash to colour as it slid under a still cursor. */
+    let hovered: HTMLElement | null = null;
+    const hover = (el: HTMLElement | null) => {
+      if (el === hovered) return;
+      hovered?.classList.remove('is-hover');
+      hovered = el;
+      hovered?.classList.add('is-hover');
+    };
     let still = 0;
     const moving = () => {
+      hover(null);
       pin.classList.add('is-moving');
       window.clearTimeout(still);
       still = window.setTimeout(() => pin.classList.remove('is-moving'), 160);
@@ -324,10 +333,13 @@ function works() {
         const ny = e.clientY / window.innerHeight - 0.5;
         ry(nx * 4);
         rx(-ny * 3);
+        const under = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement | null;
+        hover(pin.classList.contains('is-moving') ? null : (under?.closest<HTMLElement>('.works__tile') ?? null));
       };
       onLeave = () => {
         rx(0);
         ry(0);
+        hover(null);
       };
       pin.addEventListener('pointermove', onMove);
       pin.addEventListener('pointerleave', onLeave);
@@ -336,6 +348,7 @@ function works() {
     return () => {
       ScrollTrigger.removeEventListener('refreshInit', measure);
       window.clearTimeout(still);
+      hover(null);
       pin.classList.remove('is-moving');
       wallStops = () => [];
       st.kill();

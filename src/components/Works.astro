@@ -210,13 +210,14 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
     pointer-events: none;
   }
 
-  .works__tile:hover .works__img :global(img),
+  /* Hover is set by the script (is-hover): see works() in motion.ts. */
+  .works__tile.is-hover .works__img :global(img),
   .works__tile:focus-visible .works__img :global(img) {
     filter: none;
     transition: filter 0.45s var(--ease-out);
   }
 
-  .works__tile:hover .works__img::after,
+  .works__tile.is-hover .works__img::after,
   .works__tile:focus-visible .works__img::after {
     opacity: 0;
     transition: opacity 0.45s var(--ease-out);
@@ -375,7 +376,9 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
   .is-3d .works__camera {
     position: absolute;
     inset: 0;
-    transform-style: preserve-3d;
+    /* Flat, not preserve-3d: nothing inside has depth, and with preserve-3d Chrome's hit-testing
+       misses the covers whenever the camera is tilted, so hover and clicks flickered. */
+    transform-style: flat;
   }
 
   /* The wall is laid out big and scaled down, so zooming in never upscales a raster. */

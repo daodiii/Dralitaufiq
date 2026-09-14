@@ -86,7 +86,9 @@ degrees.
 Implementation notes: the grid is laid out at 380 x 570 px tiles and only ever scaled down, so no
 raster is upscaled. The camera is stored as the grid point under the focal spot plus a scale, so
 travel and zoom are independent; targets are function-based and the trigger uses
-`invalidateOnRefresh`. Shared book helpers (featured list, captions, dominant jacket colour via
+`invalidateOnRefresh`. The camera is `transform-style: flat`: with `preserve-3d` Chrome's hit-testing
+missed the covers whenever the camera was tilted, so hover (and clicks) flickered; hover is set by
+the script from `elementFromPoint` and suspended while the wall is in flight. Shared book helpers (featured list, captions, dominant jacket colour via
 sharp) live in `src/lib/books.ts`. Under 760px or with reduced motion the same markup flows as a
 labelled index grid. Deep links (`/#books`) re-land after each ScrollTrigger refresh for four
 seconds because the pinned hero grows its spacer after the browser's own jump.
