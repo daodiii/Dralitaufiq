@@ -136,6 +136,17 @@ const facebook = profile.social[0];
     display: none;
   }
 
+  /* The banner's lines arrive with the intro; they must not paint before it. */
+  html.js .hero__title .in {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.js .hero__title .in {
+      opacity: 1;
+    }
+  }
+
   .hero__open-media,
   .hero__open-zoom {
     position: absolute;
