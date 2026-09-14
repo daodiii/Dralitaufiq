@@ -398,6 +398,10 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
     width: 380px;
   }
 
+  .is-3d.is-moving .works__grid {
+    pointer-events: none;
+  }
+
   .is-3d .works__img {
     height: 570px;
     box-shadow:

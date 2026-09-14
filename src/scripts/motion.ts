@@ -218,7 +218,17 @@ function works() {
       tiles.forEach((t, k) => t.classList.toggle('is-focus', i >= 0 && k === stops[i]));
     };
 
+    /* While the wall is in flight the covers ignore the pointer, or each one would flash to
+       colour as it slid under a still cursor; hover returns once the wall has settled. */
+    let still = 0;
+    const moving = () => {
+      pin.classList.add('is-moving');
+      window.clearTimeout(still);
+      still = window.setTimeout(() => pin.classList.remove('is-moving'), 160);
+    };
+
     const render = () => {
+      moving();
       const tx = FX * sw - cam.gx * cam.s;
       const ty = FY * sh - cam.gy * cam.s;
       gsap.set(grid, { x: tx, y: ty, scale: cam.s });
@@ -325,6 +335,8 @@ function works() {
 
     return () => {
       ScrollTrigger.removeEventListener('refreshInit', measure);
+      window.clearTimeout(still);
+      pin.classList.remove('is-moving');
       wallStops = () => [];
       st.kill();
       tl.kill();
