@@ -91,8 +91,11 @@ hairline. The left page is "Formation", the 1991-2020 record (year, degree, wher
 rows set against the seam; the right is "Today", his four posts and the "Earlier" line with the
 languages. Scrolling parts the pages 14vw each and fades the records to 28%; standing between the
 pages is his portrait, in colour and still (26vw, 56svh); then the mission writes itself word by
-word across the foot of both pages with a pool of paper behind it. Below the pin, the two-paragraph
-biography at the reading measure; the mission and the roles are not repeated there. Under 760px or
+word across the foot of both pages with a pool of paper behind it. Below the pin, the biography on a
+centred card of the hero's warmer paper (chosen 2026-09-14 from three mockups: a centred lead column,
+a two-column spread with a drop capital, and this framed one): his gilded name as an emblem, the first
+paragraph set larger, the second at reading size, all centred; the mission and the roles are not
+repeated there. Under 760px or
 with reduced motion the same markup flows stacked, without the pin.
 
 Implementation notes: the parting is three numbers (`gap`, `fade`, `mission`) tweened on a paused

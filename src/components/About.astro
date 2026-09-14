@@ -4,15 +4,18 @@
  * hairline: his formation on the left and his posts today on the right, as
  * hairline records set against the seam. Scrolling parts the pages, and
  * standing between them is his portrait, still; his mission then writes
- * itself across the foot of both. Below the pin, the biography. Phones and
- * reduced motion get the same content stacked, without the pin.
+ * itself across the foot of both. Below the pin, the biography on a card of
+ * the hero's warmer paper, his gilded name above it. Phones and reduced
+ * motion get the same content stacked, without the pin.
  */
 import { Image } from 'astro:assets';
 import portrait from '../assets/about/portrait-studio.jpg';
+import calligraphy from '../assets/hero/calligraphy-name.png';
 import profile from '../data/profile.json';
 
 const formation = profile.timeline.filter((t) => t.year !== 'Today');
 const words = profile.mission.split(' ');
+const [lead, ...body] = profile.aboutLead;
 ---
 
 <section class="about" id="about" aria-labelledby="about-title">
@@ -94,12 +97,12 @@ const words = profile.mission.split(' ');
     </div>
   </div>
 
-  <div class="container about__bio" id="bio">
-    <slot name="bio">
-      <div class="about__body prose" data-reveal data-delay="0.1">
-        {profile.aboutLead.map((p) => <p>{p}</p>)}
-      </div>
-    </slot>
+  <div class="container about__bio">
+    <div class="about__card" data-reveal data-delay="0.1" style={`--calli: url(${calligraphy.src})`}>
+      <span class="about__calli" role="img" aria-label={profile.nameArabic}></span>
+      <p class="about__lead">{lead}</p>
+      {body.map((p) => <p class="about__body">{p}</p>)}
+    </div>
   </div>
 </section>
 
@@ -236,14 +239,60 @@ const words = profile.mission.split(' ');
     text-wrap: pretty;
   }
 
-  /* ---------- the biography ---------- */
+  /* ---------- the biography, framed ---------- */
 
   .about__bio {
     padding-block: clamp(4rem, 8vw, 7rem) clamp(5rem, 10vw, 9rem);
   }
 
+  .about__card {
+    max-width: 54rem;
+    margin-inline: auto;
+    padding: clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 5vw, 5rem);
+    text-align: center;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow:
+      0 1px 2px oklch(19% 0.012 60 / 0.04),
+      0 30px 70px -36px oklch(19% 0.012 60 / 0.3);
+  }
+
+  .about__calli {
+    display: block;
+    width: min(11rem, 50%);
+    aspect-ratio: 885 / 310;
+    margin: 0 auto clamp(1.6rem, 3vw, 2.4rem);
+    background-image: linear-gradient(
+      112deg,
+      var(--gold-3) 0%,
+      var(--gold) 30%,
+      var(--gold-2) 50%,
+      var(--gold) 70%,
+      var(--gold-3) 100%
+    );
+    background-size: 220% 100%;
+    -webkit-mask: var(--calli) center / contain no-repeat;
+    mask: var(--calli) center / contain no-repeat;
+  }
+
+  .about__lead {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.2rem, 1.6vw, 1.45rem);
+    line-height: 1.4;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
   .about__body {
-    font-size: 1.08rem;
+    max-width: 40rem;
+    margin: clamp(1.2rem, 2vw, 1.7rem) auto 0;
+    font-size: 1.02rem;
+    line-height: 1.66;
+    color: var(--ink-2);
+    text-wrap: pretty;
   }
 
   /* ---------- flowing layout (small screens, reduced motion) ---------- */
@@ -368,6 +417,12 @@ const words = profile.mission.split(' ');
     opacity: 0;
     display: inline-block;
     transform: translateY(0.35em);
+  }
+
+  @media (max-width: 760px) {
+    .about__card {
+      border-radius: 16px;
+    }
   }
 
   @media (max-width: 900px) {
