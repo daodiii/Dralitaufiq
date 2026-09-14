@@ -55,5 +55,3 @@ export async function dominantColour(order: number) {
   colourCache.set(order, colour);
   return colour;
 }
-
-export const pad = (n: number) => String(n).padStart(2, '0');

@@ -94,10 +94,12 @@ const words = profile.mission.split(' ');
     </div>
   </div>
 
-  <div class="container about__bio">
-    <div class="about__body prose" data-reveal data-delay="0.1">
-      {profile.aboutLead.map((p) => <p>{p}</p>)}
-    </div>
+  <div class="container about__bio" id="bio">
+    <slot name="bio">
+      <div class="about__body prose" data-reveal data-delay="0.1">
+        {profile.aboutLead.map((p) => <p>{p}</p>)}
+      </div>
+    </slot>
   </div>
 </section>
 

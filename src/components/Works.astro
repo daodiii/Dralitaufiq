@@ -8,7 +8,7 @@
  * The flight itself lives in scripts/motion.ts (works()).
  */
 import { Image } from 'astro:assets';
-import { allBooks, featuredBooks, caption, dominantColour, pad } from '../lib/books';
+import { allBooks, featuredBooks, caption, dominantColour } from '../lib/books';
 
 const all = await allBooks();
 /* Three stops, one per row and one per language (see FEATURED in lib/books). */
@@ -36,7 +36,6 @@ const tiles = await Promise.all(
 );
 
 const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
-const total = pad(caps.length);
 ---
 
 <section class="works" id="books" aria-labelledby="works-title">
@@ -74,7 +73,6 @@ const total = pad(caps.length);
                   />
                 </span>
                 <span class="works__lbl" aria-hidden="true">
-                  <b>{pad(t.order + 1)}</b>
                   <span>{t.label}</span>
                 </span>
               </a>
@@ -88,10 +86,7 @@ const total = pad(caps.length);
       {
         caps.map((c) => (
           <div class="works__cap" data-cap>
-            <p class="works__num">
-              <span>{pad(c.i + 1)}</span> / {total}
-              {c.entry.data.badge && <em>{c.entry.data.badge}</em>}
-            </p>
+            {c.entry.data.badge && <p class="works__badge">{c.entry.data.badge}</p>}
             <h3 class="works__title display display--md" lang={c.entry.data.language}>
               {c.entry.data.title}
             </h3>
@@ -112,9 +107,7 @@ const total = pad(caps.length);
       <span class="works__rail-line" aria-hidden="true"><i class="works__rail-fill"></i></span>
       {
         caps.map((c) => (
-          <button class="works__dot" type="button" data-go={c.i} aria-label={`Go to ${c.entry.data.title}`}>
-            {pad(c.i + 1)}
-          </button>
+          <button class="works__dot" type="button" data-go={c.i} aria-label={`Go to ${c.entry.data.title}`} />
         ))
       }
     </div>
@@ -204,20 +197,12 @@ const total = pad(caps.length);
 
   .works__lbl {
     display: flex;
-    gap: 0.6em;
-    align-items: baseline;
     margin-top: 0.7rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     line-height: 1.3;
-    color: var(--ink-3);
+    color: var(--ink-2);
     white-space: nowrap;
     overflow: hidden;
-  }
-
-  .works__lbl b {
-    font-weight: 500;
-    color: var(--ink);
   }
 
   .works__lbl > span {
@@ -227,23 +212,9 @@ const total = pad(caps.length);
 
   /* ---------- captions ---------- */
 
-  .works__num {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    color: var(--ink-4);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .works__num > span {
-    color: var(--ink);
-  }
-
-  .works__num em {
-    margin-left: 0.8rem;
-    font-style: normal;
+  .works__badge {
+    font-size: 0.8rem;
+    font-weight: 500;
     color: var(--accent);
   }
 
@@ -308,11 +279,8 @@ const total = pad(caps.length);
 
   .works__dot {
     position: relative;
-    padding-left: 1.4rem;
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    color: var(--ink-4);
-    transition: color 0.4s;
+    width: 1.2rem;
+    height: 1.2rem;
   }
 
   .works__dot::after {
@@ -331,9 +299,8 @@ const total = pad(caps.length);
       box-shadow 0.4s;
   }
 
-  .works__dot:hover,
-  .works__dot.is-active {
-    color: var(--ink);
+  .works__dot:hover::after {
+    box-shadow: inset 0 0 0 1px var(--ink);
   }
 
   .works__dot.is-active::after {
