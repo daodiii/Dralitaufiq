@@ -43,7 +43,6 @@ const [lead, ...body] = profile.aboutLead;
       </figure>
 
       <div class="about__page about__page--l">
-        <p class="about__tag">Formation</p>
         <div class="about__slot">
           <div class="about__records about__records--l">
             <dl class="about__rows">
@@ -64,7 +63,6 @@ const [lead, ...body] = profile.aboutLead;
       </div>
 
       <div class="about__page about__page--r">
-        <p class="about__tag">Today</p>
         <div class="about__slot">
           <div class="about__records about__records--r">
             <dl class="about__rows">
@@ -78,8 +76,10 @@ const [lead, ...body] = profile.aboutLead;
               }
             </dl>
             <p class="about__past">
-              Earlier: {profile.past.join('; ')}. He writes in Arabic, English and Somali, and teaches also in Norwegian
-              and Malay.
+              Before Norway he directed the Arabic Language Institute for Non-Native Speakers at IKIP in Malaysia and
+              the twinning programme between IKIP and Jordanian universities, and lectured at the International
+              Islamic University of Malaysia in Kuantan. He writes in Arabic, English and Somali, and teaches also in
+              Norwegian and Malay.
             </p>
           </div>
         </div>
@@ -117,11 +117,6 @@ const [lead, ...body] = profile.aboutLead;
 
   .about__head h2 {
     max-width: 22ch;
-  }
-
-  .about__tag {
-    font-size: 0.82rem;
-    color: var(--ink-3);
   }
 
   .about__photo {
@@ -310,11 +305,6 @@ const [lead, ...body] = profile.aboutLead;
     aspect-ratio: 4 / 5;
   }
 
-  .about__pin:not(.is-live) .about__page {
-    display: grid;
-    gap: 0.8rem;
-  }
-
   .about__pin:not(.is-live) .about__records {
     height: auto;
     justify-self: start;
@@ -364,8 +354,6 @@ const [lead, ...body] = profile.aboutLead;
     background: var(--paper);
     overflow: hidden;
     display: grid;
-    grid-template-rows: auto 1fr;
-    gap: 1.6rem;
     z-index: 2;
   }
 
@@ -380,12 +368,7 @@ const [lead, ...body] = profile.aboutLead;
     transform: translateX(calc(var(--gap) * 14vw));
   }
 
-  .is-live .about__page--r .about__tag {
-    text-align: right;
-  }
-
   .is-live .about__slot {
-    grid-row: 2;
     min-height: 0;
     opacity: calc(1 - var(--fade) * 0.72);
   }

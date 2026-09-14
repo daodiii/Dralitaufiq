@@ -48,8 +48,9 @@ flies to its place above the name, and the page assembles (name, lede, link, rec
 tilts, its shadow deepens, a lamp-coloured glow spills onto the paper). Since 2026-09-14 the
 assembled page is a card: warmer paper (`--paper-2`), hairline border, 22px radius, a soft
 shadow, inset from the viewport by the gutter, which the banner uncovers as it shrinks into the
-plate. The record (Field, Post, Works, Formed in) sits as a 2x2 block under the link, and the text
-column and the plate are bottom-aligned and centred in the card. The card is sized by viewport
+plate. The text column (calligraphy, name, lede, link) and the plate are bottom-aligned and centred
+in the card; the Field/Post/Works/Formed-in record that sat under the link was dropped the same
+day as a label grid, its facts being in the lede. The card is sized by viewport
 height too (calligraphy, gaps, lede, record and the plate's width follow `vh`, tighter under
 700px tall) so the whole of it is on screen while pinned, on laptop screens included; on phones
 the same card holds the stacked order. Both images come from the
@@ -68,10 +69,10 @@ an archive. The section pins for about 4.7 viewports; scrolling flies the camera
 through three stops, one per row and one per language: Arab Culture (the new release), Fiqh
 al-Mahjar (Arabic), Dawada Nafta (Somali). At a stop the featured cover blooms to colour at two
 thirds of the viewport height, the rest of the wall recedes into paper and the caption ("New
-release" where it applies, title, subtitle, record line, "Open the book" and, once its address is
-set in `profile.bookstore`, "Visit the bookstore") appears in a pool of light beside it. The
-button after the wall becomes "Visit the bookstore" the same way; until then it stays "All
-eighteen works".
+release" where it applies, title, subtitle, record line, "Open the book" and "Visit the
+bookstore") appears in a pool of light beside it. The button after the wall is "Visit the
+bookstore" too. The address is `profile.bookstore`; the old site's /books page stands in until the
+user sends the store.
 Between stops the camera lifts and settles the way a map flies, and a torch of colour follows the
 focal point across the wall. At the end the camera pulls out to the whole library in colour with
 a numbered label under every cover, so the wall doubles as the index; every tile links to
@@ -93,9 +94,9 @@ pages; the tracking shot they replaced is in git history (commit 7de7dd7).
 ### About, "the parting" (chosen 2026-09-13 from nine mockups)
 
 Headline, then a stage pinned for 2.4 viewports: two paper pages fill the viewport and meet at a
-hairline. The left page is "Formation", the 1991-2020 record (year, degree, where) as hairline
-rows set against the seam; the right is "Today", his four posts and the "Earlier" line with the
-languages. Scrolling parts the pages 14vw each and fades the records to 28%; standing between the
+hairline. The left page carries the 1991-2020 record (year, degree, where) as hairline rows set
+against the seam; the right his four posts and a sentence on his earlier posts and languages
+(the "Formation"/"Today" tags and the "Earlier:" label went on 2026-09-14 as label furniture). Scrolling parts the pages 14vw each and fades the records to 28%; standing between the
 pages is his portrait, in colour and still (26vw, 56svh); then the mission writes itself word by
 word across the foot of both pages with a pool of paper behind it. Below the pin, the biography on a
 centred card of the hero's warmer paper (chosen 2026-09-14 from three mockups: a centred lead column,

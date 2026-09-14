@@ -75,25 +75,6 @@ const facebook = profile.social[0];
           <path d="M2 8h11M9 4l4 4-4 4" />
         </svg>
       </a>
-
-      <dl class="hero__meta" data-hero="meta">
-        <div>
-          <dt>Field</dt>
-          <dd>Comparative Religion</dd>
-        </div>
-        <div>
-          <dt>Post</dt>
-          <dd>Imam and khaṭīb, Oslo</dd>
-        </div>
-        <div>
-          <dt>Works</dt>
-          <dd>Eighteen, in three languages</dd>
-        </div>
-        <div class="hero__journey">
-          <dt>Formed in</dt>
-          <dd>{profile.journey.join(' · ')}</dd>
-        </div>
-      </dl>
     </div>
 
     <figure class="hero__plate" data-hero="plate">
@@ -504,33 +485,6 @@ const facebook = profile.social[0];
     color: var(--ink-3);
   }
 
-  /* ---------- record ---------- */
-
-  .hero__meta {
-    justify-self: stretch;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(0.6rem, 1.4vh, 1.1rem) 2rem;
-    margin-top: 0.4rem;
-    padding-top: clamp(0.8rem, 1.6vh, 1.2rem);
-    border-top: 1px solid var(--line);
-  }
-
-  .hero__meta dt {
-    margin-bottom: clamp(0.2rem, 0.5vh, 0.4rem);
-    font-size: 0.8rem;
-    color: var(--ink-3);
-  }
-
-  .hero__meta dd {
-    font-size: clamp(0.84rem, 1.9vh, 0.92rem);
-    color: var(--ink);
-  }
-
-  .hero__journey dd {
-    color: var(--ink-2);
-  }
-
   /* Short laptop screens: a little less air so the card still fits. */
   @media (min-width: 1001px) and (max-height: 700px) {
     .hero__calli--page {
@@ -584,14 +538,6 @@ const facebook = profile.social[0];
 
     .hero__go {
       order: 5;
-    }
-
-    .hero__meta {
-      order: 6;
-      grid-column: 1;
-      grid-row: auto;
-      gap: 1.4rem 2rem;
-      margin-top: 1rem;
     }
   }
 
@@ -688,7 +634,6 @@ const facebook = profile.social[0];
   const photo = q('[data-hero-photo]');
   const bloom = q('[data-hero-bloom]');
   const sheen = q('[data-hero-sheen]');
-  const meta = q('[data-hero="meta"]');
   const bar = document.querySelector<HTMLElement>('.nav');
   const finePointer = window.matchMedia('(pointer: fine)').matches;
 
@@ -788,9 +733,6 @@ const facebook = profile.social[0];
     if (pre) scrub.fromTo(pre, { autoAlpha: 0, y: 6 }, { autoAlpha: 1, y: 0, duration: 0.14 }, 0.7);
     if (lede) scrub.fromTo(lede, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.74);
     if (cta) scrub.fromTo(cta, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.78);
-    if (meta) {
-      scrub.set(meta, { autoAlpha: 1 }, 0.78).from(meta.children, { autoAlpha: 0, y: 12, duration: 0.15, stagger: 0.03 }, 0.78);
-    }
 
     st = ScrollTrigger.create({
       trigger: root,
@@ -815,10 +757,9 @@ const facebook = profile.social[0];
     scrub?.kill();
     st = null;
     scrub = null;
-    const targets = [open, openMedia, openCalli, sub, latin, handle, calli, name, pre, lede, cta, plate, stack, bloom, meta, ...lines]
+    const targets = [open, openMedia, openCalli, sub, latin, handle, calli, name, pre, lede, cta, plate, stack, bloom, ...lines]
       .filter(Boolean) as HTMLElement[];
     gsap.set(targets, { clearProps: 'all' });
-    if (meta) gsap.set(Array.from(meta.children), { clearProps: 'all' });
     stack?.classList.remove('is-set');
   }
 
@@ -864,7 +805,7 @@ const facebook = profile.social[0];
       /* The banner stays as a still, the page follows below it. */
       cover();
       inner.forEach((el) => gsap.set(el, { autoAlpha: 1 }));
-      const all = [calli, name, lede, cta, plate, meta, bar].filter(Boolean) as HTMLElement[];
+      const all = [calli, name, lede, cta, plate, bar].filter(Boolean) as HTMLElement[];
       gsap.set(all, { autoAlpha: 1, clearProps: 'transform,clipPath' });
       stack?.classList.add('is-set');
       if (bloom) gsap.set(bloom, { autoAlpha: 1 });
