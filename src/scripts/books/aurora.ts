@@ -411,4 +411,5 @@ function boot() {
   });
 }
 
-fontsReady().then(boot);
+/* A font that fails to load must not leave the page blank: the canvases then draw in the fallbacks. */
+fontsReady().catch(() => undefined).then(boot);
