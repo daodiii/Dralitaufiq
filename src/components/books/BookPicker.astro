@@ -1,0 +1,63 @@
+---
+/* Every book as a button, for keyboard and screen reader: the canvas is only a picture. A button
+   shows itself while it has focus, so a keyboard user can see which book they are on. */
+import type { Book } from '../../lib/books';
+import { languageLabel } from '../../lib/books';
+import { ordered } from '../../lib/glbooks';
+
+interface Props {
+  books: Book[];
+}
+
+const { books } = Astro.props;
+---
+
+<ol class="bpick" aria-label="The books">
+  {
+    ordered(books).map((b, i) => (
+      <li>
+        <button type="button" data-pick={i}>
+          <span lang={b.data.language}>{b.data.title}</span>, {languageLabel[b.data.language]}
+        </button>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .bpick {
+    position: absolute;
+    left: var(--gutter);
+    bottom: 1.25rem;
+    z-index: 4;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .bpick button {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .bpick button:focus-visible {
+    width: auto;
+    height: auto;
+    clip-path: none;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow:
+      0 0 0 2px var(--ink),
+      0 10px 30px -12px oklch(19% 0.012 60 / 0.4);
+  }
+</style>

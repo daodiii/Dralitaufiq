@@ -1,0 +1,15 @@
+---
+/* The books for a WebGL stage, as JSON for scripts/books/gl/payload.ts. */
+import type { Book } from '../../lib/books';
+import { glBooks } from '../../lib/glbooks';
+
+interface Props {
+  books: Book[];
+}
+
+const data = await glBooks(Astro.props.books);
+/* Escaped so no title can close the script element. */
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<script is:inline type="application/json" id="glbooks" set:html={json} />

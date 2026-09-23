@@ -1,0 +1,266 @@
+---
+/**
+ * The captions of a WebGL stage, one per book, shown one at a time by scripts/books/gl/captions.ts:
+ * the meta line, the title (in Amiri for an Arabic book), the Latin title, the subtitle or English
+ * title, the Amazon listings and "About this book". An Arabic book's caption is set right to left
+ * as a whole. `extra` adds a second link to each. The page positions the box (`class`) and sets
+ * --bcap-align (start, center or end) for where the words sit in it.
+ */
+import type { Book } from '../../lib/books';
+import { languageLabel, shortRole } from '../../lib/books';
+import { amazonLabel, look, titles } from '../../lib/library';
+import { ordered } from '../../lib/glbooks';
+
+interface Props {
+  books: Book[];
+  tone?: 'light' | 'dark';
+  extra?: string;
+  class?: string;
+}
+
+const { books, tone = 'light', extra, class: cls } = Astro.props;
+
+const items = await Promise.all(
+  ordered(books).map(async (b, i) => {
+    const d = b.data;
+    const t = titles(b);
+    const L = await look(b);
+    return {
+      b,
+      d,
+      t,
+      i,
+      tint: L.accent,
+      rtl: d.language === 'ar',
+      meta: [languageLabel[d.language], d.role === 'Author' ? null : shortRole(d.role), d.publisher, d.year]
+        .filter(Boolean)
+        .join(' · '),
+      sub: d.language === 'ar' ? t.english : d.subtitle,
+    };
+  })
+);
+---
+
+<div class:list={['bcap', `bcap--${tone}`, cls]}>
+  {
+    items.map(({ b, d, t, i, tint, rtl, meta, sub }) => (
+      <div class="bcap__item" data-i={i} data-id={b.id} dir={rtl ? 'rtl' : 'ltr'} style={`--tint:${tint}`}>
+        <p class="bcap__meta" dir="ltr">
+          {meta}
+        </p>
+        {d.badge && (
+          <p class="bcap__badge" dir="ltr">
+            {d.badge}
+          </p>
+        )}
+        <h2 class="bcap__title" lang={d.language}>
+          {t.title}
+        </h2>
+        {t.latin && (
+          <p class="bcap__latin" dir="ltr">
+            {t.latin}
+          </p>
+        )}
+        {sub && (
+          <p class="bcap__sub" dir="ltr">
+            {sub}
+          </p>
+        )}
+        <div class="bcap__buy">
+          {d.amazon.map((a, k) => (
+            <a class:list={['btn', k > 0 && 'btn--ghost']} href={a.url} target="_blank" rel="noopener" dir="ltr">
+              {amazonLabel(a.label)}
+              <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                <path d="M4 12L12 4M6 4h6v6" />
+              </svg>
+            </a>
+          ))}
+        </div>
+        <div class="bcap__links">
+          <button class="link" type="button" data-sheet={b.id} dir="ltr">
+            About this book
+          </button>
+          {extra && (
+            <button class="link bcap__extra" type="button" data-extra dir="ltr">
+              {extra}
+            </button>
+          )}
+        </div>
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  /* Every caption shares one grid cell, so the box keeps its place as they swap. */
+  .bcap {
+    position: absolute;
+    z-index: 3;
+    display: grid;
+    pointer-events: none;
+  }
+
+  .bcap__item {
+    position: relative;
+    isolation: isolate;
+    grid-area: 1 / 1;
+    align-self: var(--bcap-align, end);
+  }
+
+  /* A wash of the room behind the words (--bcap-scrim), so a scene passing behind never muddies
+     them; none unless the concept sets one. */
+  .bcap__item::before {
+    content: '';
+    position: absolute;
+    inset: var(--bcap-scrim-inset, -3rem -4rem);
+    z-index: -1;
+    background: var(--bcap-scrim, none);
+    pointer-events: none;
+  }
+
+  :global(html.js) .bcap__item {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .bcap__item.is-live {
+    pointer-events: auto;
+  }
+
+  .bcap__item[dir='rtl'] > * {
+    text-align: right;
+  }
+
+  .bcap__meta {
+    font-size: 0.84rem;
+    color: var(--ink-3);
+  }
+
+  .bcap__badge {
+    margin-top: 0.9rem;
+    font-size: 0.84rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .bcap__title {
+    margin-top: 0.9rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.1rem, 3.3vw, 3.7rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    color: oklch(from var(--tint) 0.3 calc(c * 0.6) h);
+    text-wrap: balance;
+  }
+
+  .bcap__title:lang(ar) {
+    font-family: var(--font-arabic);
+    font-weight: 400;
+    font-size: clamp(2.3rem, 3.6vw, 4rem);
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  .bcap__latin {
+    margin-top: 0.6rem;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  .bcap__sub {
+    margin-top: 0.7rem;
+    font-size: 1.08rem;
+    font-weight: 300;
+    line-height: 1.4;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .bcap__buy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.6rem;
+  }
+
+  .bcap__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.8rem;
+    margin-top: 1.3rem;
+  }
+
+  /* On a night stage: light type, light buttons. */
+  .bcap--dark .bcap__meta {
+    color: oklch(80% 0.02 250);
+  }
+
+  .bcap--dark .bcap__badge {
+    color: oklch(from var(--tint) 0.84 calc(c * 0.8) h);
+  }
+
+  .bcap--dark .bcap__title {
+    color: oklch(from var(--tint) 0.94 calc(c * 0.3) h);
+  }
+
+  .bcap--dark .bcap__latin,
+  .bcap--dark .bcap__sub {
+    color: oklch(89% 0.015 250);
+  }
+
+  .bcap--dark .btn {
+    color: var(--ink);
+    background: oklch(97% 0.006 85);
+  }
+
+  .bcap--dark .btn--ghost {
+    color: oklch(97% 0.006 85);
+    background: transparent;
+    box-shadow: inset 0 0 0 1px oklch(100% 0 0 / 0.4);
+  }
+
+  .bcap--dark .btn:hover,
+  .bcap--dark .btn:focus-visible {
+    color: oklch(98% 0.004 85);
+  }
+
+  .bcap--dark .link {
+    color: oklch(96% 0.006 85);
+  }
+
+  @media (max-width: 760px) {
+    .bcap__title {
+      margin-top: 0.5rem;
+      font-size: 1.85rem;
+    }
+
+    .bcap__title:lang(ar) {
+      font-size: 2rem;
+      line-height: 1.35;
+    }
+
+    .bcap__latin {
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+    }
+
+    .bcap__sub {
+      display: none;
+    }
+
+    .bcap__buy {
+      margin-top: 0.9rem;
+    }
+
+    .bcap__buy .btn {
+      height: 2.6rem;
+      padding: 0 1.1rem;
+      font-size: 0.8rem;
+    }
+
+    .bcap__links {
+      margin-top: 0.8rem;
+    }
+  }
+</style>

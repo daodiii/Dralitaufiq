@@ -1,0 +1,282 @@
+---
+/**
+ * A book's full text in a sheet from the side, in the book's colour: its titles, the whole
+ * description in its own language, the praise and the Amazon listings. One <template> per
+ * book; scripts/books/sheet.ts clones the chosen one in.
+ */
+import type { Book } from '../../lib/books';
+import { languageLabel, shortRole } from '../../lib/books';
+import { amazonLabel, bookStyle, paragraphs, titles } from '../../lib/library';
+
+interface Props {
+  books: Book[];
+}
+
+const { books } = Astro.props;
+const sheets = await Promise.all(
+  books.map(async (b) => ({
+    b,
+    d: b.data,
+    t: titles(b),
+    style: await bookStyle(b),
+    paras: paragraphs(b),
+    meta: [
+      b.data.role === 'Author' ? null : shortRole(b.data.role),
+      languageLabel[b.data.language],
+      b.data.publisher,
+      b.data.year,
+      `${b.data.pages} pages`,
+    ]
+      .filter(Boolean)
+      .join(' · '),
+  }))
+);
+---
+
+<div class="sheet" hidden>
+  <div class="sheet__scrim"></div>
+  <div class="sheet__panel" role="dialog" aria-modal="true" aria-label="About this book" data-lenis-prevent>
+    <button class="sheet__close" type="button" aria-label="Close">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+        <path d="M3.5 3.5l9 9M12.5 3.5l-9 9"></path>
+      </svg>
+    </button>
+    <div class="sheet__body"></div>
+  </div>
+</div>
+
+{
+  sheets.map(({ b, d, t, style, paras, meta }) => (
+    <template id={`sheet-${b.id}`}>
+      <article class="sheet__book" style={style}>
+        {d.badge && <p class="sheet__badge">{d.badge}</p>}
+        <h2 class="sheet__title" lang={d.language}>
+          {t.title}
+        </h2>
+        {t.latin && <p class="sheet__latin">{t.latin}</p>}
+        {(d.language === 'ar' ? t.english : d.subtitle) && (
+          <p class="sheet__sub">{d.language === 'ar' ? t.english : d.subtitle}</p>
+        )}
+        {d.language === 'ar' && d.subtitle && (
+          <p class="sheet__sub sheet__sub--ar" lang="ar">
+            {d.subtitle}
+          </p>
+        )}
+        {d.role !== 'Author' && <p class="sheet__role">{d.role}</p>}
+        <p class="sheet__meta">{meta}</p>
+        <div class="sheet__buy">
+          {d.amazon.map((a, i) => (
+            <a class:list={['btn', i > 0 && 'btn--ghost']} href={a.url} target="_blank" rel="noopener">
+              {amazonLabel(a.label)}
+              <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                <path d="M4 12L12 4M6 4h6v6" />
+              </svg>
+            </a>
+          ))}
+        </div>
+        <div class="sheet__text" dir={d.language === 'ar' ? 'rtl' : 'ltr'}>
+          {paras.map((p) => (
+            <p lang={p.lang} dir={p.dir}>
+              {p.lead && <b>{p.lead}. </b>}
+              {p.text}
+            </p>
+          ))}
+        </div>
+        {d.endorsements && d.endorsements.length > 0 && (
+          <div class="sheet__praise">
+            {d.endorsements.map((e) => (
+              <blockquote>
+                <p>“{e.quote}”</p>
+                <cite>
+                  <b>{e.name}</b>
+                  <span>{e.title}</span>
+                </cite>
+              </blockquote>
+            ))}
+          </div>
+        )}
+      </article>
+    </template>
+  ))
+}
+
+<style is:global>
+  .sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+  }
+
+  .sheet__scrim {
+    position: absolute;
+    inset: 0;
+    background: oklch(19% 0.012 60 / 0.28);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+  }
+
+  .sheet__panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(40rem, 94vw);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--sheet-bg, var(--paper));
+    box-shadow: -30px 0 60px -30px oklch(19% 0.012 60 / 0.45);
+  }
+
+  .sheet__close {
+    position: sticky;
+    top: 1.2rem;
+    float: right;
+    margin: 1.2rem 1.2rem 0 0;
+    width: 2.8rem;
+    height: 2.8rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: oklch(100% 0 0 / 0.55);
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .sheet__close:hover {
+    transform: rotate(90deg);
+  }
+
+  .sheet__close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .sheet__book {
+    --deep: oklch(from var(--accent) 0.34 calc(c * 0.85) h);
+    padding: clamp(3rem, 7vh, 5rem) clamp(1.5rem, 5vw, 3.6rem) 4rem;
+  }
+
+  .sheet__badge {
+    margin-bottom: 1rem;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--accent-2);
+  }
+
+  .sheet__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    color: var(--deep);
+    text-wrap: balance;
+  }
+
+  .sheet__title[lang='ar'] {
+    font-family: var(--font-arabic);
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0;
+    text-align: left;
+  }
+
+  .sheet__latin {
+    margin-top: 0.8rem;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  .sheet__sub {
+    margin-top: 0.8rem;
+    font-size: 1.15rem;
+    font-weight: 300;
+    line-height: 1.4;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .sheet__sub--ar {
+    font-size: 1.4rem;
+    text-align: left;
+  }
+
+  .sheet__role {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--ink-2);
+  }
+
+  .sheet__meta {
+    margin-top: 1rem;
+    font-size: 0.84rem;
+    color: var(--ink-3);
+  }
+
+  .sheet__buy {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.8rem;
+  }
+
+  .sheet__text {
+    margin-top: 2.6rem;
+    padding-top: 2rem;
+    border-top: 1px solid color-mix(in oklab, var(--deep) 22%, transparent);
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: var(--ink-2);
+  }
+
+  .sheet__text p + p {
+    margin-top: 1em;
+  }
+
+  .sheet__text p[lang='ar'] {
+    font-size: 1.2rem;
+    line-height: 2;
+  }
+
+  .sheet__text p[lang='en'],
+  .sheet__text p[lang='so'] {
+    font-family: var(--font-body);
+  }
+
+  .sheet__text b {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .sheet__praise {
+    margin-top: 2.6rem;
+    display: grid;
+    gap: 1.8rem;
+  }
+
+  .sheet__praise blockquote {
+    margin: 0;
+    padding-left: 1.2rem;
+    border-left: 2px solid var(--deep);
+  }
+
+  .sheet__praise p {
+    font-size: 1.05rem;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+
+  .sheet__praise cite {
+    display: grid;
+    margin-top: 0.6rem;
+    font-size: 0.84rem;
+    font-style: normal;
+    color: var(--ink-3);
+  }
+
+  .sheet__praise cite b {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+</style>

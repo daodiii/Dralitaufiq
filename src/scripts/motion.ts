@@ -1,10 +1,11 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
-import { getLenis, reduceMotion, scrollToY } from './smooth';
+import { getLenis, scrollToY } from './smooth';
 import { steps, type Beats } from './steps';
+import { nav } from './nav';
+import { reveals } from './reveals';
 
-gsap.registerPlugin(ScrollTrigger, SplitText);
+gsap.registerPlugin(ScrollTrigger);
 (window as unknown as { ScrollTrigger: typeof ScrollTrigger }).ScrollTrigger = ScrollTrigger;
 ScrollTrigger.config({ ignoreMobileResize: true });
 
@@ -13,103 +14,6 @@ const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = 
   root.querySelector<T>(sel);
 const $$ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) =>
   Array.from(root.querySelectorAll<T>(sel));
-
-/* ------------------------------------------------------------------ */
-/* Navigation                                                           */
-/* ------------------------------------------------------------------ */
-
-function nav() {
-  const bar = $('.nav');
-  if (!bar) return;
-
-  const sync = (self: ScrollTrigger) => bar.classList.toggle('is-scrolled', self.scroll() > 40);
-  ScrollTrigger.create({ start: 40, onUpdate: sync, onRefresh: sync });
-
-  const toggle = $('.nav__toggle');
-  const menu = $('.nav__menu');
-  if (toggle && menu) {
-    const close = () => {
-      bar.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-    };
-    toggle.addEventListener('click', () => {
-      const open = bar.classList.toggle('is-open');
-      toggle.setAttribute('aria-expanded', String(open));
-    });
-    menu.addEventListener('click', (e) => {
-      if ((e.target as HTMLElement).closest('a')) close();
-    });
-  }
-
-  $$<HTMLAnchorElement>('.nav__menu a[href^="#"]').forEach((link) => {
-    const id = link.getAttribute('href')!.slice(1);
-    const section = document.getElementById(id);
-    if (!section) return;
-    ScrollTrigger.create({
-      trigger: section,
-      start: 'top 45%',
-      end: 'bottom 45%',
-      onToggle: (self) => link.classList.toggle('is-active', self.isActive),
-    });
-  });
-}
-
-/* ------------------------------------------------------------------ */
-/* Generic scroll reveals                                               */
-/* ------------------------------------------------------------------ */
-
-function reveals() {
-  if (reduceMotion) {
-    gsap.set('[data-reveal]', { autoAlpha: 1 });
-    gsap.set('[data-split]', { visibility: 'visible' });
-    return;
-  }
-
-  $$('[data-reveal]').forEach((el) => {
-    const delay = parseFloat(el.dataset.delay || '0');
-    const y = parseFloat(el.dataset.y || '26');
-    gsap.fromTo(
-      el,
-      { autoAlpha: 0, y },
-      {
-        autoAlpha: 1,
-        y: 0,
-        duration: 1.3,
-        delay,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: el, start: 'top 90%', once: true },
-      }
-    );
-  });
-
-  $$('[data-split]').forEach((el) => {
-    const split = new SplitText(el, { type: 'lines', mask: 'lines', linesClass: 'line' });
-    gsap.set(el, { visibility: 'visible' });
-    gsap.from(split.lines, {
-      yPercent: 110,
-      duration: 1.3,
-      stagger: 0.09,
-      ease: 'power4.out',
-      scrollTrigger: { trigger: el, start: 'top 86%', once: true },
-    });
-  });
-
-  $$('[data-stagger]').forEach((group) => {
-    const items = Array.from(group.children) as HTMLElement[];
-    gsap.fromTo(
-      items,
-      { autoAlpha: 0, y: 20 },
-      {
-        autoAlpha: 1,
-        y: 0,
-        duration: 1.1,
-        stagger: 0.08,
-        ease: 'power3.out',
-        scrollTrigger: { trigger: group, start: 'top 88%', once: true },
-      }
-    );
-  });
-}
 
 /* ------------------------------------------------------------------ */
 /* Works: the wall                                                      */

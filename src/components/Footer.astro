@@ -1,5 +1,12 @@
 ---
 import profile from '../data/profile.json';
+
+interface Props {
+  page?: 'home' | 'inner';
+}
+
+const { page = 'home' } = Astro.props;
+const home = page === 'home';
 const year = new Date().getFullYear();
 ---
 
@@ -25,9 +32,9 @@ const year = new Date().getFullYear();
       <div class="footer__col" data-reveal data-delay="0.16">
         <p class="footer__h">Navigate</p>
         <ul class="footer__links">
-          <li><a href="#books">Books</a></li>
-          <li><a href="#about">About</a></li>
-          <li><a href="#top">Top</a></li>
+          <li><a href={home ? '#books' : '/books'}>Books</a></li>
+          <li><a href={home ? '#about' : '/#about'}>About</a></li>
+          <li><a href={home ? '#top' : '/'}>{home ? 'Top' : 'Home'}</a></li>
         </ul>
       </div>
     </div>

@@ -1,0 +1,37 @@
+---
+/* The books page's opening: a headline and one line on what the works are about. */
+---
+
+<header class="libhead">
+  <h1 class="display display--lg libhead__title" data-split>The library</h1>
+  <p class="libhead__lede" data-reveal data-delay="0.2">
+    Jurisprudence for Muslims in the West, dialogue between the Abrahamic faiths, the family and the unseen, in
+    Arabic, English and Somali.
+  </p>
+</header>
+
+<style>
+  .libhead {
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin-inline: auto;
+    padding-top: calc(var(--nav-h) + clamp(3.5rem, 8vw, 7rem));
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 1.5rem 4rem;
+    align-items: end;
+  }
+
+  .libhead__lede {
+    max-width: 25rem;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-3);
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 900px) {
+    .libhead {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

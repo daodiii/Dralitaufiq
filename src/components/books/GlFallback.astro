@@ -1,0 +1,42 @@
+---
+/* What a WebGL stage shows without WebGL (or without scripts): the covers in a grid, each
+   opening the book's sheet. Shown when the section has .no-gl, or when the page has no js class. */
+import { Image } from 'astro:assets';
+import type { Book } from '../../lib/books';
+import { ordered } from '../../lib/glbooks';
+
+interface Props {
+  books: Book[];
+}
+---
+
+<div class="glfall">
+  {
+    ordered(Astro.props.books).map((b) => (
+      <button class="glfall__book" type="button" data-sheet={b.id}>
+        <Image src={b.data.cover} alt={b.data.title} widths={[200, 400]} sizes="(max-width: 760px) 40vw, 12vw" loading="lazy" />
+      </button>
+    ))
+  }
+</div>
+
+<style>
+  .glfall {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+    gap: 2rem 1.5rem;
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin: 3rem auto 6rem;
+  }
+
+  :global(.no-gl) .glfall,
+  :global(html:not(.js)) .glfall {
+    display: grid;
+  }
+
+  .glfall__book :global(img) {
+    width: 100%;
+    height: auto;
+    box-shadow: var(--shadow-plate);
+  }
+</style>

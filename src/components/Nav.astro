@@ -1,10 +1,23 @@
 ---
 import profile from '../data/profile.json';
+
+interface Props {
+  /* The home page links to its own sections; an inner page links home, and to itself for Books. */
+  page?: 'home' | 'inner';
+  booksHref?: string;
+}
+
+const { page = 'home', booksHref = '/books' } = Astro.props;
+const home = page === 'home';
 ---
 
 <header class="nav">
   <div class="container nav__inner">
-    <a class="nav__brand" href="#top" aria-label="Ali Mohamed Salah, back to top">
+    <a
+      class="nav__brand"
+      href={home ? '#top' : '/'}
+      aria-label={home ? 'Ali Mohamed Salah, back to top' : 'Ali Mohamed Salah, home'}
+    >
       <span class="nav__en">Ali Mohamed Salah</span>
       <span class="nav__ar" lang="ar">{profile.nameArabic}</span>
     </a>
@@ -13,8 +26,16 @@ import profile from '../data/profile.json';
       <i></i><i></i>
     </button>
     <nav class="nav__menu" id="site-menu" aria-label="Primary">
-      <a href="#books">Books</a>
-      <a href="#about">About</a>
+      {
+        home ? (
+          <a href="#books">Books</a>
+        ) : (
+          <a href={booksHref} class="is-active" aria-current="page">
+            Books
+          </a>
+        )
+      }
+      <a href={home ? '#about' : '/#about'}>About</a>
       <a href="#contact">Contact</a>
     </nav>
   </div>

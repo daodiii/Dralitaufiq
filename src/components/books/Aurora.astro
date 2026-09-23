@@ -1,0 +1,99 @@
+---
+/**
+ * "Northern lights". Night over a frozen lake in Norway (nordlys, "north light"). The page
+ * opens white; scrolling brings the night. The 18 books stand on the ice in an arc around the
+ * reader, and above each hangs a curtain of aurora in its colours. Choosing a book turns the view
+ * to it: its curtain surges across the sky and it steps forward. At the end, the whole sky. The
+ * scene lives in scripts/books/aurora.ts.
+ */
+import type { Book } from '../../lib/books';
+import GlPayload from './GlPayload.astro';
+import BookCaption from './BookCaption.astro';
+import BookPicker from './BookPicker.astro';
+import GlFallback from './GlFallback.astro';
+
+interface Props {
+  books: Book[];
+}
+
+const { books } = Astro.props;
+---
+
+<section class="aur" aria-label="The books" style={`--lead:1.1;--per:0.7;--n:${books.length + 1}`}>
+  <div class="aur__stage">
+    <div class="aur__shade" aria-hidden="true"></div>
+    <BookCaption books={books} tone="dark" class="aur__caps" />
+    <BookPicker books={books} />
+  </div>
+  <GlFallback books={books} />
+  <GlPayload books={books} />
+</section>
+
+<style>
+  .aur {
+    position: relative;
+    height: calc((var(--lead) + var(--per) * (var(--n) - 1) + 1) * 100svh);
+    margin-top: clamp(1.5rem, 4vw, 3rem);
+  }
+
+  .aur__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    background: #fbfaf7;
+  }
+
+  .aur__stage :global(.gl__canvas) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: pan-y;
+  }
+
+  .aur__stage.is-hot :global(.gl__canvas) {
+    cursor: pointer;
+  }
+
+  /* Night under the words, low on the left, ending before the chosen book so it takes none of its
+     light; its opacity follows the dark (set by the script). */
+  .aur__shade {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(80% 110% at 0% 100%, oklch(7% 0.02 260 / 0.88), transparent 64%);
+  }
+
+  .aur__stage :global(.aur__caps) {
+    left: var(--gutter);
+    top: calc(var(--nav-h) + 1rem);
+    bottom: 3rem;
+    width: min(27rem, 34vw);
+    --bcap-align: end;
+  }
+
+  .aur.no-gl {
+    height: auto;
+  }
+
+  .aur.no-gl .aur__stage,
+  :global(html:not(.js)) .aur__stage {
+    display: none;
+  }
+
+  @media (max-width: 760px) {
+    .aur__stage :global(.aur__caps) {
+      right: var(--gutter);
+      bottom: 1.2rem;
+      width: auto;
+    }
+
+    .aur__shade {
+      background: linear-gradient(to top, oklch(8% 0.02 260 / 0.85), oklch(8% 0.02 260 / 0.6) 24%, transparent 34%);
+    }
+  }
+</style>
