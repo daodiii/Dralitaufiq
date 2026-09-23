@@ -11,7 +11,7 @@ import { Image } from 'astro:assets';
 import { allBooks, featuredBooks, caption, dominantColour } from '../lib/books';
 import profile from '../data/profile.json';
 
-/* The bookstore address lives in profile.json (a stand-in until the user's own store arrives). */
+/* The bookstore address lives in profile.json: his author store on Amazon UK. */
 const store = profile.bookstore;
 
 const all = await allBooks();
