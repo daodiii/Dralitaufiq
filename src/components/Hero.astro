@@ -239,6 +239,11 @@ const facebook = profile.social[0];
     text-align: center;
   }
 
+  /* Each line's inner wrapper is a block; the handle's own rule below keeps its icon beside it. */
+  .hero__title .in {
+    display: block;
+  }
+
   .hero__sub {
     width: 50%;
     aspect-ratio: 460 / 110;
@@ -289,10 +294,6 @@ const facebook = profile.social[0];
   .hero__handle svg {
     width: 1.1em;
     height: 1.1em;
-  }
-
-  .hero__title .in {
-    display: block;
   }
 
 
