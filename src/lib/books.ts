@@ -37,7 +37,8 @@ export function caption(b: Book) {
     meta: [shortRole(b.data.role), languageLabel[b.data.language], b.data.publisher, b.data.year]
       .filter(Boolean)
       .join(' · '),
-    href: `/books/${b.id}`,
+    /* The books page opens on this book. */
+    href: `/books?book=${b.id}`,
     label: b.data.titleLatin || b.data.title,
   };
 }

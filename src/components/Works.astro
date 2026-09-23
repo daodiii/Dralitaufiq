@@ -9,10 +9,6 @@
  */
 import { Image } from 'astro:assets';
 import { allBooks, featuredBooks, caption, dominantColour } from '../lib/books';
-import profile from '../data/profile.json';
-
-/* The bookstore address lives in profile.json: his author store on Amazon UK. */
-const store = profile.bookstore;
 
 const all = await allBooks();
 /* Three stops, one per row and one per language (see FEATURED in lib/books). */
@@ -103,16 +99,6 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
                   <path d="M4 12L12 4M6 4h6v6" />
                 </svg>
               </a>
-              {
-                store && (
-                  <a class="link" href={store} target="_blank" rel="noopener">
-                    Visit the bookstore
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-                      <path d="M4 12L12 4M6 4h6v6" />
-                    </svg>
-                  </a>
-                )
-              }
             </p>
           </div>
         ))
@@ -130,23 +116,12 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
   </div>
 
   <div class="container works__all" data-reveal>
-    {
-      store ? (
-        <a class="btn btn--ghost" href={store} target="_blank" rel="noopener">
-          Visit the bookstore
-          <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-            <path d="M2 8h11M9 4l4 4-4 4" />
-          </svg>
-        </a>
-      ) : (
-        <a class="btn btn--ghost" href="/books">
-          All the works
-          <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-            <path d="M2 8h11M9 4l4 4-4 4" />
-          </svg>
-        </a>
-      )
-    }
+    <a class="btn btn--ghost" href="/books">
+      All the works
+      <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+        <path d="M2 8h11M9 4l4 4-4 4" />
+      </svg>
+    </a>
   </div>
 </section>
 
