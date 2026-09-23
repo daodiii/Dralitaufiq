@@ -72,8 +72,7 @@ const facebook = profile.social[0];
       <div class="hero__calli hero__calli--page" data-hero="calli" role="img" aria-label={profile.nameArabic}></div>
       <h1 class="hero__name" data-hero="name">
         <span class="hero__pre" data-hero-pre>Prof. Dr.</span>
-        <span class="hero__mask"><span class="hero__line">Ali Mohamed</span></span>
-        <span class="hero__mask"><span class="hero__line">Salah</span></span>
+        <span class="hero__mask"><span class="hero__line">Ali Mohamed Salah</span></span>
       </h1>
       <p class="hero__lede" data-hero="lede">{profile.heroLede}</p>
       <a class="hero__go" href="#books" data-hero="cta">
@@ -384,15 +383,20 @@ const facebook = profile.social[0];
     display: grid;
     gap: clamp(0.7rem, 1.8vh, 1.2rem);
     justify-items: start;
+    container-type: inline-size;
   }
 
+  /* The name is one line, never wider than its column: set in this face and tracking it is
+     8.13 em wide (measured), so a column of 100cqi holds it at 100cqi / 8.13. */
   .hero__name {
+    --fit: calc(100cqi / 8.13);
     margin: 0.3rem 0 0 -0.03em;
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, min(5.6vw, 9.5vh), 5.8rem);
+    font-size: min(clamp(2.5rem, min(5.6vw, 9.5vh), 5.8rem), var(--fit));
     font-weight: 500;
     line-height: 0.92;
     letter-spacing: -0.05em;
+    white-space: nowrap;
     color: var(--ink);
   }
 
@@ -600,7 +604,7 @@ const facebook = profile.social[0];
     }
 
     .hero__name {
-      font-size: clamp(2.5rem, min(5.6vw, 8.8vh), 5.8rem);
+      font-size: min(clamp(2.5rem, min(5.6vw, 8.8vh), 5.8rem), var(--fit));
     }
   }
 
@@ -610,10 +614,13 @@ const facebook = profile.social[0];
       grid-template-rows: none;
       row-gap: 1.3rem;
       margin-block: 1.5vh 2vh;
+      container-type: inline-size;
     }
 
+    /* The lead dissolves into the card here, so the card is the column the name fits. */
     .hero__lead {
       display: contents;
+      container-type: normal;
     }
 
     .hero__calli--page {
@@ -624,7 +631,7 @@ const facebook = profile.social[0];
 
     .hero__name {
       order: 2;
-      font-size: clamp(2.4rem, 11vw, 4.2rem);
+      font-size: min(clamp(2.4rem, 11vw, 4.2rem), var(--fit));
     }
 
     .hero__plate {
@@ -684,6 +691,13 @@ const facebook = profile.social[0];
     .hero__grid {
       padding: calc(1.25rem + 12px);
       border-radius: 16px;
+    }
+
+    /* On phones the gold heads the card: centred, nearly as wide as the name below it. */
+    .hero__calli--page {
+      justify-self: center;
+      width: min(90%, 330px);
+      max-width: none;
     }
   }
 
