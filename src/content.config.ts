@@ -22,12 +22,11 @@ const books = defineCollection({
       coverWidth: z.number(),
       coverHeight: z.number(),
       description: z.array(z.string()),
-      links: z.object({
-        amazon: z.string().optional(),
-        bookshop: z.string().optional(),
-        barnesNoble: z.string().optional(),
-      }),
-      editions: z.array(z.object({ label: z.string(), url: z.string() })),
+      /* Amazon UK listings: one per format (Paperback, Hardcover) or volume. */
+      amazon: z.array(z.object({ label: z.string(), url: z.string() })).min(1),
+      pages: z.number(),
+      /* The printed book in centimetres, from the Amazon listing: width, height, thickness. */
+      size: z.object({ w: z.number(), h: z.number(), t: z.number() }),
       endorsements: z
         .array(z.object({ quote: z.string(), name: z.string(), title: z.string() }))
         .optional(),
