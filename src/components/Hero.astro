@@ -1,9 +1,9 @@
 ---
 /**
- * The hero is the banner, rebuilt for the web: his portrait on black, full-bleed,
- * the gold calligraphy of the mosque behind him; the official-page line, his name
- * in gilded calligraphy, the Latin name and the handle, all live layers over the
- * photograph. Scrolling pulls the camera back: the dark closes in around him and
+ * The hero is the banner, rebuilt for the web: his portrait on black, full-bleed;
+ * the official-page line, his name in gilded calligraphy, the Latin name and the
+ * handle, all live layers over the photograph (made by tools/hero-portrait).
+ * Scrolling pulls the camera back: the dark closes in around him and
  * lands on a printed plate, the gold flies with it onto the paper, and the page
  * assembles as a folio: a card ruled in gold with corner marks, his gilded name
  * as its heading.
@@ -90,7 +90,7 @@ const facebook = profile.social[0];
         <div class="hero__photo" data-hero-photo>
           <Image
             src={plate}
-            alt="Prof. Dr. Ali Mohamed Salah, the name of God and the shahada in gold calligraphy behind him"
+            alt="Prof. Dr. Ali Mohamed Salah in an embroidered kufi, against black"
             widths={[480, 720, 1180]}
             sizes="(max-width: 1000px) 88vw, 36vw"
             loading="eager"
@@ -463,7 +463,7 @@ const facebook = profile.social[0];
     transform-style: preserve-3d;
   }
 
-  /* The gold in the photograph spills onto the wall; the print casts a warm shadow the other way. */
+  /* A warm light spills onto the wall behind the print; the print casts a warm shadow the other way. */
   .hero__bloom {
     position: absolute;
     inset: -22% -30% -26% -30%;
