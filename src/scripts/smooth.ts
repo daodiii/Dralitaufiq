@@ -45,7 +45,9 @@ export function getLenis() {
 
 export function scrollToY(y: number, immediate = false) {
   if (lenis) {
-    lenis.scrollTo(y, { duration: immediate ? 0 : 1.4, easing: (t) => 1 - Math.pow(1 - t, 4) });
+    /* A jump needs immediate: Lenis reads duration 0 as no duration and glides there on its lerp. */
+    if (immediate) lenis.scrollTo(y, { immediate: true, force: true });
+    else lenis.scrollTo(y, { duration: 1.4, easing: (t) => 1 - Math.pow(1 - t, 4) });
   } else {
     window.scrollTo({ top: y, behavior: immediate ? 'auto' : 'smooth' });
   }
