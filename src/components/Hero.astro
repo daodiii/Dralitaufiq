@@ -1,11 +1,12 @@
 ---
 /**
- * The hero is the banner, rebuilt for the web: the study full-bleed, the
- * official-page line, his name in gilded calligraphy, the Latin name and the
- * handle, all live layers over the text-free photograph. Scrolling pulls the
- * camera back: the room shrinks around his face and lands on a printed plate,
- * the gold flies with it onto the paper, and the page assembles as a folio:
- * a card ruled in gold with corner marks, his gilded name as its heading.
+ * The hero is the banner, rebuilt for the web: his portrait on black, full-bleed,
+ * the gold calligraphy of the mosque behind him; the official-page line, his name
+ * in gilded calligraphy, the Latin name and the handle, all live layers over the
+ * photograph. Scrolling pulls the camera back: the dark closes in around him and
+ * lands on a printed plate, the gold flies with it onto the paper, and the page
+ * assembles as a folio: a card ruled in gold with corner marks, his gilded name
+ * as its heading.
  */
 import { Image, getImage } from 'astro:assets';
 import banner from '../assets/hero/portrait-open.jpg';
@@ -14,8 +15,8 @@ import calligraphy from '../assets/hero/calligraphy-name.png';
 import subline from '../assets/hero/calligraphy-line.png';
 import profile from '../data/profile.json';
 
-const bannerSet = await getImage({ src: banner, widths: [1400, 2000, 2800, 4096], format: 'webp' });
-const bannerFallback = await getImage({ src: banner, width: 2000, format: 'jpg' });
+const bannerSet = await getImage({ src: banner, widths: [900, 1300, 1800, 2400], format: 'webp' });
+const bannerFallback = await getImage({ src: banner, width: 1300, format: 'jpg' });
 const facebook = profile.social[0];
 ---
 
@@ -32,7 +33,7 @@ const facebook = profile.social[0];
           data-open-img
           src={bannerFallback.src}
           srcset={bannerSet.srcSet.attribute}
-          sizes="100vw"
+          sizes="(max-width: 760px) 120vw, 94vh"
           width={banner.width}
           height={banner.height}
           alt=""
@@ -89,7 +90,7 @@ const facebook = profile.social[0];
         <div class="hero__photo" data-hero-photo>
           <Image
             src={plate}
-            alt="Prof. Dr. Ali Mohamed Salah, seated before a microphone in a lamp-lit study"
+            alt="Prof. Dr. Ali Mohamed Salah, the name of God and the shahada in gold calligraphy behind him"
             widths={[480, 720, 1180]}
             sizes="(max-width: 1000px) 88vw, 36vw"
             loading="eager"
@@ -127,7 +128,7 @@ const facebook = profile.social[0];
     right: 0;
     height: 100svh;
     z-index: 5;
-    background: rgb(50 36 27);
+    background: #000;
     color: oklch(96% 0.006 80);
   }
 
@@ -155,21 +156,41 @@ const facebook = profile.social[0];
 
   .hero__open-zoom {
     transform: scale(1.06);
-    transform-origin: 66% 30%;
+    transform-origin: 66% 38%;
     will-change: transform;
   }
 
-  /* Sized by script to the banner's full cover box, so nothing is cropped away
-     before the pull-back scales it down onto the plate. */
+  /* The portrait stands on the bottom edge with his face two thirds across; on phones it is
+     smaller, his face in the upper third and the title on the black below. The photograph's
+     own black meets the banner's, so only this square is image. The script reads this box;
+     0.4908 and 0.33 are his face in the photograph (SHOT below). */
   .hero__open-media img {
+    --shot: min(94svh, 62vw);
     position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
+    left: calc(66% - 0.4908 * var(--shot));
+    top: calc(100% - var(--shot));
+    width: var(--shot);
+    height: var(--shot);
     max-width: none;
-    object-fit: cover;
-    object-position: 80% 20%;
+  }
+
+  /* Upright tablets: the width is the limit, so let him fill more of it. */
+  @media (orientation: portrait) {
+    .hero__open-media img {
+      --shot: min(94svh, 75vw);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .hero__open-zoom {
+      transform-origin: 50% 30%;
+    }
+
+    .hero__open-media img {
+      --shot: min(120vw, 60svh);
+      left: calc(50% - 0.4908 * var(--shot));
+      top: calc(30% - 0.33 * var(--shot));
+    }
   }
 
   .hero__veil {
@@ -441,7 +462,7 @@ const facebook = profile.social[0];
     transform-style: preserve-3d;
   }
 
-  /* The lamp in the photograph spills onto the wall; the print casts a warm shadow the other way. */
+  /* The gold in the photograph spills onto the wall; the print casts a warm shadow the other way. */
   .hero__bloom {
     position: absolute;
     inset: -22% -30% -26% -30%;
@@ -459,7 +480,7 @@ const facebook = profile.social[0];
     aspect-ratio: 1180 / 1448;
     overflow: hidden;
     border-radius: 4px;
-    background: var(--paper-3);
+    background: #000;
     transform: translateZ(0);
     box-shadow:
       0 1px 2px oklch(19% 0.012 60 / 0.08),
@@ -628,7 +649,7 @@ const facebook = profile.social[0];
       display: block;
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgb(20 14 10 / 0) 40%, rgb(20 14 10 / 0.72) 72%, rgb(20 14 10 / 0.9) 100%);
+      background: linear-gradient(180deg, rgb(0 0 0 / 0) 40%, rgb(0 0 0 / 0.72) 72%, rgb(0 0 0 / 0.9) 100%);
       pointer-events: none;
     }
 
@@ -723,36 +744,27 @@ const facebook = profile.social[0];
   /* How much scrolling the pull-back takes, in viewport heights. */
   const PIN = 1.3;
 
-  /* Where his face sits in the banner and in the plate (source pixels). Both images carry the
-     same 140px of replicated headroom, so plate (x, y) = banner (x + 2720, y). */
-  const WIDE = { w: 4096, h: 1588, fx: 3320, fy: 470 };
-  const PLATE = { w: 1180, h: 1448, fx: 600, fy: 470 };
+  /* Where his face sits in the banner and in the plate (source pixels). Both are cut from the
+     same 2400px portrait at the same scale, so plate (x, y) = banner (x - 200, y). */
+  const SHOT = { w: 2400, h: 2400, fx: 1178, fy: 792 };
+  const PLATE = { w: 1956, h: 2400, fx: 978, fy: 792 };
 
-  const isPhone = () => window.innerWidth < 760;
-
-  /* Lay the banner out as object-fit: cover would, but as a real box so nothing is discarded,
-     and with his face placed where the composition wants it. */
-  function cover() {
+  /* The banner's box is laid out by the stylesheet; find his face in it. Its layout values, not
+     the bounding box, so the intro's zoom does not skew the measurement. */
+  function findFace() {
     if (!open || !openImg) return null;
     const s = open.getBoundingClientRect();
-    const k = Math.max(s.width / WIDE.w, s.height / WIDE.h);
-    const w = WIDE.w * k;
-    const h = WIDE.h * k;
-    const phone = isPhone();
-    let offX = (phone ? 0.5 : 0.66) * s.width - WIDE.fx * k;
-    offX = Math.min(0, Math.max(s.width - w, offX));
-    let offY = (phone ? 0.3 : 0.42) * s.height - WIDE.fy * k;
-    offY = Math.min(0, Math.max(s.height - h, offY));
-    gsap.set(openImg, { width: w, height: h, left: offX, top: offY });
-    const faceX = offX + WIDE.fx * k;
-    const faceY = offY + WIDE.fy * k;
+    const box = getComputedStyle(openImg);
+    const k = parseFloat(box.width) / SHOT.w;
+    const faceX = parseFloat(box.left) + SHOT.fx * k;
+    const faceY = parseFloat(box.top) + SHOT.fy * k;
     if (openZoom) gsap.set(openZoom, { transformOrigin: `${faceX}px ${faceY}px` });
     return { s, k, faceX, faceY };
   }
 
   /** The pull-back, solved exactly: both layers show the same photograph. */
   function fit() {
-    const c = cover();
+    const c = findFace();
     if (!c || !open || !photo) return null;
     const { s, k, faceX, faceY } = c;
     const r = photo.getBoundingClientRect();
@@ -886,7 +898,7 @@ const facebook = profile.social[0];
     if (!root) return;
     if (reduceMotion) {
       /* The banner stays as a still, the page follows below it. */
-      cover();
+      findFace();
       inner.forEach((el) => gsap.set(el, { autoAlpha: 1 }));
       const all = [calli, name, lede, cta, plate, bar].filter(Boolean) as HTMLElement[];
       gsap.set(all, { autoAlpha: 1, clearProps: 'transform,clipPath' });
@@ -916,7 +928,7 @@ const facebook = profile.social[0];
     });
   }
 
-  cover();
+  findFace();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(start);
   else start();
 </script>
