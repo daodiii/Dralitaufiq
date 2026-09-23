@@ -841,12 +841,20 @@ const facebook = profile.social[0];
     if (lede) scrub.fromTo(lede, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.74);
     if (cta) scrub.fromTo(cta, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.18 }, 0.78);
 
+    /* Phones get no stepping (steps.ts starts at 760px), so a swipe that stops inside the
+       pull-back glides on the way it was going: one swipe assembles the page, or brings the
+       banner back. The photo also trails the finger less. */
+    const phone = !window.matchMedia('(min-width: 760px)').matches;
+
     st = ScrollTrigger.create({
       trigger: root,
       start: 'top top',
       end: () => `+=${Math.round(window.innerHeight * PIN)}`,
       pin: true,
-      scrub: 0.6,
+      scrub: phone ? 0.3 : 0.6,
+      snap: phone
+        ? { snapTo: 1, directional: true, inertia: false, delay: 0.08, duration: { min: 0.3, max: 0.8 }, ease: 'power2.inOut' }
+        : undefined,
       animation: scrub,
       anticipatePin: 1,
       refreshPriority: 1,
