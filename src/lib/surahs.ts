@@ -1,0 +1,35 @@
+/**
+ * The 114 sūrahs in the order of the muṣḥaf: the name as the site writes it, and in Arabic. As the
+ * lesson list's generator spells them (docs/research/youtube/lessons.mjs), each checked by hand.
+ */
+export const SURAHS: readonly (readonly [string, string])[] = [
+  ['Al-Fātiḥah', 'الفاتحة'], ['Al-Baqarah', 'البقرة'], ['Āl ʿImrān', 'آل عمران'], ['An-Nisāʾ', 'النساء'],
+  ['Al-Māʾidah', 'المائدة'], ['Al-Anʿām', 'الأنعام'], ['Al-Aʿrāf', 'الأعراف'], ['Al-Anfāl', 'الأنفال'],
+  ['At-Tawbah', 'التوبة'], ['Yūnus', 'يونس'], ['Hūd', 'هود'], ['Yūsuf', 'يوسف'],
+  ['Ar-Raʿd', 'الرعد'], ['Ibrāhīm', 'إبراهيم'], ['Al-Ḥijr', 'الحجر'], ['An-Naḥl', 'النحل'],
+  ['Al-Isrāʾ', 'الإسراء'], ['Al-Kahf', 'الكهف'], ['Maryam', 'مريم'], ['Ṭā Hā', 'طه'],
+  ['Al-Anbiyāʾ', 'الأنبياء'], ['Al-Ḥajj', 'الحج'], ['Al-Muʾminūn', 'المؤمنون'], ['An-Nūr', 'النور'],
+  ['Al-Furqān', 'الفرقان'], ['Ash-Shuʿarāʾ', 'الشعراء'], ['An-Naml', 'النمل'], ['Al-Qaṣaṣ', 'القصص'],
+  ['Al-ʿAnkabūt', 'العنكبوت'], ['Ar-Rūm', 'الروم'], ['Luqmān', 'لقمان'], ['As-Sajdah', 'السجدة'],
+  ['Al-Aḥzāb', 'الأحزاب'], ['Sabaʾ', 'سبأ'], ['Fāṭir', 'فاطر'], ['Yā Sīn', 'يس'],
+  ['Aṣ-Ṣāffāt', 'الصافات'], ['Ṣād', 'ص'], ['Az-Zumar', 'الزمر'], ['Ghāfir', 'غافر'],
+  ['Fuṣṣilat', 'فصلت'], ['Ash-Shūrā', 'الشورى'], ['Az-Zukhruf', 'الزخرف'], ['Ad-Dukhān', 'الدخان'],
+  ['Al-Jāthiyah', 'الجاثية'], ['Al-Aḥqāf', 'الأحقاف'], ['Muḥammad', 'محمد'], ['Al-Fatḥ', 'الفتح'],
+  ['Al-Ḥujurāt', 'الحجرات'], ['Qāf', 'ق'], ['Adh-Dhāriyāt', 'الذاريات'], ['Aṭ-Ṭūr', 'الطور'],
+  ['An-Najm', 'النجم'], ['Al-Qamar', 'القمر'], ['Ar-Raḥmān', 'الرحمن'], ['Al-Wāqiʿah', 'الواقعة'],
+  ['Al-Ḥadīd', 'الحديد'], ['Al-Mujādilah', 'المجادلة'], ['Al-Ḥashr', 'الحشر'], ['Al-Mumtaḥanah', 'الممتحنة'],
+  ['Aṣ-Ṣaff', 'الصف'], ['Al-Jumuʿah', 'الجمعة'], ['Al-Munāfiqūn', 'المنافقون'], ['At-Taghābun', 'التغابن'],
+  ['Aṭ-Ṭalāq', 'الطلاق'], ['At-Taḥrīm', 'التحريم'], ['Al-Mulk', 'الملك'], ['Al-Qalam', 'القلم'],
+  ['Al-Ḥāqqah', 'الحاقة'], ['Al-Maʿārij', 'المعارج'], ['Nūḥ', 'نوح'], ['Al-Jinn', 'الجن'],
+  ['Al-Muzzammil', 'المزمل'], ['Al-Muddaththir', 'المدثر'], ['Al-Qiyāmah', 'القيامة'], ['Al-Insān', 'الإنسان'],
+  ['Al-Mursalāt', 'المرسلات'], ['An-Nabaʾ', 'النبأ'], ['An-Nāziʿāt', 'النازعات'], ['ʿAbasa', 'عبس'],
+  ['At-Takwīr', 'التكوير'], ['Al-Infiṭār', 'الانفطار'], ['Al-Muṭaffifīn', 'المطففين'], ['Al-Inshiqāq', 'الانشقاق'],
+  ['Al-Burūj', 'البروج'], ['Aṭ-Ṭāriq', 'الطارق'], ['Al-Aʿlā', 'الأعلى'], ['Al-Ghāshiyah', 'الغاشية'],
+  ['Al-Fajr', 'الفجر'], ['Al-Balad', 'البلد'], ['Ash-Shams', 'الشمس'], ['Al-Layl', 'الليل'],
+  ['Aḍ-Ḍuḥā', 'الضحى'], ['Ash-Sharḥ', 'الشرح'], ['At-Tīn', 'التين'], ['Al-ʿAlaq', 'العلق'],
+  ['Al-Qadr', 'القدر'], ['Al-Bayyinah', 'البينة'], ['Az-Zalzalah', 'الزلزلة'], ['Al-ʿĀdiyāt', 'العاديات'],
+  ['Al-Qāriʿah', 'القارعة'], ['At-Takāthur', 'التكاثر'], ['Al-ʿAṣr', 'العصر'], ['Al-Humazah', 'الهمزة'],
+  ['Al-Fīl', 'الفيل'], ['Quraysh', 'قريش'], ['Al-Māʿūn', 'الماعون'], ['Al-Kawthar', 'الكوثر'],
+  ['Al-Kāfirūn', 'الكافرون'], ['An-Naṣr', 'النصر'], ['Al-Masad', 'المسد'], ['Al-Ikhlāṣ', 'الإخلاص'],
+  ['Al-Falaq', 'الفلق'], ['An-Nās', 'الناس'],
+];

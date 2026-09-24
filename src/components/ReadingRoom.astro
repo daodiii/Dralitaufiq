@@ -1,0 +1,561 @@
+---
+/**
+ * The lectures page, "the reading room". On the left every lesson of a series, a series at a
+ * time (the whole Qur'an under its sūrahs); on the right a large preview of the lesson under the
+ * pointer or the keyboard: its frame, what it covers, its length, and the way to YouTube, so a
+ * reader sees which lesson they are opening before they open it. Every row is itself the link.
+ * The talks close the list. On a phone the series names are one line that swipes, and a tapped
+ * row opens where it is, into the same preview. The script is scripts/room.ts.
+ */
+import LESSONS from '../data/lessons.json';
+import { SERIES, ROOM, TALKS, describe, talkMeta, video, type Lessons, type Told } from '../lib/lectures';
+import { still, pictureOf } from '../lib/stills';
+import { SURAHS } from '../lib/surahs';
+
+const data = LESSONS as Lessons;
+
+interface Row extends Told {
+  k: number;
+}
+interface Group {
+  id: string;
+  head?: readonly [string, string];
+  rows: Row[];
+}
+
+const shelves = ROOM.map((key) => {
+  /* The Qur'an under the sūrah each lesson begins in; the other series as one list. */
+  const groups: Group[] = [];
+  data[key].lessons.forEach((l, k) => {
+    const s = key === 'quran' ? (l.s ?? 1) : 0;
+    const id = `g-${key}-${s}`;
+    if (groups.at(-1)?.id !== id) groups.push({ id, head: s ? SURAHS[s - 1] : undefined, rows: [] });
+    groups.at(-1)!.rows.push({ k, ...describe(key, l, data[key].pl) });
+  });
+  return { key, title: SERIES[key].title, groups };
+});
+
+const talks: Row[] = TALKS.map((t, k) => ({
+  k,
+  num: '',
+  label: t.title,
+  title: t.title,
+  ar: '',
+  meta: talkMeta(t),
+  len: '',
+  href: video(t.id),
+}));
+
+const first = shelves[0].groups[0].rows[0];
+const firstPic = pictureOf(data.quran.lessons[0]);
+
+/* A link to another series (?series=) shows that series before the script has come: the inline
+   script at the top marks the page with it, and these rules show its list and mark its name. */
+const deep = [...ROOM.slice(1), 'talks'];
+const deepCss =
+  deep
+    .map(
+      (k) =>
+        `html.js[data-series='${k}'] .room .room__shelf[data-key='${k}']{display:block}` +
+        `html[data-series='${k}'] .room .room__tabs a[data-key='${k}']{color:var(--ink);box-shadow:0 1px 0 var(--ink)}`
+    )
+    .join('') +
+  `html.js[data-series] .room .room__shelf.is-on{display:none}` +
+  `html[data-series] .room .room__tabs a.is-on{color:inherit;box-shadow:none}` +
+  `html[data-series] .room .room__view{visibility:hidden}`;
+---
+
+<section class="room" aria-labelledby="room-title">
+  <script is:inline define:vars={{ deep }}>
+    const asked = new URLSearchParams(location.search).get('series');
+    if (deep.includes(asked)) document.documentElement.dataset.series = asked;
+  </script>
+  <style is:inline set:html={deepCss}></style>
+  <h1 class="sr-only" id="room-title">All the lectures</h1>
+
+  <div class="room__index">
+    <nav class="room__tabs" aria-label="Series">
+      <div class="room__line" data-scroll-x>
+        {
+          shelves.map((sh, i) => (
+            <a href={`#t-${sh.key}`} data-key={sh.key} class:list={[i === 0 && 'is-on']} aria-current={i === 0 ? 'true' : undefined}>
+              {sh.title}
+            </a>
+          ))
+        }
+        <a href="#t-talks" data-key="talks">Talks</a>
+      </div>
+    </nav>
+
+    {
+      shelves.map((sh, i) => (
+        <div class:list={['room__shelf', i === 0 && 'is-on']} data-key={sh.key}>
+          <h2 class="room__shelf-title" id={`t-${sh.key}`}>
+            {sh.title}
+          </h2>
+          {sh.groups.map((g) => (
+            <div class="room__group">
+              {g.head && (
+                <h3 class="room__head" id={g.id}>
+                  <span>{g.head[0]}</span>
+                  <span lang="ar">{g.head[1]}</span>
+                </h3>
+              )}
+              {g.rows.map((r) => (
+                <a
+                  class="room__row"
+                  href={r.href}
+                  target="_blank"
+                  rel="noopener"
+                  data-k={r.k}
+                  aria-describedby={g.head ? g.id : `t-${sh.key}`}
+                >
+                  <span class="room__n">{r.num}</span>
+                  <span class="room__l">{r.label}</span>
+                  <span class="room__len">{r.len}</span>
+                </a>
+              ))}
+            </div>
+          ))}
+        </div>
+      ))
+    }
+    <div class="room__shelf" data-key="talks">
+      <h2 class="room__shelf-title" id="t-talks">Talks</h2>
+      <div class="room__group">
+        {
+          talks.map((r) => (
+            <a class="room__row room__row--talk" href={r.href} target="_blank" rel="noopener" data-k={r.k}>
+              <span class="room__l">{r.label}</span>
+              <span class="room__len">{r.meta}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <aside class="room__view" aria-label="The lesson chosen">
+    {/* On a phone the script moves this under the row it opens. */}
+    <div class="room__open" id="room-open">
+      <div class="room__sticky">
+        <a class="room__frame" href={first.href} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
+          <img class="room__lo" src={still(firstPic.id, firstPic.f, 'mq')} alt="" decoding="async" />
+          <img class="room__hi" alt="" decoding="async" />
+        </a>
+        <p class="room__ar" lang="ar">{first.ar}</p>
+        <p class="room__title">{first.title}</p>
+        <p class="room__meta">{first.meta}</p>
+        <div class="room__act">
+          <a class="btn room__watch" href={first.href} target="_blank" rel="noopener">
+            Watch on YouTube
+            <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M2 8h11M9 4l4 4-4 4"></path>
+            </svg>
+          </a>
+          <p class="room__near">
+            <button type="button" data-go="-1">Before it <b></b></button>
+            <button type="button" data-go="1">After it <b></b></button>
+          </p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<style>
+  .room {
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin-inline: auto;
+    padding: calc(var(--nav-h) + clamp(1.5rem, 3vw, 2.5rem)) 0 clamp(4rem, 8vw, 7rem);
+    display: grid;
+    grid-template-columns: minmax(0, clamp(21rem, 43%, 37rem)) minmax(0, 1fr);
+    gap: clamp(2.5rem, 4.5vw, 4.5rem);
+    align-items: start;
+  }
+
+  /* ---------- the list ---------- */
+
+  .room__tabs {
+    position: sticky;
+    top: calc(var(--nav-h) - 1rem);
+    z-index: 2;
+    padding: 1rem 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line-strong);
+    font-size: 0.82rem;
+    color: var(--ink-2);
+  }
+
+  .room__line {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
+  }
+
+  .room__tabs a {
+    padding-bottom: 0.15rem;
+    transition: color 0.3s;
+  }
+
+  .room__tabs a:hover {
+    color: var(--ink);
+  }
+
+  .room__tabs a.is-on {
+    color: var(--ink);
+    box-shadow: 0 1px 0 var(--ink);
+  }
+
+  /* With the script a series at a time; without it, all of them, each under its name. */
+  html.js .room__shelf:not(.is-on) {
+    display: none;
+  }
+
+  html.js .room__shelf-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .room__shelf-title {
+    margin-top: 2rem;
+    font-weight: 500;
+    font-size: 1.4rem;
+    letter-spacing: -0.02em;
+  }
+
+  .room__group {
+    padding-top: 0.4rem;
+  }
+
+  .room__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin: 1.4rem 0 0.35rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .room__head [lang='ar'] {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: var(--gold);
+  }
+
+  /* Whatever is brought into view here (a row reached from the keyboard, a series by its link)
+     comes below the bar and the series names, which stay over the top of the list (up to three
+     lines of names). On the page's scroller: Chrome ignores a row's scroll-margin when focus
+     moves, as long as the row is still inside the window. */
+  :global(html) {
+    scroll-padding-top: calc(var(--nav-h) + 6.5rem);
+  }
+
+  .room__row {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.45rem 0.65rem;
+    border-radius: 3px;
+    font-size: 0.88rem;
+    color: var(--ink-2);
+    transition: background-color 0.25s;
+  }
+
+  .room__row--talk {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .room__n,
+  .room__len {
+    font-size: 0.8rem;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .room__row--talk .room__len {
+    text-align: right;
+  }
+
+  .room__row.is-on {
+    background: var(--paper-3);
+    color: var(--ink);
+  }
+
+  .room__row.is-on .room__l {
+    font-weight: 500;
+  }
+
+  .room__row.is-on .room__n {
+    color: var(--gold);
+  }
+
+  .room__row:focus-visible {
+    outline-offset: 0;
+  }
+
+  /* ---------- the preview ---------- */
+
+  .room__view {
+    align-self: stretch;
+  }
+
+  /* Beside the list it is only a holder: the preview inside keeps to the top of the screen. */
+  .room__open {
+    display: contents;
+  }
+
+  .room__sticky {
+    position: sticky;
+    top: calc(var(--nav-h) + 0.5rem);
+    padding-top: 0.5rem;
+  }
+
+  .room__frame {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 3px;
+    background: var(--paper-3);
+    box-shadow: 0 50px 80px -44px oklch(19% 0.012 60 / 0.6);
+  }
+
+  .room__frame img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .room__hi {
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .room__hi.is-ready {
+    opacity: 1;
+  }
+
+  .room__ar {
+    margin-top: 1.3rem;
+    min-height: 1.4em;
+    font-size: clamp(1.5rem, 2vw, 1.9rem);
+    line-height: 1.4;
+    color: var(--gold);
+    text-align: right;
+  }
+
+  .room__title {
+    margin-top: 0.1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 2.5vw, 2.4rem);
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .room__meta {
+    margin-top: 0.6rem;
+    font-size: 0.9rem;
+    color: var(--ink-3);
+  }
+
+  .room__act {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.6rem;
+    margin-top: 1.4rem;
+  }
+
+  .room__near {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    font-size: 0.82rem;
+    color: var(--ink-3);
+  }
+
+  .room__near button {
+    text-align: left;
+    color: inherit;
+  }
+
+  .room__near b {
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+
+  .room__near button:hover b {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  .room__near button:disabled {
+    display: none;
+  }
+
+  /* Without the script the preview stays on the first lesson: nothing to step through. */
+  html:not(.js) .room__near {
+    display: none;
+  }
+
+  /* On a short screen the frame gives way, so the way to YouTube stays in view under it. */
+  @media (min-width: 1001px) {
+    .room__frame {
+      width: min(100%, max(18rem, calc((100svh - var(--nav-h) - 18.5rem) * 16 / 9)));
+    }
+  }
+
+  /* ---------- phones: the names swipe, and a row opens where it is ---------- */
+
+  /* Narrower, the preview beside the list gets small and the names above it take four lines
+     (the script's `narrow` matches this). */
+  @media (max-width: 1000px) {
+    /* One column, never wider than the screen: the line of names must not widen it. */
+    .room {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .room__view {
+      display: none;
+    }
+
+    /* The series names on one line from edge to edge, swiped sideways; both edges fade, the left
+       only as wide as the gutter, so the first name starts clear of it. */
+    .room__tabs {
+      margin-inline: calc(-1 * var(--gutter));
+      padding: 0.9rem 0 0.75rem;
+    }
+
+    /* (Room under the names for the chosen one's underline, which the scroller would clip.) */
+    .room__line {
+      flex-wrap: nowrap;
+      gap: 1.35rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-padding-inline: var(--gutter) 2.5rem;
+      scrollbar-width: none;
+      padding: 0 2.5rem 2px var(--gutter);
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--gutter), #000 calc(100% - 2.5rem), transparent);
+      mask-image: linear-gradient(to right, transparent, #000 var(--gutter), #000 calc(100% - 2.5rem), transparent);
+    }
+
+    .room__line::-webkit-scrollbar {
+      display: none;
+    }
+
+    .room__line a {
+      flex: none;
+      white-space: nowrap;
+    }
+
+    :global(html) {
+      scroll-padding-top: calc(var(--nav-h) + 2.5rem);
+    }
+
+    /* A talk's place goes under its title. */
+    .room__row--talk {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0.15rem;
+    }
+
+    .room__row--talk .room__len {
+      text-align: left;
+    }
+
+    /* The open row, and under it the preview, opening down from it. */
+    .room__row.is-on {
+      border-radius: 4px 4px 0 0;
+    }
+
+    .room__open {
+      display: grid;
+      grid-template-rows: 0fr;
+      background: var(--paper-3);
+      border-radius: 0 0 4px 4px;
+      transition: grid-template-rows 0.45s var(--ease-out);
+    }
+
+    .room__open.is-open {
+      grid-template-rows: 1fr;
+    }
+
+    /* Closed, it is out of reach of the keyboard and screen readers once it has folded away. */
+    .room__open .room__sticky {
+      position: static;
+      min-height: 0;
+      overflow: hidden;
+      padding: 0 0.65rem;
+      visibility: hidden;
+      transition: visibility 0s 0.45s;
+    }
+
+    .room__open.is-open .room__sticky {
+      visibility: visible;
+      transition: none;
+    }
+
+    .room__open .room__frame {
+      margin-top: 0.15rem;
+      box-shadow: 0 30px 50px -34px oklch(19% 0.012 60 / 0.6);
+    }
+
+    .room__open .room__ar {
+      margin-top: 0.9rem;
+      min-height: 0;
+      font-size: 1.35rem;
+    }
+
+    .room__open .room__ar:empty {
+      display: none;
+    }
+
+    .room__open .room__title {
+      margin-top: 0.1rem;
+      font-size: 1.45rem;
+    }
+
+    .room__open .room__ar:empty + .room__title {
+      margin-top: 0.9rem;
+    }
+
+    .room__open .room__meta {
+      margin-top: 0.45rem;
+      font-size: 0.82rem;
+    }
+
+    .room__open .room__act {
+      margin-top: 1rem;
+      padding-bottom: 1.2rem;
+    }
+
+    .room__open .room__near {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .room__open,
+    .room__open .room__sticky {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/room';
+</script>

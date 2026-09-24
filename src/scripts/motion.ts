@@ -347,8 +347,9 @@ function about() {
 /* Read live, so they follow resizes and refreshes. Three zones the page scrolls through
    automatically: the pull-back (banner at rest, banner pulled back), the wall (wide, its
    stops, the index) and the parting (pages meeting, mission written). Between them the
-   scroll is free; the marks are where the keys rest on the way: the works headline and the
-   About headline (set so the "all works" link still shows above it). */
+   scroll is free; the marks are where the keys rest on the way: the works headline, the
+   lectures headline (set so the "all works" link still shows above it), the table of
+   lectures down to its button, and the About headline (the "all lectures" link above it). */
 function beats(): Beats {
   const pins = ScrollTrigger.getAll().filter((t) => t.pin);
   const pin = (sel: string) => pins.find((t) => (t.trigger as Element).matches(sel));
@@ -360,17 +361,24 @@ function beats(): Beats {
     for (let e: HTMLElement | null = el; e; e = e.offsetParent as HTMLElement | null) y += e.offsetTop;
     return y;
   };
+  const bottom = (sel: string) => top(sel) + ($(sel)?.offsetHeight ?? NaN);
   const navH = $('.nav')?.getBoundingClientRect().height ?? 0;
   const hero = pin('.hero');
   const wall = pin('.works__pin');
   const parting = pin('.about__pin');
+  const lectures = Math.min(top('#lectures'), top('.works__all') - navH - 24);
   return {
     zones: [
       hero ? [0, hero.end] : [],
       wall ? [wall.start, ...wallStops(), wall.end] : [],
       parting ? [parting.start, parting.end] : [],
     ],
-    marks: [top('#books'), Math.min(top('#about'), top('.works__all') - navH - 24)],
+    marks: [
+      top('#books'),
+      lectures,
+      Math.max(lectures, bottom('.lectures__all') + 32 - window.innerHeight),
+      Math.min(top('#about'), top('.lectures__all') - navH - 24),
+    ],
   };
 }
 

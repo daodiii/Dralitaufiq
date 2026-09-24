@@ -1,0 +1,22 @@
+---
+/* The lectures: "the reading room" (components/ReadingRoom.astro). The home page's table of stacks
+   leads here with "All the lectures". */
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import ReadingRoom from '../components/ReadingRoom.astro';
+---
+
+<Base
+  title="Lectures · Prof. Dr. Ali Mohamed Salah"
+  description="Every lesson of Prof. Dr. Ali Mohamed Salah on YouTube, series by series: the whole Qur'an explained, Riyāḍ aṣ-Ṣāliḥīn, the lives of the Prophet and his Companions, Bulūgh al-Marām, Ḥiṣn al-Muslim, and his talks."
+>
+  <Nav page="inner" current="lectures" />
+  <main>
+    <ReadingRoom />
+  </main>
+  <Footer page="inner" />
+  <script>
+    import '../scripts/smooth';
+  </script>
+</Base>

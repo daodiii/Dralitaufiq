@@ -2,13 +2,16 @@
 import profile from '../data/profile.json';
 
 interface Props {
-  /* The home page links to its own sections; an inner page links home, and to itself for Books. */
+  /* The home page links to its own sections; an inner page links to the pages, marks its own, and
+     links home for About. */
   page?: 'home' | 'inner';
+  current?: 'books' | 'lectures';
   booksHref?: string;
 }
 
-const { page = 'home', booksHref = '/books' } = Astro.props;
+const { page = 'home', current = 'books', booksHref = '/books' } = Astro.props;
 const home = page === 'home';
+const here = (k: 'books' | 'lectures') => !home && current === k;
 ---
 
 <header class="nav">
@@ -26,15 +29,16 @@ const home = page === 'home';
       <i></i><i></i>
     </button>
     <nav class="nav__menu" id="site-menu" aria-label="Primary">
-      {
-        home ? (
-          <a href="#books">Books</a>
-        ) : (
-          <a href={booksHref} class="is-active" aria-current="page">
-            Books
-          </a>
-        )
-      }
+      <a href={home ? '#books' : booksHref} class:list={[here('books') && 'is-active']} aria-current={here('books') ? 'page' : undefined}>
+        Books
+      </a>
+      <a
+        href={home ? '#lectures' : '/lectures'}
+        class:list={[here('lectures') && 'is-active']}
+        aria-current={here('lectures') ? 'page' : undefined}
+      >
+        Lectures
+      </a>
       <a href={home ? '#about' : '/#about'}>About</a>
       <a href="#contact">Contact</a>
     </nav>

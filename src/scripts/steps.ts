@@ -82,7 +82,8 @@ export function steps(read: () => Beats) {
     });
 
     const onKey = (e: KeyboardEvent) => {
-      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      /* Taken already: the arrow keys walking a stack of lectures. */
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
       if (e.key === ' ' && t && /^(a|button)$/i.test(t.tagName)) return; /* space activates it */

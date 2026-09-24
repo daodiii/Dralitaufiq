@@ -23,7 +23,14 @@ if (!reduceMotion) {
     smoothWheel: true,
     wheelMultiplier: 1,
     touchMultiplier: 1.4,
-    virtualScroll: (data) => (gesture ? gesture(data) : true),
+    virtualScroll: (data) => {
+      /* A sideways swipe over a row that scrolls sideways ([data-scroll-x]) is the browser's:
+         Lenis would read its little vertical wobble as a scroll of the page and swallow it. */
+      const e = data.event;
+      if (e.type === 'wheel' && Math.abs(data.deltaX) > Math.abs(data.deltaY) && (e.target as Element).closest?.('[data-scroll-x]'))
+        return false;
+      return gesture ? gesture(data) : true;
+    },
   });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => {
@@ -49,7 +56,7 @@ export function scrollToY(y: number, immediate = false) {
     if (immediate) lenis.scrollTo(y, { immediate: true, force: true });
     else lenis.scrollTo(y, { duration: 1.4, easing: (t) => 1 - Math.pow(1 - t, 4) });
   } else {
-    window.scrollTo({ top: y, behavior: immediate ? 'auto' : 'smooth' });
+    window.scrollTo({ top: y, behavior: immediate || reduceMotion ? 'auto' : 'smooth' });
   }
 }
 

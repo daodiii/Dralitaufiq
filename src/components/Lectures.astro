@@ -1,0 +1,484 @@
+---
+/**
+ * The lectures: "thumbing through". Each series he teaches on YouTube is a stack of its lesson
+ * cards on a table under the north light, one card for every public lesson, so the whole Qur'an
+ * stands as a tower. Running the pointer up a stack pulls out the card at that height: it stands
+ * up in colour, the cards around it fan out like a thumbed deck, the label under the stack names
+ * the lesson, and a click opens it on YouTube inside its series. Monochrome like the wall.
+ * The table is drawn in one unit (--lu) sized so the row spans the text column. The 3D is only
+ * for looks: pointing and clicking go through flat hit areas laid over it, since hit-testing in
+ * a tilted preserve-3d layer is unreliable. The script is scripts/lectures.ts.
+ */
+import { Image } from 'astro:assets';
+import LESSONS from '../data/lessons.json';
+import { SERIES, TABLE, playlist, seriesMeta, rowAt, stackHeight, type Lessons } from '../lib/lectures';
+import sira from '../assets/lectures/sira.jpg';
+import brief from '../assets/lectures/brief.jpg';
+import riyad from '../assets/lectures/riyad.jpg';
+import quran from '../assets/lectures/quran.jpg';
+import companions from '../assets/lectures/companions.jpg';
+import bulugh from '../assets/lectures/bulugh.jpg';
+
+/* A frame of each series for the top of its stack. */
+const FRAMES = { sira, brief, riyad, quran, companions, bulugh };
+
+const data = LESSONS as Lessons;
+const stacks = TABLE.map((key, i) => {
+  const s = SERIES[key];
+  const n = data[key].lessons.length;
+  return { key, s, n, h: stackHeight(n), meta: seriesMeta(s), href: playlist(s.pl), ...rowAt(i) };
+});
+
+/* What the script needs, small enough to inline; the lessons it loads when the table comes near. */
+const client = stacks.map(({ key, s, n, h, meta, href }) => ({ key, title: s.title, meta, href, pl: s.pl, n, h }));
+---
+
+<section class="lectures" id="lectures" aria-labelledby="lectures-title">
+  <div class="container lectures__head">
+    <h2 class="display display--lg" id="lectures-title" data-split>A lifetime of lessons. <em>Open to all.</em></h2>
+    <p class="lectures__lede" data-reveal data-delay="0.15">
+      The whole Qur'an and the great books of ḥadīth, taught at the Tawfiiq mosque in Oslo, and talks given from Helsinki
+      to Kampala. Most in Somali, some in English.
+    </p>
+  </div>
+
+  <div data-reveal data-y="40">
+    <div class="lectures__stage" data-scroll-x>
+      <div class="lectures__world">
+        <div class="lectures__scene" aria-hidden="true">
+          <div class="lectures__table">
+            {
+              stacks.map((st, i) => (
+                <div class="lectures__stack" data-i={i} style={`--x:${st.x};--y:${st.y};--h:${st.h}`}>
+                  <div class="lectures__shadow" />
+                  <div class="lectures__face lectures__front" />
+                  <div class="lectures__face lectures__side lectures__side--r" />
+                  <div class="lectures__face lectures__side lectures__side--l" />
+                  <div class="lectures__top">
+                    <Image
+                      src={FRAMES[st.key]}
+                      alt=""
+                      widths={[240, 420]}
+                      sizes="(max-width: 760px) 120px, 220px"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="lectures__hits">
+          {
+            stacks.map((st, i) => (
+              <a
+                class="lectures__hit"
+                data-i={i}
+                href={st.href}
+                target="_blank"
+                rel="noopener"
+                aria-label={`${st.s.title}, ${st.meta.toLowerCase()}, on YouTube`}
+              />
+            ))
+          }
+          {
+            stacks.map((st, i) => (
+              <div class="lectures__lbl" data-i={i} aria-hidden="true">
+                <span class="lectures__lbl-ar" lang="ar">
+                  {st.key === 'quran' ? st.s.ar : ''}
+                </span>
+                <span class="lectures__lbl-t">{st.s.title}</span>
+                <span class="lectures__lbl-m">{st.meta}</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <p class="sr-only" aria-live="polite" data-live></p>
+      <script type="application/json" data-stacks set:html={JSON.stringify(client)} />
+    </div>
+
+    <ul class="container lectures__list">
+      {
+        stacks.map((st) => (
+          <li>
+            <a class="link" href={st.href} target="_blank" rel="noopener">
+              {st.s.title}
+            </a>
+            <span>{st.meta}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="container lectures__all">
+      <a class="btn btn--ghost" href="/lectures">
+        All the lectures
+        <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+          <path d="M2 8h11M9 4l4 4-4 4"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The table's unit: one design pixel of the row, so the six stacks span the text column
+     (1086 is the row's width on screen at one unit). Registered, so it is worked out once here
+     and the script can read it back. */
+  @property --lu {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 1px;
+  }
+
+  .lectures {
+    container-type: inline-size;
+    padding-top: clamp(6rem, 12vw, 11rem);
+  }
+
+  .lectures__head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 2rem 4rem;
+    align-items: end;
+    padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .lectures__lede {
+    max-width: 25rem;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-3);
+    text-wrap: pretty;
+  }
+
+  /* The stage runs from above the tower (--top, in units over the table's middle: room for a
+     card pulled from its top) to under the labels of the nearest stacks (--words: room for the
+     longest lesson's; a smaller table has narrower labels, so its words take more lines). */
+  .lectures__stage {
+    --lu: max(0.62px, calc(min(100cqi - 2 * var(--gutter), var(--max)) / 1086));
+    --top: 500;
+    --words: max(5.25rem, 5.25rem + (1px - var(--lu)) * 200);
+    position: relative;
+    height: calc((var(--top) - 94) * var(--lu) + var(--words));
+    overflow: clip;
+  }
+
+  /* On a touch screen nothing is pulled out, and the labels only ever name the series. */
+  @media (hover: none) {
+    .lectures__stage {
+      --top: 435;
+      --words: 5.5rem;
+    }
+  }
+
+  .lectures__world {
+    position: relative;
+    height: 100%;
+  }
+
+  /* A phone keeps the one row at a size that reads, and swipes along it. */
+  @media (max-width: 759px) {
+    .lectures__stage {
+      --lu: clamp(0.62px, 100cqi / 560, 0.8px);
+      overflow: auto clip;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+
+    .lectures__stage::-webkit-scrollbar {
+      display: none;
+    }
+
+    .lectures__world {
+      width: calc(1086 * var(--lu) + 2 * var(--gutter));
+    }
+
+    .lectures__hit {
+      scroll-snap-align: center;
+    }
+  }
+
+  /* ---------- the table, tilted away under a north light ---------- */
+
+  /* The script reads the camera back from the computed style, so it can change here alone.
+     The table turns 3° and the row draws 17.6 units left of its middle: shifted back, it sits
+     centred in the column. */
+  .lectures__scene {
+    position: absolute;
+    inset: 0;
+    perspective: calc(2100 * var(--lu));
+    perspective-origin: calc(50% + 17.6 * var(--lu)) calc((var(--top) - 620) * var(--lu));
+    pointer-events: none;
+  }
+
+  .lectures__table {
+    position: absolute;
+    left: calc(50% + 17.6 * var(--lu));
+    top: calc(var(--top) * var(--lu));
+    width: 0;
+    height: 0;
+    transform-style: preserve-3d;
+    transform: rotateX(58deg) rotateZ(-3deg);
+  }
+
+  .lectures__stack {
+    position: absolute;
+    left: calc(var(--x) * var(--lu));
+    top: calc(var(--y) * var(--lu));
+    width: calc(162 * var(--lu));
+    height: calc(91 * var(--lu));
+    transform-style: preserve-3d;
+  }
+
+  .lectures__stack > * {
+    position: absolute;
+    backface-visibility: hidden;
+  }
+
+  .lectures__top {
+    inset: 0;
+    overflow: hidden;
+    border-radius: 1px;
+    transform: translateZ(calc(var(--h) * var(--lu)));
+    box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.08);
+  }
+
+  /* The frames are grey in the files: a CSS filter would be a render pass per stack per frame. */
+  .lectures__top :global(img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .lectures__top::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    opacity: 0.38;
+  }
+
+  /* The edges of many lesson cards, stacked: the script paints each sheet on a canvas, and
+     the gradient is what shows before it does. */
+  .lectures__face :global(canvas) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .lectures__front {
+    left: calc(-2 * var(--lu));
+    top: calc((91 - var(--h)) * var(--lu));
+    width: calc(166 * var(--lu));
+    height: calc(var(--h) * var(--lu));
+    transform-origin: bottom;
+    transform: rotateX(-90deg);
+    background: repeating-linear-gradient(to bottom, oklch(97% 0.004 85) 0 2.2px, oklch(80% 0.01 70) 2.2px 3.3px);
+    background-clip: content-box;
+    padding: 0 2px;
+  }
+
+  .lectures__side {
+    top: calc(-2 * var(--lu));
+    width: calc(var(--h) * var(--lu));
+    height: calc(95 * var(--lu));
+    background: repeating-linear-gradient(to right, oklch(90% 0.006 80) 0 2.2px, oklch(72% 0.01 70) 2.2px 3.3px);
+    background-clip: content-box;
+    padding: 2px 0;
+  }
+
+  .lectures__face.is-painted {
+    background: none;
+  }
+
+  .lectures__side--r {
+    left: calc((162 - var(--h)) * var(--lu));
+    transform-origin: right;
+    transform: rotateY(90deg);
+  }
+
+  .lectures__side--l {
+    left: 0;
+    transform-origin: left;
+    transform: rotateY(-90deg);
+  }
+
+  /* A soft shadow drawn as a gradient, not blurred: a blur is a render pass per frame. */
+  .lectures__shadow {
+    inset: -10% -7% -28% -7%;
+    background: radial-gradient(closest-side, oklch(19% 0.012 60 / 0.3) 52%, oklch(19% 0.012 60 / 0.09) 76%, transparent);
+  }
+
+  /* ---------- the card pulled from a stack (made by the script) ---------- */
+
+  /* One slot rides up and down the stack with the pointer; the pulled card and the cards
+     around it live in it, so a move along the stack is one short glide. */
+  .lectures :global(.lectures__slot) {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    transition: transform 0.14s linear;
+    pointer-events: none;
+  }
+
+  .lectures :global(.lectures__leaf) {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, hsl(40 12% 88%), hsl(40 22% 98%) 80%, hsl(40 16% 93%) 100%);
+    box-shadow:
+      0 1.2px 0 hsl(35 12% 64%),
+      0 3px 5px -2px hsl(35 20% 30% / 0.25);
+    backface-visibility: hidden;
+    transition: transform 0.38s var(--ease-out);
+  }
+
+  .lectures :global(.lectures__card) {
+    position: absolute;
+    inset: 0;
+    padding: 3px;
+    background: hsl(40 20% 97%);
+    border-radius: 1.5px;
+    transform-origin: 50% 100%;
+    box-shadow:
+      0 0 0 0.5px hsl(35 10% 70% / 0.6),
+      0 26px 36px -20px oklch(19% 0.012 60 / 0.55);
+    opacity: 0;
+    transition:
+      transform 0.5s var(--ease-out),
+      opacity 0.25s;
+  }
+
+  .lectures :global(.lectures__card.is-out) {
+    opacity: 1;
+  }
+
+  .lectures :global(.lectures__card img) {
+    position: absolute;
+    inset: 3px;
+    width: calc(100% - 6px);
+    height: calc(100% - 6px);
+    object-fit: cover;
+  }
+
+  .lectures :global(.lectures__card .is-hi) {
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .lectures :global(.lectures__card .is-hi.is-ready) {
+    opacity: 1;
+  }
+
+  /* ---------- flat layer: hit areas and labels, placed by the script ---------- */
+
+  .lectures__hits {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .lectures__stage:not(.is-laid) .lectures__hits {
+    visibility: hidden;
+  }
+
+  .lectures__hit {
+    position: absolute;
+    pointer-events: auto;
+    border-radius: 4px;
+  }
+
+  /* Placed and sized by the script: as wide as the room between its neighbours. */
+  .lectures__lbl {
+    position: absolute;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    transform: translateX(-50%);
+  }
+
+  .lectures__lbl-ar {
+    font-size: clamp(1.1rem, calc(15.4 * var(--lu)), 1.3rem);
+    line-height: 1.3;
+    color: var(--gold);
+  }
+
+  .lectures__lbl-ar:empty {
+    display: none;
+  }
+
+  .lectures__lbl-t {
+    font-size: clamp(0.86rem, calc(12.6 * var(--lu)), 1.04rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    text-wrap: balance;
+    text-decoration: underline 1px transparent;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color 0.4s var(--ease-out);
+  }
+
+  .lectures__lbl.is-on .lectures__lbl-t {
+    text-decoration-color: currentColor;
+  }
+
+  .lectures__lbl-m {
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+    color: var(--ink-3);
+  }
+
+  .lectures__all {
+    display: flex;
+    justify-content: center;
+    padding-top: clamp(0.5rem, 1.5vw, 1.25rem);
+  }
+
+  /* Without the script, the series as plain links. */
+  .lectures__list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.4rem 2rem;
+    padding-block: 1rem 2rem;
+  }
+
+  .lectures__list li {
+    display: grid;
+    justify-items: start;
+    gap: 0.2rem;
+  }
+
+  .lectures__list span {
+    font-size: 0.8rem;
+    color: var(--ink-3);
+  }
+
+  html.js .lectures__list,
+  html:not(.js) .lectures__stage {
+    display: none;
+  }
+
+  @media (max-width: 900px) {
+    .lectures__head {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+
+  @media (max-width: 759px) {
+    .lectures__list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<script>
+  import '../scripts/lectures';
+</script>
