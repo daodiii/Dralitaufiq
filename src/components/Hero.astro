@@ -934,18 +934,17 @@ const facebook = profile.social[0];
     pointer();
     ScrollTrigger.refresh();
 
+    /* A new width moves the face and the calligraphy's flight, so the pull-back is rebuilt,
+       inside ScrollTrigger's own resize refresh, once it has noted the scroll position. Taking
+       the pin out shortens the page above the reader by the whole pull-back, and the browser
+       scrolls up to match; a refresh begun after that would keep the reader there. */
     let width = window.innerWidth;
-    let timer = 0;
-    window.addEventListener('resize', () => {
+    ScrollTrigger.addEventListener('refreshInit', () => {
       if (window.innerWidth === width) return;
       width = window.innerWidth;
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        teardown();
-        inner.forEach((el) => gsap.set(el, { autoAlpha: 1 }));
-        build();
-        ScrollTrigger.refresh();
-      }, 200);
+      teardown();
+      inner.forEach((el) => gsap.set(el, { autoAlpha: 1 }));
+      build();
     });
   }
 
