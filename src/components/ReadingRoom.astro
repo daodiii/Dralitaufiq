@@ -67,7 +67,8 @@ const deepCss =
 
 <section class="room" aria-labelledby="room-title">
   <script is:inline define:vars={{ deep }}>
-    const asked = new URLSearchParams(location.search).get('series');
+    const heading = location.hash.startsWith('#t-') ? location.hash.slice(3) : '';
+    const asked = new URLSearchParams(location.search).get('series') || heading;
     if (deep.includes(asked)) document.documentElement.dataset.series = asked;
   </script>
   <style is:inline set:html={deepCss}></style>
@@ -222,7 +223,10 @@ const deepCss =
     white-space: nowrap;
   }
 
+  /* A link to a series' heading (the names, without the script) lands below the bar and the
+     names, which stay over the top of the list (up to three lines of names). */
   .room__shelf-title {
+    scroll-margin-top: calc(var(--nav-h) + 6.5rem);
     margin-top: 2rem;
     font-weight: 500;
     font-size: 1.4rem;
@@ -248,14 +252,6 @@ const deepCss =
     font-size: 1.2rem;
     font-weight: 400;
     color: var(--gold);
-  }
-
-  /* Whatever is brought into view here (a row reached from the keyboard, a series by its link)
-     comes below the bar and the series names, which stay over the top of the list (up to three
-     lines of names). On the page's scroller: Chrome ignores a row's scroll-margin when focus
-     moves, as long as the row is still inside the window. */
-  :global(html) {
-    scroll-padding-top: calc(var(--nav-h) + 6.5rem);
   }
 
   .room__row {
@@ -463,8 +459,8 @@ const deepCss =
       white-space: nowrap;
     }
 
-    :global(html) {
-      scroll-padding-top: calc(var(--nav-h) + 2.5rem);
+    .room__shelf-title {
+      scroll-margin-top: calc(var(--nav-h) + 2.5rem);
     }
 
     /* A talk's place goes under its title. */

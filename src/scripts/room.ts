@@ -110,6 +110,17 @@ function mount(room: HTMLElement) {
   let row: HTMLAnchorElement | null = null;
   const last = new Map<string, number>();
 
+  /* A row brought into view (from the keyboard, or by "Before it" / "After it") comes clear of the
+     bar and the series names, which stay over the top of the list. Done here: page-wide
+     scroll-padding would do it for the rows, but it also makes Chrome scroll the page on every Tab
+     onto a name in the stuck bar, which no scroll can bring out of the padding. */
+  const bringIn = (r: HTMLElement) => {
+    const box = r.getBoundingClientRect();
+    const clear = $<HTMLElement>('.room__tabs').getBoundingClientRect().bottom + 8;
+    if (box.top < clear) scrollToY(window.scrollY + box.top - clear, true);
+    else if (box.bottom > window.innerHeight - 8) scrollToY(window.scrollY + box.bottom - window.innerHeight + 8, true);
+  };
+
   const pick = (r: HTMLAnchorElement, reveal = false) => {
     if (r === row) return;
     row?.classList.remove('is-on');
@@ -134,7 +145,7 @@ function mount(room: HTMLElement) {
       b.querySelector('b')!.textContent = other ? told(key, Number(other.dataset.k)).title : '';
     });
     if (held?.disabled) (near.find((b) => !b.disabled) ?? watch).focus();
-    if (reveal) r.scrollIntoView({ block: 'nearest' });
+    if (reveal) bringIn(r);
   };
   const unpick = () => {
     row?.classList.remove('is-on');
@@ -154,9 +165,15 @@ function mount(room: HTMLElement) {
     if (r) pick(r);
   });
   room.addEventListener('focusin', (e) => {
-    if (narrow.matches) return;
     const r = (e.target as Element).closest<HTMLAnchorElement>('.room__row');
-    if (r) pick(r);
+    if (!r) return;
+    /* After the browser's own scroll to it, which leaves a row going up under the bars. */
+    if (r.matches(':focus-visible')) requestAnimationFrame(() => document.activeElement === r && bringIn(r));
+    if (!narrow.matches) pick(r);
+  });
+  /* A key after a touch that ended as a scroll is the keyboard's: Enter opens, as it should. */
+  room.addEventListener('keydown', () => {
+    touchFrom = undefined;
   });
   near.forEach((b) =>
     b.addEventListener('click', () => {
@@ -314,7 +331,10 @@ function mount(room: HTMLElement) {
     if (on) showTab(on, true);
   });
 
-  const asked = new URLSearchParams(location.search).get('series');
+  /* The series asked for: ?series=, or a link to its heading (#t-<key>, the names without the
+     script). */
+  const heading = location.hash.startsWith('#t-') ? location.hash.slice(3) : null;
+  const asked = new URLSearchParams(location.search).get('series') ?? heading;
   choose(asked ?? shelves[0].dataset.key!, false);
   /* The series is shown by the classes now, no longer by the mark the page opened with. */
   delete document.documentElement.dataset.series;
