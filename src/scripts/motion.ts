@@ -4,6 +4,7 @@ import { getLenis, scrollToY } from './smooth';
 import { steps, type Beats } from './steps';
 import { nav } from './nav';
 import { reveals } from './reveals';
+import { keepPlace } from './place';
 
 gsap.registerPlugin(ScrollTrigger);
 (window as unknown as { ScrollTrigger: typeof ScrollTrigger }).ScrollTrigger = ScrollTrigger;
@@ -418,6 +419,7 @@ function init() {
   works();
   about();
   ScrollTrigger.refresh();
+  keepPlace('.hero, .works__pin, .about__pin');
   landOnHash();
   steps(beats);
 }
