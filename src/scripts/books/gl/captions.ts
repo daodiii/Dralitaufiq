@@ -4,9 +4,10 @@ import { reduceMotion } from '../../smooth';
 /* One caption at a time (BookCaption.astro): the outgoing one lifts away as it fades, the next
    rises in a beat later. `dir` is the direction of travel (1 forward, -1 back). No blur: a CSS blur
    animating over a live WebGL canvas cost 33 to 67 ms a frame on this laptop (measured
-   2026-09-23), a visible stutter while a book is moving. */
-export function captions(root: ParentNode) {
-  const items = Array.from(root.querySelectorAll<HTMLElement>('.bcap__item'));
+   2026-09-23), a visible stutter while a book is moving. Other sets of words that take turns the
+   same way (the books page's chapter titles) pass their own selector. */
+export function captions(root: ParentNode, selector = '.bcap__item') {
+  const items = Array.from(root.querySelectorAll<HTMLElement>(selector));
   let current = -1;
 
   function out(el: HTMLElement | undefined, dir: number) {

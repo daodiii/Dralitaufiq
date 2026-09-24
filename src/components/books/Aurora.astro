@@ -2,11 +2,15 @@
 /**
  * "Northern lights". Night over a frozen lake in Norway (nordlys, "north light"). The page
  * opens white; scrolling brings the night. The 18 books stand on the ice in an arc around the
- * reader, and above each hangs a curtain of aurora in its colours. Choosing a book turns the view
- * to it: its curtain surges across the sky and it steps forward. At the end, the whole sky. The
- * scene lives in scripts/books/aurora.ts.
+ * reader, and above each hangs a curtain of aurora in its colours. Scrolling goes language by
+ * language, one chapter each (English, Arabic, Somali), titled in the sky in the language's own
+ * words, its curtains lit together; inside a chapter a tap, a swipe or the arrow keys choose the
+ * book, whose curtain surges as it steps forward. At the end, the whole sky. The scene lives in
+ * scripts/books/aurora.ts.
  */
 import type { Book } from '../../lib/books';
+import { languageLabel, languageName } from '../../lib/books';
+import { byLanguage } from '../../lib/library';
 import GlPayload from './GlPayload.astro';
 import BookCaption from './BookCaption.astro';
 import BookPicker from './BookPicker.astro';
@@ -17,11 +21,33 @@ interface Props {
 }
 
 const { books } = Astro.props;
+/* The chapters, in the order the scene lays the books out (lib/glbooks, ordered()). */
+const chapters = byLanguage(books).filter((g) => g.books.length);
 ---
 
-<section class="aur" aria-label="The books" style={`--lead:1.1;--per:0.7;--n:${books.length + 1}`}>
+<section class="aur" aria-label="The books" style={`--lead:1.1;--per:1;--n:${chapters.length + 1}`}>
   <div class="aur__stage">
     <div class="aur__shade" aria-hidden="true"></div>
+    <div class="aur__head">
+      <div class="aur__names" aria-hidden="true">
+        {
+          chapters.map((c) => (
+            <p class="aur__name" lang={c.lang} dir={c.lang === 'ar' ? 'rtl' : 'ltr'}>
+              {languageName[c.lang]}
+            </p>
+          ))
+        }
+      </div>
+      <nav class="aur__langs" aria-label="Languages">
+        {
+          chapters.map((c, i) => (
+            <button type="button" data-chapter={i}>
+              {languageLabel[c.lang]}
+            </button>
+          ))
+        }
+      </nav>
+    </div>
     <BookCaption books={books} tone="dark" class="aur__caps" />
     <BookPicker books={books} />
   </div>
@@ -68,6 +94,82 @@ const { books } = Astro.props;
     background: radial-gradient(80% 110% at 0% 100%, oklch(7% 0.02 260 / 0.88), transparent 64%);
   }
 
+  /* The chapter's title in the sky, and the three languages to go between them. The script shows
+     one title at a time and fades the languages in with the night. */
+  .aur__head {
+    position: absolute;
+    z-index: 3;
+    top: calc(var(--nav-h) + clamp(0.4rem, 4vh, 2.2rem));
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .aur__names {
+    display: grid;
+  }
+
+  /* Where the height is short the title makes way for the book (the script decides, fit()). */
+  .aur__stage.is-short .aur__names {
+    display: none;
+  }
+
+  .aur__name {
+    grid-area: 1 / 1;
+    align-self: center;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: clamp(3.4rem, 6.6vw, 7rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.05em;
+    color: oklch(97% 0.01 85 / 0.9);
+  }
+
+  .aur__name:lang(ar) {
+    font-family: var(--font-arabic);
+    font-size: clamp(3.6rem, 7vw, 7.4rem);
+    font-weight: 400;
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+
+  :global(html.js) .aur__name,
+  :global(html.js) .aur__langs {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .aur__langs {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1.1rem;
+    pointer-events: auto;
+  }
+
+  /* A faint shadow keeps the words legible where they pass over a far book's cover. */
+  .aur__langs button {
+    padding: 0.35rem 0 0.3rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: oklch(92% 0.01 250 / 0.55);
+    text-shadow: 0 1px 10px oklch(8% 0.02 260 / 0.7);
+    transition: color 0.3s var(--ease-out);
+  }
+
+  .aur__langs button:hover,
+  .aur__langs button:focus-visible {
+    color: oklch(96% 0.006 85 / 0.85);
+  }
+
+  .aur__langs button[aria-current='true'] {
+    color: oklch(98% 0.005 85);
+    box-shadow: inset 0 -1px 0 currentColor;
+  }
+
   .aur__stage :global(.aur__caps) {
     left: var(--gutter);
     top: calc(var(--nav-h) + 1rem);
@@ -85,15 +187,78 @@ const { books } = Astro.props;
     display: none;
   }
 
-  @media (max-width: 760px) {
+  /* Upright (phones, and tablets held upright) the words go under the book, and the script tilts
+     the camera so the book clears them. */
+  @media (max-width: 760px), (max-aspect-ratio: 4/5) {
     .aur__stage :global(.aur__caps) {
       right: var(--gutter);
-      bottom: 1.2rem;
+      bottom: 1rem;
       width: auto;
     }
 
     .aur__shade {
-      background: linear-gradient(to top, oklch(8% 0.02 260 / 0.85), oklch(8% 0.02 260 / 0.6) 24%, transparent 34%);
+      background: linear-gradient(to top, oklch(8% 0.02 260 / 0.8), oklch(8% 0.02 260 / 0.45) 18%, transparent 28%);
+    }
+  }
+
+  /* On a phone, a smaller title and one row for the first Amazon listing and "About this book",
+     which holds the other formats. */
+  @media (max-width: 760px) {
+    .aur__langs {
+      gap: 1.4rem;
+    }
+
+    .aur__langs button {
+      font-size: 0.86rem;
+    }
+
+    /* The button and the link share a row where it holds both, and the link goes under it where not. */
+    .aur__stage :global(.aur__caps .bcap__item) {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      column-gap: 1.2rem;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__item > :is(p, h2)) {
+      flex-basis: 100%;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__links) {
+      white-space: nowrap;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__meta) {
+      font-size: 0.78rem;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__badge) {
+      margin-top: 0.35rem;
+      font-size: 0.78rem;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__title) {
+      margin-top: 0.3rem;
+      font-size: 1.6rem;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__title:lang(ar)) {
+      font-size: 1.75rem;
+      line-height: 1.3;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__latin) {
+      margin-top: 0.15rem;
+      font-size: 0.86rem;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__buy),
+    .aur__stage :global(.aur__caps .bcap__links) {
+      margin-top: 0.8rem;
+    }
+
+    .aur__stage :global(.aur__caps .bcap__buy .btn--ghost) {
+      display: none;
     }
   }
 </style>

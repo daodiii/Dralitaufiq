@@ -13,6 +13,8 @@ export type Book = CollectionEntry<'books'>;
 export const FEATURED = [0, 11, 15];
 
 export const languageLabel = { en: 'English', ar: 'Arabic', so: 'Somali' } as const;
+/* Each language in its own words, as the books page titles its chapters. */
+export const languageName = { en: 'English', ar: 'العربية', so: 'Soomaali' } as const;
 
 export function shortRole(role: string) {
   if (role.startsWith('Translated, edited')) return 'Translated, edited and annotated';

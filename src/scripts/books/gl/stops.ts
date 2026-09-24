@@ -1,11 +1,13 @@
 import { getLenis } from '../../smooth';
 import { sheetOpen } from '../sheet';
+import { settleIndex } from './settle';
 
 /* Scroll stops for a sticky WebGL stage: the section is tall and its stage stays on
    screen; the scroll position picks the current stop; when the scroll comes to rest between stops
-   it glides on to the nearest; an opening beat (`lead` screens) plays out before the first stop
-   and, left half way, carries on in the direction of travel. The section's height comes from CSS
-   (--lead, --per, --n), so it is right before any script runs. */
+   it glides on to the nearest, or with `carry` on to the next in the direction of travel (one
+   gesture, one stop); an opening beat (`lead` screens) plays out before the first stop and, left
+   half way, carries on in the direction of travel. The section's height comes from CSS (--lead,
+   --per, --n), so it is right before any script runs. */
 
 export interface Stops {
   count: number;
@@ -18,6 +20,8 @@ export interface Stops {
 }
 
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+/* With `carry`, a scroll that stops this near a stop goes back onto it (px). */
+const TOL = 24;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export function stops(o: {
@@ -27,7 +31,9 @@ export function stops(o: {
   lead: number;
   per: number;
   onRest?: (i: number) => void;
-  keys?: boolean;
+  /* 'vertical' leaves the left and right arrows to the page. */
+  keys?: boolean | 'vertical';
+  carry?: boolean;
 }): Stops {
   const lenis = getLenis();
   const r = { top: 0, H: 1 };
@@ -86,7 +92,8 @@ export function stops(o: {
       glide(dir > 0 ? y(0) : r.top, 1.1, () => (dir > 0 ? o.onRest?.(0) : undefined));
       return;
     }
-    const i = at().i;
+    const { u } = at();
+    const i = o.carry ? settleIndex(u, dir, TOL / (o.per * r.H), o.count - 1) : Math.round(u);
     if (Math.abs(s - y(i)) < 1.5) {
       o.onRest?.(i);
       return;
@@ -104,6 +111,12 @@ export function stops(o: {
   if (lenis) lenis.on('scroll', onScroll);
   else window.addEventListener('scroll', onScroll, { passive: true });
 
+  const down = ['ArrowDown', 'PageDown'];
+  const up = ['ArrowUp', 'PageUp'];
+  if (o.keys !== 'vertical') {
+    down.push('ArrowRight');
+    up.push('ArrowLeft');
+  }
   if (o.keys !== false)
     window.addEventListener('keydown', (e) => {
       if (sheetOpen() || !inside() || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -113,8 +126,8 @@ export function stops(o: {
       const { u } = at();
       const before = window.scrollY < y(0) - 1;
       let to: number;
-      if (['ArrowDown', 'PageDown', 'ArrowRight'].includes(e.key) || (e.key === ' ' && !e.shiftKey)) to = before ? 0 : Math.floor(u + 0.001) + 1;
-      else if (['ArrowUp', 'PageUp', 'ArrowLeft'].includes(e.key) || (e.key === ' ' && e.shiftKey)) to = Math.ceil(u - 0.001) - 1;
+      if (down.includes(e.key) || (e.key === ' ' && !e.shiftKey)) to = before ? 0 : Math.floor(u + 0.001) + 1;
+      else if (up.includes(e.key) || (e.key === ' ' && e.shiftKey)) to = Math.ceil(u - 0.001) - 1;
       else return;
       if (to < 0 || to >= o.count) return;
       e.preventDefault();

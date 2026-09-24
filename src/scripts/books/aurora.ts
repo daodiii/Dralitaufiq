@@ -5,7 +5,8 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { reduceMotion } from '../smooth';
 import { nav, showNav } from '../nav';
 import { reveals } from '../reveals';
-import { openSheet } from './sheet';
+import { openSheet, sheetOpen } from './sheet';
+import { chapterOf, chaptersOf } from './chapters';
 import { readBooks } from './gl/payload';
 import { createStage } from './gl/stage';
 import { bookKit, makeBook } from './gl/book';
@@ -20,14 +21,18 @@ import { gradePass } from './aurora/grade';
 /* "Northern lights". The stage opens white, like the page; the first stretch of scrolling brings
    the night: the sky darkens, the mountains and the ice come out of the white, stars appear and the
    aurora kindles. The books stand on the ice in an arc around a low camera, and above each hangs
-   its curtain of aurora in its colours (curtains.ts). Scrolling turns the view along the arc; the
-   book it comes to steps forward while its curtain surges across the sky and tints the ice. At the
-   end the view draws back under the whole sky, every curtain alight. */
+   its curtain of aurora in its colours (curtains.ts). Scrolling goes language by language (a
+   chapter each, chapters.ts): the view turns to the book chosen in that language, its curtains
+   light together and its name stands in the sky. Inside a chapter a tap, a swipe or the arrow keys
+   choose the book; the chosen book steps forward while its curtain surges across the sky and tints
+   the ice. At the end the view draws back under the whole sky, every curtain alight. */
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
 const section = $('.aur');
 const host = $('.aur__stage', section);
 const shade = $('.aur__shade', host);
+const head = $('.aur__head', host);
+const langBar = $('.aur__langs', head);
 const navBar = document.querySelector<HTMLElement>('.nav');
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (t: number) => {
@@ -36,6 +41,10 @@ const smooth = (t: number) => {
 };
 const EYE = 0.3; /* the camera's height above the ice, metres */
 const R = 2.2; /* the arc of books */
+/* How far out of the arc a chosen book steps towards the reader, as a share of R: nearer on an
+   upright screen, where it has the width to itself (fit() may step it back where the height is
+   short). */
+const STEP = { desk: 0.45, upright: 0.3 };
 const CLASSIC = new THREE.Color('#3dffa6');
 
 /* The balance of light by night. The chosen book is the brightest, truest thing on screen: lit
@@ -43,7 +52,8 @@ const CLASSIC = new THREE.Color('#3dffa6');
    light show that outshines the book is uncomfortable to look at. */
 const LIGHT = {
   chosen: 0.75, /* the chosen book's curtain */
-  others: 0.055, /* the other curtains meanwhile */
+  group: 0.12, /* the other curtains of its language, lit together as the chapter's band of sky */
+  others: 0.035, /* the curtains of the other languages meanwhile */
   rest: 0.12, /* every curtain before a choice */
   whole: 0.36, /* every curtain under the whole sky */
   surge: 0.75, /* the crest that runs along a chosen curtain adds this much of its light, fading */
@@ -64,15 +74,21 @@ function boot() {
      that frame rests at the top of the page, which clears the address. */
   const wanted = new URLSearchParams(location.search).get('book');
   /* No multisampling on the canvas: the composer draws into its own targets, so the canvas only ever
-     receives one full-screen quad. */
-  const stage = createStage(host, { fov: 46, near: 0.05, far: 6000, maxDpr: 1.25, clear: '#fbfaf7', antialias: false });
+     receives one full-screen quad. Phones draw at up to twice their CSS pixels: at the 1.25 larger
+     screens keep, a phone's 3x screen stretched the picture more than twice over and it looked soft. */
+  const small = Math.min(screen.width, screen.height) < 760;
+  const stage = createStage(host, { fov: 46, near: 0.05, far: 6000, maxDpr: small ? 2 : 1.25, clear: '#fbfaf7', antialias: false });
   if (!stage || !books.length) {
     section.classList.add('no-gl');
     return;
   }
   const { scene, camera, renderer, pointer } = stage;
   const caps = captions(host);
+  const names = captions(host, '.aur__name');
+  const langs = Array.from(langBar.querySelectorAll<HTMLButtonElement>('[data-chapter]'));
   const n = books.length;
+  const chapters = chaptersOf(books.map((b) => b.lang));
+  const C = chapters.length;
 
   /* ---------- the night ---------- */
 
@@ -106,6 +122,14 @@ function boot() {
     scene.add(o.group);
     return p;
   });
+  /* Phones, and tablets held upright: the words go under the book (Aurora.astro's media query). */
+  const upright = () => stage!.size.w < 760 || stage!.size.w / stage!.size.h < 0.8;
+  const step = (i: number) => (upright() ? frames[chapterOf(chapters, i)].near : R * STEP.desk);
+
+  /* Each chapter keeps the book chosen in it (its first, to begin with) and the way the camera
+     looks to see that book, which turns when another book of the chapter is chosen. */
+  const pick = chapters.map((c) => c.first);
+  const view = chapters.map((c) => ({ yaw: az[c.first] }));
 
   const reach = (i: number) => 300 + (i % 3) * 30;
   const curtains: Curtain[] = books.map((b, i) => makeCurtain(b, az[i] * 1.05, reach(i), i * 1.73 + 0.4, night));
@@ -167,12 +191,56 @@ function boot() {
   /* A cover that arrives late must still be drawn, even on the still white stage. */
   objs.forEach((o) => o.loaded.then(() => busy(0.3)));
   sky.dpr.value = stage.size.dpr;
+
+  /* Upright, the chosen book stands between the languages' row above and the words below: in each
+     chapter the camera tilts down until its tallest book's foot clears its tallest caption, and
+     steps the book back a little where it would not fit or the tilt would hide the sky. Where even
+     that is not enough in some chapter, the chapters' titles make way everywhere (the row still
+     names the language). Measured from the layout, not the drawn page, so it holds while the words
+     animate; again on each resize. */
+  const FOV = { desk: 46, upright: 62 };
+  const frames = chapters.map(() => ({ near: R * STEP.upright, pitch: -0.2 }));
+  const capBox = $('.aur__caps', host);
+  function fit() {
+    host.classList.remove('is-short');
+    if (!upright()) return;
+    const H = host.clientHeight;
+    const tan = Math.tan((FOV.upright * Math.PI) / 360);
+    const tops = caps.items.map((el) => capBox.offsetTop + el.offsetTop);
+    const plan = (c: (typeof chapters)[number], limit: number) => {
+      const own = books.slice(c.first, c.last + 1);
+      const tallest = Math.max(...own.map((b) => b.size.h)) * 0.01 + 0.002;
+      const thickest = Math.max(...own.map((b) => b.size.t)) * 0.01;
+      const below = H - Math.min(...tops.slice(c.first, c.last + 1)) + 20;
+      const above = head.offsetTop + langBar.offsetTop + langBar.offsetHeight + 16;
+      const place = (d: number) => {
+        const front = d - thickest / 2;
+        const pitch = Math.atan2(-EYE, front) - Math.atan(((2 * below) / H - 1) * tan);
+        const top = (H / 2) * (1 - Math.tan(Math.atan2(tallest - EYE, front) - pitch) / tan);
+        return { near: d, pitch, fits: top >= above && pitch >= -0.3 };
+      };
+      let p = place(R * STEP.upright);
+      while (!p.fits && p.near < limit) p = place(p.near + 0.02);
+      return p;
+    };
+    let plans = chapters.map((c) => plan(c, R * 0.4));
+    if (plans.some((p) => !p.fits)) {
+      host.classList.add('is-short');
+      plans = chapters.map((c) => plan(c, R * 0.8));
+    }
+    plans.forEach((p, k) => Object.assign(frames[k], { near: p.near, pitch: p.pitch }));
+  }
+  fit();
+
   stage.resized((w, h) => {
     busy(0.5);
     composer.setPixelRatio(stage!.size.dpr);
     composer.setSize(w, h);
     ice.resize(Math.round(w * stage!.size.dpr * 0.25), Math.round(h * stage!.size.dpr * 0.25));
     sky.dpr.value = stage!.size.dpr;
+    fit();
+    /* A turn between upright and wide framing moves the chosen book's place out of the arc. */
+    if (active >= 0) stepBook(active, true);
   });
 
   function applyNight(k: number) {
@@ -199,32 +267,40 @@ function boot() {
     sky.stars.visible = k > 0.62;
     ice.mesh.visible = k > 0.001;
     shade.style.opacity = k.toFixed(3);
+    /* The languages are light words for the night; by day they would vanish into the white. */
+    langBar.style.opacity = smooth((k - 0.6) / 0.4).toFixed(3);
+    langBar.style.visibility = k > 0.6 ? 'visible' : 'hidden';
     const r = host.getBoundingClientRect();
     navBar?.classList.toggle('is-light', r.top <= 1 && r.bottom > 80 && k > 0.45);
   }
 
-  /* ---------- the camera: along the arc with the scroll, back for the whole sky ---------- */
+  /* ---------- the camera: from chapter to chapter with the scroll, back for the whole sky ---------- */
 
   function aim(at: { intro: number; u: number }) {
-    const phone = stage!.size.phone;
+    const up = upright();
     let yaw: number;
-    if (at.intro < 1) yaw = az[0] * smooth((at.intro - 0.55) / 0.45);
+    let low = frames[0].pitch;
+    if (at.intro < 1) yaw = view[0].yaw * smooth((at.intro - 0.55) / 0.45);
     else {
-      const u = Math.min(at.u, n - 1);
+      const u = Math.min(at.u, C - 1);
       const i = Math.floor(u);
-      yaw = i >= n - 1 ? az[n - 1] : az[i] + (az[i + 1] - az[i]) * smooth(u - i);
-      if (at.u > n - 1) yaw *= 1 - smooth(at.u - (n - 1));
+      const f = smooth(u - i);
+      yaw = i >= C - 1 ? view[C - 1].yaw : view[i].yaw + (view[i + 1].yaw - view[i].yaw) * f;
+      low = i >= C - 1 ? frames[C - 1].pitch : frames[i].pitch + (frames[i + 1].pitch - frames[i].pitch) * f;
+      if (at.u > C - 1) yaw *= 1 - smooth(at.u - (C - 1));
     }
-    const pull = at.u > n - 1 ? smooth(at.u - (n - 1)) : 0;
-    const fov = (phone ? 62 : 46) + pull * (phone ? 14 : 18);
+    const pull = at.u > C - 1 ? smooth(at.u - (C - 1)) : 0;
+    const fov = (up ? FOV.upright : FOV.desk) + pull * (up ? 14 : 18);
     if (Math.abs(camera.fov - fov) > 0.01) {
       camera.fov = fov;
       camera.updateProjectionMatrix();
     }
     /* A portrait screen steps much further back to hold the whole arc. */
-    camera.position.set(0, EYE + pull * 0.4, pull * (phone ? 4.8 : 1.6));
-    /* Tilted up just enough for the aurora, not so far that the chosen book leaves the frame. */
-    const pitch = (phone ? -0.1 : 0.05) + pull * (phone ? 0.2 : 0.1);
+    camera.position.set(0, EYE + pull * 0.4, pull * (up ? 4.8 : 1.6));
+    /* Tilted up just enough for the aurora, not so far that the chosen book leaves the frame (upright,
+       down until it clears the words: fit()), and up for the whole sky. */
+    if (!up) low = 0.05;
+    const pitch = low + pull * ((up ? 0.1 : 0.15) - low);
     camera.lookAt(Math.sin(yaw) * 10, camera.position.y + Math.tan(pitch) * 10, camera.position.z - Math.cos(yaw) * 10);
   }
 
@@ -235,7 +311,7 @@ function boot() {
   /* A chosen book steps out of the arc towards the reader; once it stands still there it takes its
      sharp cover (the upgrade costs a frame or two, which only shows while something moves). */
   function stepBook(i: number, forward: boolean) {
-    const to = forward ? ring(i, R * 0.45) : home[i];
+    const to = forward ? ring(i, step(i)) : home[i];
     gsap.to(objs[i].group.position, {
       x: to.x,
       z: to.z,
@@ -264,8 +340,9 @@ function boot() {
     const prev = active;
     whole = false;
     active = i;
+    const lang = books[i].lang;
     curtainsTo(
-      (k) => (k === i ? LIGHT.chosen : LIGHT.others),
+      (k) => (k === i ? LIGHT.chosen : books[k].lang === lang ? LIGHT.group : LIGHT.others),
       (k) => (k === i ? 1.5 : 1),
       (k) => (k === i ? curtains[k].height * 1.3 : curtains[k].height)
     );
@@ -275,7 +352,7 @@ function boot() {
     gsap.fromTo(c.u.uWaveAmt, { value: reduceMotion ? 0 : LIGHT.surge }, { value: 0, duration: 2.6, ease: 'power2.in', overwrite: true });
     tintTo(auroraColours(books[i]).primary);
     gsap.to(lights, { front: 1, duration: reduceMotion ? 0 : 1.2, overwrite: true });
-    front.target.position.copy(ring(i, R * 0.45)).setY(0.12);
+    front.target.position.copy(ring(i, step(i))).setY(0.12);
     stepBook(i, true);
     if (prev >= 0) stepBook(prev, false);
     caps.show(i, prev < 0 || i > prev ? 1 : -1);
@@ -304,17 +381,75 @@ function boot() {
     );
     tintTo(CLASSIC);
   }
+  /* The chapter's name in the sky, and which language the index marks. */
+  function showChapter(c: number, dir: number) {
+    if (c < 0) names.hide();
+    else names.show(c, dir);
+    langs.forEach((b, k) => b.setAttribute('aria-current', String(k === c)));
+  }
 
-  /* The address follows the book the scroll rests on, not every stop a glide passes (WebKit throws
-     after a hundred rewrites in half a minute). */
+  /* The scroll stops once per chapter, then for the whole sky; one gesture goes one stop. The
+     address follows the book the scroll rests on, not every stop a glide passes (WebKit throws after
+     a hundred rewrites in half a minute). */
   const st = stops({
     section,
     stage: host,
-    count: n + 1,
+    count: C + 1,
     lead: 1.1,
-    per: 0.7,
-    onRest: (i) => history.replaceState(null, '', i < n ? `?book=${books[i].id}` : location.pathname),
+    per: 1,
+    carry: true,
+    keys: 'vertical',
+    onRest: (c) => history.replaceState(null, '', c < C ? `?book=${books[pick[c]].id}` : location.pathname),
   });
+
+  let lastStop = -2;
+  /* A glide past the next chapter (the languages' row, a book tapped under the whole sky) goes by
+     the chapters between without choosing their books, which would step out and back with their
+     captions flashing: the chapter it leaves lets its book go at once and the one it goes to opens
+     on arrival. The goal is dropped on arrival, when the reader scrolls meanwhile, or after the
+     longest glide. */
+  let goal = -1;
+  let goalUntil = 0;
+  function goChapter(c: number) {
+    st.go(c);
+    if (Math.abs(c - lastStop) <= 1) return;
+    goal = c;
+    goalUntil = performance.now() + 2800;
+    release();
+    names.hide();
+    langs.forEach((b, k) => b.setAttribute('aria-current', String(k === c)));
+  }
+  const drop = () => void (goal = -1);
+  window.addEventListener('wheel', drop, { passive: true });
+  window.addEventListener('touchstart', drop, { passive: true });
+
+  /* Chooses book i. In the chapter on screen the view turns to it; a book of another chapter (a
+     neighbour tapped across the gap, or an arrow or swipe past the chapter's last book) takes the
+     scroll on to that chapter, which opens on it. */
+  function goBook(i: number) {
+    const c = chapterOf(chapters, i);
+    if (c < 0) return;
+    pick[c] = i;
+    if (c === lastStop) {
+      gsap.to(view[c], { yaw: az[i], duration: reduceMotion ? 0 : 1.3, ease: 'power2.inOut', overwrite: true });
+      select(i);
+      history.replaceState(null, '', `?book=${books[i].id}`);
+    } else {
+      gsap.killTweensOf(view[c]);
+      view[c].yaw = az[i];
+      goChapter(c);
+    }
+  }
+  /* At once, to book i: the address's ?book=, and scripted checks. */
+  function jumpTo(i: number) {
+    const c = chapterOf(chapters, i);
+    if (c < 0) return;
+    pick[c] = i;
+    gsap.killTweensOf(view[c]);
+    view[c].yaw = az[i];
+    if (c === lastStop) select(i);
+    st.jump(c);
+  }
 
   /* ---------- pointing ---------- */
 
@@ -360,21 +495,51 @@ function boot() {
     });
   }
 
+  const words = '.bcap, .bpick, .aur__langs';
   host.addEventListener('click', (e) => {
-    if ((e.target as HTMLElement).closest('.bcap, .bpick')) return;
+    if ((e.target as HTMLElement).closest(words)) return;
     if (pointer.moved > 6) return;
     /* Picked here rather than read from the hover, which a touch never has. */
     const i = target();
     if (i < 0) return;
     if (i === active) openSheet(books[i].id, host);
-    else st.go(i);
+    else goBook(i);
   });
-  host.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((b) => b.addEventListener('click', () => st.go(Number(b.dataset.pick))));
+  host.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((b) => b.addEventListener('click', () => goBook(Number(b.dataset.pick))));
+  langs.forEach((b, c) => b.addEventListener('click', () => goChapter(c)));
+
+  /* Left and right go to the next book that way (the scroll keeps up and down, chapter by chapter). */
+  window.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    if (active < 0 || sheetOpen() || !st.inside() || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    if ((e.target as HTMLElement | null)?.closest('input, textarea, select')) return;
+    e.preventDefault();
+    goBook(active + (e.key === 'ArrowRight' ? 1 : -1));
+  });
+
+  /* A sideways swipe (or drag) over the stage goes to the next book that way; an upright one
+     scrolls the page as ever, since the canvas lets the browser pan only vertically. */
+  let swipe: { x: number; y: number; id: number } | null = null;
+  /* Only the first finger counts: a second one (a resting thumb) neither starts nor ends a swipe. */
+  host.addEventListener('pointerdown', (e) => {
+    if (!e.isPrimary) return;
+    swipe = (e.target as HTMLElement).closest(words) ? null : { x: e.clientX, y: e.clientY, id: e.pointerId };
+  });
+  host.addEventListener('pointercancel', (e) => {
+    if (e.pointerId === swipe?.id) swipe = null;
+  });
+  window.addEventListener('pointerup', (e) => {
+    if (!swipe || e.pointerId !== swipe.id) return;
+    const dx = e.clientX - swipe.x;
+    const dy = e.clientY - swipe.y;
+    swipe = null;
+    if (active < 0 || Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    goBook(active + (dx < 0 ? 1 : -1));
+  });
 
   /* ---------- frames ---------- */
 
   objs.forEach((o) => (o.front.emissiveIntensity = 0));
-  let lastStop = -2;
   stage.frame((dt, t) => {
     const at = st.at();
     const k = reduceMotion ? 1 : smooth(at.intro);
@@ -385,11 +550,14 @@ function boot() {
     sky.time.value = clock;
     curtains.forEach((c) => (c.u.uTime.value = clock));
     const stop = at.intro < 0.999 ? -1 : at.i;
-    if (stop !== lastStop) {
+    if (goal >= 0 && (stop === goal || performance.now() > goalUntil)) goal = -1;
+    if (stop !== lastStop && goal < 0) {
+      const from = lastStop;
       lastStop = stop;
       if (stop < 0) rest();
-      else if (stop >= n) wholeSky();
-      else select(stop);
+      else if (stop >= C) wholeSky();
+      else select(pick[stop]);
+      showChapter(stop < C ? stop : -1, stop > from ? 1 : -1);
     }
     hover(dt);
   });
@@ -400,14 +568,41 @@ function boot() {
     const r = host.getBoundingClientRect();
     return { x: r.left + ((v.x + 1) / 2) * stage!.size.w, y: r.top + ((1 - v.y) / 2) * stage!.size.h };
   }
+  /* Where book i lies on screen: its own corners, projected. */
+  function bookBox(i: number) {
+    const { mesh } = objs[i];
+    mesh.geometry.computeBoundingBox();
+    const b = mesh.geometry.boundingBox!;
+    const r = host.getBoundingClientRect();
+    const box = { left: Infinity, top: Infinity, right: -Infinity, bottom: -Infinity };
+    for (let k = 0; k < 8; k++) {
+      const v = new THREE.Vector3(k & 1 ? b.max.x : b.min.x, k & 2 ? b.max.y : b.min.y, k & 4 ? b.max.z : b.min.z).applyMatrix4(mesh.matrixWorld).project(camera);
+      const x = r.left + ((v.x + 1) / 2) * stage!.size.w;
+      const y = r.top + ((1 - v.y) / 2) * stage!.size.h;
+      box.left = Math.min(box.left, x);
+      box.right = Math.max(box.right, x);
+      box.top = Math.min(box.top, y);
+      box.bottom = Math.max(box.bottom, y);
+    }
+    return box;
+  }
 
   Promise.all(objs.map((o) => o.loaded)).then(() => {
     aim(st.at());
     renderer.compile(scene, camera);
     const at = wanted ? books.findIndex((b) => b.id === wanted) : -1;
-    if (at >= 0) st.jump(at);
+    if (at >= 0) jumpTo(at);
     /* For scripted checks of the page. */
-    (window as unknown as { __books: object }).__books = { ready: true, go: (i: number) => st.jump(i), y: (i: number) => st.y(i), night: () => night.value, bookAt };
+    (window as unknown as { __books: object }).__books = {
+      ready: true,
+      go: jumpTo,
+      y: (i: number) => st.y(chapterOf(chapters, i)),
+      night: () => night.value,
+      bookAt,
+      bookBox,
+      active: () => active,
+      chapter: () => lastStop,
+    };
   });
 }
 
