@@ -40,12 +40,26 @@ export function stops(o: {
 }): Stops {
   const lenis = getLenis();
   const r = { top: 0, H: 1 };
+  /* A page opened in a window with no size yet (a hidden pane, a background frame) measures 0; the
+     stops divide by the height, so it counts as 1 px until the window's first resize. */
   const measure = () => {
-    r.H = o.stage.clientHeight || window.innerHeight;
+    r.H = o.stage.clientHeight || window.innerHeight || 1;
     r.top = o.section.getBoundingClientRect().top + window.scrollY;
   };
   measure();
-  window.addEventListener('resize', () => window.setTimeout(measure, 60));
+  /* The stops are sized in screen heights, the scroll in pixels: after a resize the page goes back
+     to the same place among the stops (the same book, or as far between two), where the same pixel
+     would show another. That includes a page first opened with no size. A phone's address bar
+     coming and going leaves the stage's height, so the place, as it was, and nothing moves. */
+  window.addEventListener('resize', () =>
+    window.setTimeout(() => {
+      const s = window.scrollY;
+      const among = s >= y(0) - 1 && s <= last() + 1;
+      const { u } = at();
+      measure();
+      if (among && Math.abs(y(u) - s) >= 1) jump(u);
+    }, 60)
+  );
 
   const y = (i: number) => r.top + (o.lead + o.per * i) * r.H;
   const last = () => y(o.count - 1);

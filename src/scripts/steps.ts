@@ -27,6 +27,7 @@ const QUIET = 90; /* ms without input before a drag that simply stopped settles 
 const TRICKLE = 180; /* px of a spent gesture's momentum swallowed after the glide has landed */
 const HALF = 0.45; /* a new push the same way past this much of a glide asks for the next beat */
 const SPIN = 300; /* px of notches more in a spent spin of the wheel that move on another beat */
+const REST = 250; /* ms between notches after which a spin of the wheel has come to rest */
 
 /* Returns whether it is carrying the page now (wide screens without reduced motion), so a page with
    its own way of settling (the books page's stops) can leave the wheel and the keys to it. */
@@ -79,6 +80,9 @@ export function steps(read: () => Beats) {
     let flight: { to: number; dir: number; start: number; duration: number; spun: number } | null = null;
     let spent = -1;
     let trickle = 0;
+    /* A spin of the wheel that arrived at a zone from outside it: its notches, each one gesture
+       of its own, until the wheel rests. */
+    let arrival = { dir: 0, t: -Infinity };
     const go = (to: number | undefined, gesture = -1) => {
       if (to === undefined) return;
       spent = gesture;
@@ -116,9 +120,16 @@ export function steps(read: () => Beats) {
     setGestureHandler(({ deltaX, deltaY, event }: VirtualScrollData) => {
       if (event.type.startsWith('touch') || (event as WheelEvent).ctrlKey || !deltaY || lenis.isStopped) return true;
       if (Math.abs(deltaX) > Math.abs(deltaY)) return true;
-      const g = gesture(event.timeStamp || performance.now(), deltaY);
+      const t = event.timeStamp || performance.now();
+      const g = gesture(t, deltaY);
       window.clearTimeout(quiet);
       flying();
+
+      /* The rest of a spin that arrived from outside is spent on that arrival. */
+      if (g.notch && g.dir === arrival.dir && t - arrival.t < REST) {
+        arrival.t = t;
+        return swallow(event);
+      }
 
       /* The gesture the glide took its speed from: its momentum is spent. A long spin of the
          wheel asks for another beat; after landing a little more trickles in, then it is free. */
@@ -156,6 +167,18 @@ export function steps(read: () => Beats) {
 
       const z = zoneAt(lenis.targetScroll + deltaY) ?? zoneAt(lenis.animatedScroll);
       if (!z) return true;
+      /* Arriving from outside the zone, however fast: the page comes to its edge beat, the first it
+         meets, and the rest of the gesture (a spin of the wheel included) is spent on getting
+         there. The next gesture moves on from it. */
+      const y = lenis.animatedScroll;
+      if (y < z[0] - SNAP || y > z[z.length - 1] + SNAP) {
+        const edge = next(z, y, g.dir);
+        if (edge !== undefined) {
+          go(edge, g.id);
+          if (g.notch) arrival = { dir: g.dir, t };
+          return swallow(event);
+        }
+      }
       /* A notch is the whole wish at once; fingers are followed until their momentum fades. */
       if (g.notch || (g.fading >= 3 && g.n >= 4)) {
         const to = landing(z, lenis.animatedScroll, speed, g.dir);
