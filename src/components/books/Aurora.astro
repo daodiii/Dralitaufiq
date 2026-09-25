@@ -1,12 +1,12 @@
 ---
 /**
  * "Northern lights". Night over a frozen lake in Norway (nordlys, "north light"). The page
- * opens under the whole sky: the 18 books stand on the ice in an arc around the reader, a curtain
- * of aurora in its colours above each, the library's name in the sky. Scrolling then goes
- * language by language, one chapter each (English, Arabic, Somali), titled in the sky in the
- * language's own words, its curtains lit together; inside a chapter a tap, a swipe or the arrow
- * keys choose the book, whose curtain surges as it steps forward. The scene lives in
- * scripts/books/aurora.ts.
+ * opens inside a ring of the 18 books standing on the ice, a curtain of aurora in its colours
+ * above each, the library's name in the sky; the view turns along the ring with the mouse, or a
+ * drag. Scrolling then goes language by language, one chapter each (English, Arabic, Somali),
+ * titled in the sky in the language's own words, its curtains lit together; inside a chapter a
+ * tap, a swipe or the arrow keys choose the book, which comes close into the middle of the screen
+ * as its curtain surges. The scene lives in scripts/books/aurora.ts.
  */
 import type { Book } from '../../lib/books';
 import { languageLabel, languageName } from '../../lib/books';
@@ -30,7 +30,7 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
     <div class="aur__shade" aria-hidden="true"></div>
     <div class="aur__head">
       <div class="aur__names" aria-hidden="true">
-        <p class="aur__name">The library</p>
+        <p class="aur__name aur__name--library">The library</p>
         {
           chapters.map((c) => (
             <p class="aur__name" lang={c.lang} dir={c.lang === 'ar' ? 'rtl' : 'ltr'}>
@@ -120,8 +120,14 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
     pointer-events: none;
   }
 
+  /* On a wide screen a chapter's title stays small above the book that stands close below it, and
+     the box keeps the height of the tallest (the Arabic), so the languages' row does not move as
+     the titles change; the library's larger name rises out of the box. */
   .aur__names {
+    --arabic: clamp(2.6rem, 3.9vw, 4.1rem);
     display: grid;
+    grid-template-rows: 100%;
+    height: calc(var(--arabic) * 1.2);
   }
 
   /* Where the height is short the title makes way for the book (the script decides, fit()). */
@@ -131,10 +137,10 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
 
   .aur__name {
     grid-area: 1 / 1;
-    align-self: center;
+    align-self: end;
     text-align: center;
     font-family: var(--font-display);
-    font-size: clamp(3.4rem, 6.6vw, 7rem);
+    font-size: clamp(2.4rem, 3.6vw, 3.8rem);
     font-weight: 500;
     line-height: 1;
     letter-spacing: -0.05em;
@@ -143,10 +149,16 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
 
   .aur__name:lang(ar) {
     font-family: var(--font-arabic);
-    font-size: clamp(3.6rem, 7vw, 7.4rem);
+    font-size: var(--arabic);
     font-weight: 400;
     line-height: 1.2;
     letter-spacing: 0;
+  }
+
+  /* The library's name, as the page opens, stands a little clear of the row. */
+  .aur__name--library {
+    margin-bottom: 1rem;
+    font-size: clamp(3rem, 5.2vw, 5.6rem);
   }
 
   :global(html.js) .aur__name,
@@ -169,6 +181,13 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
     text-shadow: 0 1px 10px oklch(8% 0.02 260 / 0.7);
     text-wrap: pretty;
     pointer-events: none;
+  }
+
+  /* On a very short screen (a phone on its side) the line would stand over the books. */
+  @media (max-height: 500px) {
+    .aur__about {
+      display: none;
+    }
   }
 
   .aur__langs {
@@ -218,6 +237,22 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
   /* Upright (phones, and tablets held upright) the words go under the book, and the script tilts
      the camera so the book clears them. */
   @media (max-width: 760px), (max-aspect-ratio: 4/5) {
+    /* Upright the book has the width to itself below the titles, which keep their full size. */
+    .aur__names {
+      grid-template-rows: auto;
+      height: auto;
+    }
+
+    .aur__name {
+      align-self: center;
+      margin-bottom: 0;
+      font-size: clamp(3.4rem, 6.6vw, 7rem);
+    }
+
+    .aur__name:lang(ar) {
+      font-size: clamp(3.6rem, 7vw, 7.4rem);
+    }
+
     .aur__stage :global(.aur__caps) {
       right: var(--gutter);
       bottom: 1rem;

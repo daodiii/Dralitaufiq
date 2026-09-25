@@ -8,6 +8,7 @@ import { nav, showNav } from '../nav';
 import { reveals } from '../reveals';
 import { openSheet, sheetOpen } from './sheet';
 import { chapterOf, chaptersOf } from './chapters';
+import { lookRange, tiltTo, wideFrame } from './framing';
 import { readBooks } from './gl/payload';
 import { createStage } from './gl/stage';
 import { bookKit, makeBook } from './gl/book';
@@ -19,14 +20,14 @@ import { auroraColours, makeCurtain, type Curtain } from './aurora/curtains';
 import { makeIce } from './aurora/ice';
 import { gradePass } from './aurora/grade';
 
-/* "Northern lights". The page opens by night under the whole sky: every book on the ice in an arc
-   around a low camera, every curtain of aurora alight above them in their colours (curtains.ts),
-   the library's name in the sky. Scrolling then goes language by language (a chapter each,
-   chapters.ts): the view comes down to the book chosen in that language, its curtains light
-   together and its name stands in the sky. Inside a chapter a tap, a swipe or the arrow keys
-   choose the book; the chosen book steps forward while its curtain surges across the sky and tints
-   the ice. On wide screens the wheel and the keys move by the same carry as the home page
-   (steps.ts). */
+/* "Northern lights". The page opens by night inside a ring of books standing on the ice, every
+   curtain of aurora alight above them in their colours (curtains.ts), the library's name in the
+   sky; the view turns along the ring with the mouse, or a drag. Scrolling then goes language by
+   language (a chapter each, chapters.ts): the view turns to the book chosen in that language, its
+   curtains light together and its name stands in the sky. Inside a chapter a tap, a swipe or the
+   arrow keys choose the book; the chosen book comes close, into the middle of the screen, while its
+   curtain surges across the sky and tints the ice. On wide screens the wheel and the keys move by
+   the same carry as the home page (steps.ts). */
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
 const section = $('.aur');
@@ -41,12 +42,19 @@ const smooth = (t: number) => {
   const x = clamp(t);
   return x * x * (3 - 2 * x);
 };
-const EYE = 0.3; /* the camera's height above the ice, metres */
-const R = 2.2; /* the arc of books */
-/* How far out of the arc a chosen book steps towards the reader, as a share of R: nearer on an
-   upright screen, where it has the width to itself (fit() may step it back where the height is
-   short). */
-const STEP = { desk: 0.45, upright: 0.3 };
+/* The camera's height above the ice, metres: on a wide screen low, near the books' own height. */
+const EYE = { desk: 0.2, upright: 0.3 };
+const R = 2.2; /* the ring of books */
+/* The ring runs this far either side of its middle (±49°), the books about a hand apart. */
+const ARC = 0.86;
+/* Where a chosen book comes to stand, as a share of R from the reader: close on a wide screen, in
+   the middle of it, looked down on a little (TILT); on an upright one it has the width to itself.
+   fit() steps it back where the screen is short. */
+const STEP = { desk: 0.28, upright: 0.3 };
+const TILT = -0.09;
+/* The page opens inside the ring: the camera stands this far out from its centre towards the books,
+   this high above the ice and tilted so, and turns about the centre as the reader looks along. */
+const OPEN = { forward: 0.75, eye: 0.2, pitch: { desk: -0.03, upright: 0 } };
 const CLASSIC = new THREE.Color('#3dffa6');
 
 /* The balance of light by night. The chosen book is the brightest, truest thing on screen: lit
@@ -62,7 +70,7 @@ const LIGHT = {
   horizon: 0.08, /* the chosen colour low on the horizon */
   key: 2.8, /* the spotlight on the chosen book */
   keyTint: 0.05, /* how far its white turns to the aurora's colour */
-  sky: 1.3, /* the sky light on every book, so the whole arc reads at night */
+  sky: 1.3, /* the sky light on every book, so the whole ring reads at night */
   skyTint: 0.1, /* how far it turns to the aurora's colour */
 };
 
@@ -105,15 +113,14 @@ function boot() {
   const ice = makeIce(2400, new THREE.Vector2(Math.round(stage.size.w * stage.size.dpr * 0.25), Math.round(stage.size.h * stage.size.dpr * 0.25)));
   scene.add(ice.mesh);
 
-  /* ---------- the books, in an arc around the camera ---------- */
+  /* ---------- the books, in a ring around the camera ---------- */
 
   const kit = bookKit(renderer);
   const objs = books.map((b) => makeBook(b, kit));
   const meshes = objs.map((o) => o.mesh);
   const slots: number[] = [];
   books.forEach((b, i) => slots.push(i === 0 ? 0 : slots[i - 1] + (b.lang !== books[i - 1].lang ? 1.8 : 1)));
-  /* ±60°: wide enough to turn along, narrow enough that the whole sky mostly fits one wide view. */
-  const az = slots.map((v) => (v / slots[n - 1] - 0.5) * 2 * 1.05);
+  const az = slots.map((v) => (v / slots[n - 1] - 0.5) * 2 * ARC);
   const ring = (i: number, r: number) => new THREE.Vector3(Math.sin(az[i]) * r, 0, -Math.cos(az[i]) * r);
   const home = objs.map((o, i) => {
     const p = ring(i, R);
@@ -124,9 +131,11 @@ function boot() {
     scene.add(o.group);
     return p;
   });
-  /* Phones, and tablets held upright: the words go under the book (Aurora.astro's media query). */
-  const upright = () => stage!.size.w < 760 || stage!.size.w / stage!.size.h < 0.8;
-  const step = (i: number) => (upright() ? frames[chapterOf(chapters, i)].near : R * STEP.desk);
+  /* Phones, and tablets held upright: the words go under the book. Read from Aurora.astro's own
+     media query, so the scene frames the page the way the CSS lays it out. */
+  const uprightQuery = matchMedia('(max-width: 760px), (max-aspect-ratio: 4/5)');
+  const upright = () => uprightQuery.matches;
+  const step = (i: number) => frames[chapterOf(chapters, i)].near;
 
   /* Each chapter keeps the book chosen in it (its first, to begin with) and the way the camera
      looks to see that book, which turns when another book of the chapter is chosen. */
@@ -194,45 +203,73 @@ function boot() {
   objs.forEach((o) => o.loaded.then(() => busy(0.3)));
   sky.dpr.value = stage.size.dpr;
 
-  /* Upright, the chosen book stands between the languages' row above and the words below: in each
-     chapter the camera tilts down until its tallest book's foot clears its tallest caption, and
-     steps the book back a little where it would not fit or the tilt would hide the sky. Where even
-     that is not enough in some chapter, the chapters' titles make way everywhere (the row still
-     names the language). Measured from the layout, not the drawn page, so it holds while the words
-     animate; again on each resize. */
+  /* Where each chapter's chosen book stands and how the camera turns and tilts to it. Wide, it
+     stands close in the middle of the screen, below the languages' row, moving over right of the
+     middle where the words beside it would cover it (framing.ts). Upright, it stands between the
+     languages' row above and the words below: the camera tilts down until its tallest book's foot
+     clears its tallest caption, and steps the book back a little where it would not fit or the tilt
+     would hide the sky. Where even that is not enough in some chapter, the chapters' titles make way
+     everywhere (the row still names the language). And, wide, the opening view tilts up where the
+     row would stand over the books. Measured from the layout, not the drawn page, so it holds while
+     the words animate; again on each resize. */
   const FOV = { desk: 46, upright: 62 };
-  const frames = chapters.map(() => ({ near: R * STEP.upright, pitch: -0.2 }));
+  const frames = chapters.map(() => ({ near: R * STEP.upright, pitch: -0.2, aside: 0 }));
+  let openPitch = OPEN.pitch.desk;
   const capBox = $('.aur__caps', host);
+  const tallestOf = (list: typeof books) => Math.max(...list.map((b) => b.size.h)) * 0.01 + 0.002;
   function fit() {
     host.classList.remove('is-short');
-    if (!upright()) return;
+    const up = upright();
     const H = host.clientHeight;
     const tan = Math.tan((FOV.upright * Math.PI) / 360);
     const tops = caps.items.map((el) => capBox.offsetTop + el.offsetTop);
+    const rowFoot = () => head.offsetTop + langBar.offsetTop + langBar.offsetHeight;
     const plan = (c: (typeof chapters)[number], limit: number) => {
       const own = books.slice(c.first, c.last + 1);
-      const tallest = Math.max(...own.map((b) => b.size.h)) * 0.01 + 0.002;
+      const tallest = tallestOf(own);
       const thickest = Math.max(...own.map((b) => b.size.t)) * 0.01;
+      const above = rowFoot() + 16;
+      if (!up) {
+        const widest = Math.max(...own.map((b) => b.size.w)) * 0.01;
+        const clear = capBox.offsetLeft + capBox.offsetWidth + 16;
+        return wideFrame({ H, W: host.clientWidth, above, clear, margin: 16, fov: FOV.desk, eye: EYE.desk, pitch: TILT, near: R * STEP.desk, limit, tallest, widest, thickest });
+      }
       const below = H - Math.min(...tops.slice(c.first, c.last + 1)) + 20;
-      const above = head.offsetTop + langBar.offsetTop + langBar.offsetHeight + 16;
       const place = (d: number) => {
         const front = d - thickest / 2;
-        const pitch = Math.atan2(-EYE, front) - Math.atan(((2 * below) / H - 1) * tan);
-        const top = (H / 2) * (1 - Math.tan(Math.atan2(tallest - EYE, front) - pitch) / tan);
-        return { near: d, pitch, fits: top >= above && pitch >= -0.3 };
+        const pitch = Math.atan2(-EYE.upright, front) - Math.atan(((2 * below) / H - 1) * tan);
+        const top = (H / 2) * (1 - Math.tan(Math.atan2(tallest - EYE.upright, front) - pitch) / tan);
+        return { near: d, pitch, aside: 0, fits: top >= above && pitch >= -0.3 };
       };
       let p = place(R * STEP.upright);
       while (!p.fits && p.near < limit) p = place(p.near + 0.02);
       return p;
     };
-    let plans = chapters.map((c) => plan(c, R * 0.4));
+    let plans = chapters.map((c) => plan(c, R * (up ? 0.4 : 0.45)));
     if (plans.some((p) => !p.fits)) {
       host.classList.add('is-short');
       plans = chapters.map((c) => plan(c, R * 0.8));
     }
-    plans.forEach((p, k) => Object.assign(frames[k], { near: p.near, pitch: p.pitch }));
+    plans.forEach((p, k) => Object.assign(frames[k], { near: p.near, pitch: p.pitch, aside: p.aside }));
+    /* How far above the opening camera's eye line it sees the tops of the ring's nearest books. */
+    const ahead = Math.atan2(tallestOf(books) - OPEN.eye, R - OPEN.forward - 0.015);
+    openPitch = up ? OPEN.pitch.upright : Math.max(OPEN.pitch.desk, tiltTo(FOV.desk, H, ahead, rowFoot() + 24));
   }
   fit();
+
+  /* ---------- looking along the ring as the page opens ---------- */
+
+  /* The view turns about the ring's centre: with the mouse as it crosses the screen (not with reduced
+     motion), with a finger (or then the mouse) as it drags the ring along; as far either way as
+     brings the ring's end book to the edge (framing.ts). */
+  const look = { yaw: 0, target: 0, range: 0, half: 0 };
+  function measureLook() {
+    const fov = ((upright() ? FOV.upright : FOV.desk) * Math.PI) / 360;
+    look.half = Math.atan((stage!.size.w / stage!.size.h) * Math.tan(fov));
+    look.range = lookRange({ r: R, forward: OPEN.forward, arc: ARC, half: look.half, pad: 0.07 });
+    look.target = clamp(look.target, -look.range, look.range);
+  }
+  measureLook();
 
   stage.resized((w, h) => {
     busy(0.5);
@@ -241,7 +278,8 @@ function boot() {
     ice.resize(Math.round(w * stage!.size.dpr * 0.25), Math.round(h * stage!.size.dpr * 0.25));
     sky.dpr.value = stage!.size.dpr;
     fit();
-    /* A turn between upright and wide framing moves the chosen book's place out of the arc. */
+    measureLook();
+    /* A turn between upright and wide framing moves the chosen book's place out of the ring. */
     if (active >= 0) stepBook(active, true);
   });
 
@@ -276,36 +314,39 @@ function boot() {
     navBar?.classList.toggle('is-light', r.top <= 1 && r.bottom > 80 && k > 0.45);
   }
 
-  /* ---------- the camera: down from the whole sky to the first chapter, then chapter to chapter ---------- */
+  /* ---------- the camera: from inside the ring to the first chapter, then chapter to chapter ---------- */
 
   function aim(at: { u: number }) {
     const up = upright();
-    /* Stop 0 is the whole sky, stop c + 1 chapter c. */
+    /* Stop 0 is the ring as the page opens, stop c + 1 chapter c. */
     const pull = 1 - smooth(at.u);
     const u = clamp(at.u - 1, 0, C - 1);
     const i = Math.floor(u);
     const f = smooth(u - i);
-    const yaw = (i >= C - 1 ? view[C - 1].yaw : view[i].yaw + (view[i + 1].yaw - view[i].yaw) * f) * (1 - pull);
-    let low = i >= C - 1 ? frames[C - 1].pitch : frames[i].pitch + (frames[i + 1].pitch - frames[i].pitch) * f;
-    const fov = (up ? FOV.upright : FOV.desk) + pull * (up ? 14 : 18);
+    const between = (get: (k: number) => number) => (i >= C - 1 ? get(C - 1) : get(i) + (get(i + 1) - get(i)) * f);
+    const turn = between((k) => view[k].yaw - frames[k].aside);
+    const low = between((k) => frames[k].pitch);
+    const fov = up ? FOV.upright : FOV.desk;
     if (Math.abs(camera.fov - fov) > 0.01) {
       camera.fov = fov;
       camera.updateProjectionMatrix();
     }
-    /* A portrait screen steps much further back to hold the whole arc. */
-    camera.position.set(0, EYE + pull * 0.4, pull * (up ? 4.8 : 1.6));
-    /* Tilted up just enough for the aurora, not so far that the chosen book leaves the frame (upright,
-       down until it clears the words: fit()), and up for the whole sky. */
-    if (!up) low = 0.05;
-    const pitch = low + pull * ((up ? 0.1 : 0.15) - low);
-    camera.lookAt(Math.sin(yaw) * 10, camera.position.y + Math.tan(pitch) * 10, camera.position.z - Math.cos(yaw) * 10);
+    /* In a chapter the camera stands at the ring's centre, tilted as fit() says; as the page opens it
+       stands out towards the books, facing the way the reader has looked. */
+    const eye = up ? EYE.upright : EYE.desk;
+    const out = OPEN.forward * pull;
+    camera.position.set(Math.sin(look.yaw) * out, eye + (OPEN.eye - eye) * pull, -Math.cos(look.yaw) * out);
+    const yaw = turn + (look.yaw - turn) * pull;
+    const pitch = low + (openPitch - low) * pull;
+    const p = camera.position;
+    camera.lookAt(p.x + Math.sin(yaw) * 10, p.y + Math.tan(pitch) * 10, p.z - Math.cos(yaw) * 10);
   }
 
   /* ---------- choosing a book ---------- */
 
   let active = -1;
   let whole = false;
-  /* A chosen book steps out of the arc towards the reader; once it stands still there it takes its
+  /* A chosen book steps out of the ring towards the reader; once it stands still there it takes its
      sharp cover (the upgrade costs a frame or two, which only shows while something moves). */
   function stepBook(i: number, forward: boolean) {
     const to = forward ? ring(i, step(i)) : home[i];
@@ -526,6 +567,29 @@ function boot() {
     goBook(active + (dx < 0 ? 1 : -1));
   });
 
+  /* As the page opens, a finger (or, with reduced motion, the mouse's main button) dragging over the
+     stage turns the view along the ring, the books ahead keeping pace with it: the camera turns
+     about the ring's centre, from which they stand further than from the camera. */
+  let drag: { x: number; id: number; mouse: boolean } | null = null;
+  host.addEventListener('pointerdown', (e) => {
+    if (!e.isPrimary || e.button !== 0 || (e.pointerType === 'mouse' && !reduceMotion) || (e.target as HTMLElement).closest(words)) return;
+    drag = { x: e.clientX, id: e.pointerId, mouse: e.pointerType === 'mouse' };
+  });
+  host.addEventListener('pointermove', (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    /* A mouse whose button came up out of sight (a menu took the release) ends the drag. */
+    if (drag.mouse && !(e.buttons & 1)) {
+      drag = null;
+      return;
+    }
+    const turn = ((e.clientX - drag.x) / stage!.size.w) * 2 * look.half * ((R - OPEN.forward) / R);
+    if (lastStop === 0) look.target = clamp(look.target - turn, -look.range, look.range);
+    drag.x = e.clientX;
+  });
+  const undrag = (e: PointerEvent) => void (e.pointerId === drag?.id && (drag = null));
+  window.addEventListener('pointerup', undrag);
+  host.addEventListener('pointercancel', undrag);
+
   /* ---------- frames ---------- */
 
   objs.forEach((o) => (o.front.emissiveIntensity = 0));
@@ -533,7 +597,26 @@ function boot() {
     const at = st.at();
     /* Night throughout: the page opens under the whole sky. */
     applyNight(1);
+    /* The view follows the mouse along the ring unhurried, a drag closely; drawn every frame while
+       it turns and the opening view is on screen. */
+    const hand = drag || reduceMotion || pointer.type !== 'mouse';
+    if (!hand && pointer.inside) look.target = clamp((pointer.x / stage!.size.w - 0.5) / 0.4, -1, 1) * look.range;
+    const was = look.yaw;
+    look.yaw += (look.target - look.yaw) * (1 - Math.exp(-dt / (hand ? 0.12 : 0.6)));
+    if (Math.abs(look.yaw - was) > 1e-4 && at.u < 1) busy(0.1);
     aim(at);
+    /* Between the opening and the first chapter the camera stands out towards the ring, so the
+       first chapter's chosen book keeps ahead of it, coming in no faster than the scroll. */
+    const pull = 1 - smooth(at.u);
+    if (pull > 0) {
+      const p = objs[pick[0]].group.position;
+      const least = step(pick[0]) + (R - step(pick[0])) * pull;
+      if (Math.hypot(p.x, p.z) < least) {
+        const q = ring(pick[0], least);
+        p.x = q.x;
+        p.z = q.z;
+      }
+    }
     /* With reduced motion the sky holds still: no rippling curtains, no twinkling stars. */
     const clock = reduceMotion ? 12 : t;
     sky.time.value = clock;
