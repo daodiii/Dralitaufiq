@@ -18,6 +18,7 @@ const ICE = {
     uTint: { value: new THREE.Color() },
     uPage: { value: PAGE.clone() },
     uTexel: { value: new THREE.Vector2(1 / 512, 1 / 512) },
+    uMirror: { value: 1 },
   },
   vertexShader: /* glsl */ `
     uniform mat4 textureMatrix;
@@ -38,6 +39,7 @@ const ICE = {
     uniform vec3 uTint;
     uniform vec3 uPage;
     uniform vec2 uTexel;
+    uniform float uMirror;
     varying vec4 vUv;
     varying vec3 vWorld;
     #include <logdepthbuf_pars_fragment>
@@ -68,7 +70,7 @@ const ICE = {
       }
       refl /= 8.0;
       vec3 ice = vec3(0.006, 0.012, 0.022) + uTint * 0.015;
-      vec3 night = ice + refl * (0.44 - snow * 0.24) + snow * (vec3(0.03, 0.036, 0.05) + uTint * 0.04);
+      vec3 night = ice + refl * uMirror * (0.44 - snow * 0.24) + snow * (vec3(0.03, 0.036, 0.05) + uTint * 0.04);
       gl_FragColor = vec4(mix(uPage, night, uNight), 1.0);
     }`,
 };

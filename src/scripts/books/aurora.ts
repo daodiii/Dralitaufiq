@@ -22,12 +22,13 @@ import { gradePass } from './aurora/grade';
 
 /* "Northern lights". The page opens by night inside a ring of books standing on the ice, every
    curtain of aurora alight above them in their colours (curtains.ts), the library's name in the
-   sky; the view turns along the ring with the mouse, or a drag. Scrolling then goes language by
-   language (a chapter each, chapters.ts): the view turns to the book chosen in that language, its
-   curtains light together and its name stands in the sky. Inside a chapter a tap, a swipe or the
-   arrow keys choose the book; the chosen book comes close, into the middle of the screen, while its
-   curtain surges across the sky and tints the ice. On wide screens the wheel and the keys move by
-   the same carry as the home page (steps.ts). */
+   sky; the view turns along the ring with the mouse, or a drag. Scrolling then goes book by book,
+   left to right along the ring, English, then Arabic, then Somali (a chapter each, chapters.ts):
+   the chosen book comes close, into the middle of the screen, while its curtain surges across the
+   sky and tints the ice, its language's curtains light together and the language's name stands in
+   the sky. A tap, a swipe or the arrow keys go to a book as well, and the languages' row to the
+   first book of each. On wide screens the wheel and the keys move by the same carry as the home
+   page (steps.ts). */
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
 const section = $('.aur');
@@ -57,21 +58,25 @@ const TILT = -0.09;
 const OPEN = { forward: 0.75, eye: 0.2, pitch: { desk: -0.03, upright: 0 } };
 const CLASSIC = new THREE.Color('#3dffa6');
 
-/* The balance of light by night. The chosen book is the brightest, truest thing on screen: lit
-   almost white, its cover shows its printed colours. The aurora stays well below it, a backdrop; a
-   light show that outshines the book is uncomfortable to look at. */
+/* The balance of light by night. The books are the subject: under the whole sky the ring is lit
+   well above the sky behind it, and the chosen book is the brightest, truest thing on screen, lit
+   almost white so its cover shows its printed colours. The aurora stays well below them, a
+   backdrop; a light show that outshines the books is uncomfortable to look at, and they blend into
+   it. */
 const LIGHT = {
-  chosen: 0.75, /* the chosen book's curtain */
-  group: 0.12, /* the other curtains of its language, lit together as the chapter's band of sky */
-  others: 0.035, /* the curtains of the other languages meanwhile */
-  rest: 0.12, /* every curtain before a choice */
-  whole: 0.36, /* every curtain under the whole sky */
-  surge: 0.75, /* the crest that runs along a chosen curtain adds this much of its light, fading */
+  chosen: 0.35, /* the chosen book's curtain */
+  group: 0.05, /* the other curtains of its language, lit together as the chapter's band of sky */
+  others: 0.02, /* the curtains of the other languages meanwhile */
+  rest: 0.06, /* every curtain before a choice */
+  whole: 0.16, /* every curtain under the whole sky */
+  surge: 0.4, /* the crest that runs along a chosen curtain adds this much of its light, fading */
   horizon: 0.08, /* the chosen colour low on the horizon */
-  key: 2.8, /* the spotlight on the chosen book */
+  key: 5, /* the spotlight on the chosen book */
   keyTint: 0.05, /* how far its white turns to the aurora's colour */
-  sky: 1.3, /* the sky light on every book, so the whole ring reads at night */
+  sky: 3, /* the sky light on every book while one is chosen, below the chosen book's own */
+  skyWhole: 8, /* the same under the whole sky, where the ring itself is the subject */
   skyTint: 0.1, /* how far it turns to the aurora's colour */
+  mirror: 0.55, /* how much of the sky the ice gives back */
 };
 
 function boot() {
@@ -98,7 +103,6 @@ function boot() {
   const langs = Array.from(langBar.querySelectorAll<HTMLButtonElement>('[data-chapter]'));
   const n = books.length;
   const chapters = chaptersOf(books.map((b) => b.lang));
-  const C = chapters.length;
 
   /* ---------- the night ---------- */
 
@@ -135,12 +139,8 @@ function boot() {
      media query, so the scene frames the page the way the CSS lays it out. */
   const uprightQuery = matchMedia('(max-width: 760px), (max-aspect-ratio: 4/5)');
   const upright = () => uprightQuery.matches;
-  const step = (i: number) => frames[chapterOf(chapters, i)].near;
-
-  /* Each chapter keeps the book chosen in it (its first, to begin with) and the way the camera
-     looks to see that book, which turns when another book of the chapter is chosen. */
-  const pick = chapters.map((c) => c.first);
-  const view = chapters.map((c) => ({ yaw: az[c.first] }));
+  const chapterAt = books.map((_, i) => chapterOf(chapters, i));
+  const step = (i: number) => frames[chapterAt[i]].near;
 
   const reach = (i: number) => 300 + (i % 3) * 30;
   const curtains: Curtain[] = books.map((b, i) => makeCurtain(b, az[i] * 1.05, reach(i), i * 1.73 + 0.4, night));
@@ -162,7 +162,7 @@ function boot() {
   const front = new THREE.SpotLight(0xffffff, 0, 0, 0.2, 0.9, 0);
   front.position.set(0, 0.9, 0.9);
   scene.add(hemi, day, glow, moon, front, front.target);
-  const lights = { front: 0 };
+  const lights = { front: 0, whole: 1 };
   const WHITE = new THREE.Color(0xffffff);
   const DAY_GROUND = new THREE.Color(0xe8e4dc);
   const NIGHT_GROUND = new THREE.Color(0x0a0f18);
@@ -290,13 +290,15 @@ function boot() {
     /* The book's colour stays mostly in its curtain; the night keeps its blue. */
     hemi.color.copy(WHITE).lerp(tint, k * LIGHT.skyTint);
     hemi.groundColor.copy(DAY_GROUND).lerp(NIGHT_GROUND, k);
-    hemi.intensity = 1.2 + (LIGHT.sky - 1.2) * k;
+    const skyLight = LIGHT.sky + (LIGHT.skyWhole - LIGHT.sky) * lights.whole;
+    hemi.intensity = 1.2 + (skyLight - 1.2) * k;
     day.intensity = 2.4 * (1 - k);
     glow.color.copy(tint);
     glow.intensity = 1.6 * k;
     moon.intensity = 0.35 * k;
     front.color.copy(WHITE).lerp(tint, LIGHT.keyTint);
     front.intensity = LIGHT.key * lights.front * k;
+    ice.u.uMirror.value = LIGHT.mirror;
     scene.environmentIntensity = 0.25 * (1 - k) + 0.04;
     grade.uniforms.uTone.value = k;
     grade.uniforms.uVignette.value = 0.55 * k;
@@ -314,18 +316,18 @@ function boot() {
     navBar?.classList.toggle('is-light', r.top <= 1 && r.bottom > 80 && k > 0.45);
   }
 
-  /* ---------- the camera: from inside the ring to the first chapter, then chapter to chapter ---------- */
+  /* ---------- the camera: from inside the ring to the first book, then book to book ---------- */
 
   function aim(at: { u: number }) {
     const up = upright();
-    /* Stop 0 is the ring as the page opens, stop c + 1 chapter c. */
+    /* Stop 0 is the ring as the page opens, stop i + 1 book i, framed as its chapter says. */
     const pull = 1 - smooth(at.u);
-    const u = clamp(at.u - 1, 0, C - 1);
+    const u = clamp(at.u - 1, 0, n - 1);
     const i = Math.floor(u);
     const f = smooth(u - i);
-    const between = (get: (k: number) => number) => (i >= C - 1 ? get(C - 1) : get(i) + (get(i + 1) - get(i)) * f);
-    const turn = between((k) => view[k].yaw - frames[k].aside);
-    const low = between((k) => frames[k].pitch);
+    const between = (get: (k: number) => number) => (i >= n - 1 ? get(n - 1) : get(i) + (get(i + 1) - get(i)) * f);
+    const turn = between((k) => az[k] - frames[chapterAt[k]].aside);
+    const low = between((k) => frames[chapterAt[k]].pitch);
     const fov = up ? FOV.upright : FOV.desk;
     if (Math.abs(camera.fov - fov) > 0.01) {
       camera.fov = fov;
@@ -389,7 +391,7 @@ function boot() {
     gsap.fromTo(c.u.uWave, { value: rtl ? 1.2 : -0.2 }, { value: rtl ? -0.2 : 1.2, duration: reduceMotion ? 0 : 2.4, ease: 'power1.inOut', overwrite: true });
     gsap.fromTo(c.u.uWaveAmt, { value: reduceMotion ? 0 : LIGHT.surge }, { value: 0, duration: 2.6, ease: 'power2.in', overwrite: true });
     tintTo(auroraColours(books[i]).primary);
-    gsap.to(lights, { front: 1, duration: reduceMotion ? 0 : 1.2, overwrite: true });
+    gsap.to(lights, { front: 1, whole: 0, duration: reduceMotion ? 0 : 1.2, overwrite: true });
     front.target.position.copy(ring(i, step(i))).setY(0.12);
     stepBook(i, true);
     if (prev >= 0) stepBook(prev, false);
@@ -400,6 +402,7 @@ function boot() {
     busy(2);
     release();
     whole = true;
+    gsap.to(lights, { whole: 1, duration: reduceMotion ? 0 : 1.2, overwrite: 'auto' });
     curtainsTo(
       () => LIGHT.whole,
       () => 1.25,
@@ -407,78 +410,62 @@ function boot() {
     );
     tintTo(CLASSIC);
   }
-  /* The name in the sky (the library's under the whole sky, else the chapter's), which language the
-     index marks, and a line on the works while the whole sky is up. */
+  /* The name in the sky (the library's under the whole sky, else the language's), which language
+     the row marks, and a line on the works while the whole sky is up. The name changes only where
+     the scroll crosses into another language. */
+  const chapterOfStop = (s: number) => (s > 0 ? chapterAt[s - 1] : -1);
   function showStop(s: number, dir: number) {
-    names.show(s, dir);
-    langs.forEach((b, k) => b.setAttribute('aria-current', String(k === s - 1)));
+    const c = chapterOfStop(s);
+    names.show(c + 1, dir);
+    langs.forEach((b, k) => b.setAttribute('aria-current', String(k === c)));
     gsap.to(about, { autoAlpha: s === 0 ? 1 : 0, y: s === 0 ? 0 : -10 * dir, duration: reduceMotion ? 0 : s === 0 ? 0.8 : 0.35, delay: s === 0 && !reduceMotion ? 0.18 : 0, ease: s === 0 ? 'power3.out' : 'power2.in', overwrite: true });
   }
 
-  /* The scroll stops for the whole sky, then once per chapter; one gesture goes one stop. On wide
+  /* The scroll stops for the whole sky, then once per book; one gesture goes one stop. On wide
      screens the carry (steps.ts) moves the page between them; it is set up first, so its keys come
      before the stops'. The address follows the book the scroll rests on, not every stop a glide
      passes (WebKit throws after a hundred rewrites in half a minute). */
-  const carrying = steps(() => ({ zones: [Array.from({ length: C + 1 }, (_, s) => st.y(s))], marks: [] }));
+  const carrying = steps(() => ({ zones: [Array.from({ length: n + 1 }, (_, s) => st.y(s))], marks: [] }));
   const st = stops({
     section,
     stage: host,
-    count: C + 1,
+    count: n + 1,
     lead: 0,
     per: 1,
     carry: true,
     keys: 'vertical',
     carried: () => carrying.active(),
-    onRest: (s) => history.replaceState(null, '', s > 0 ? `?book=${books[pick[s - 1]].id}` : location.pathname),
+    onRest: (s) => history.replaceState(null, '', s > 0 ? `?book=${books[s - 1].id}` : location.pathname),
   });
 
   let lastStop = -2;
-  /* A glide past the next chapter (the languages' row, a book tapped under the whole sky) goes by
-     the chapters between without choosing their books, which would step out and back with their
-     captions flashing: the chapter it leaves lets its book go at once and the one it goes to opens
-     on arrival. The goal is dropped on arrival, when the reader scrolls meanwhile, or after the
-     longest glide. */
+  /* A glide past the next book (the languages' row, a book tapped further along) goes by the books
+     between without choosing them, which would step out and back with their captions flashing: the
+     book it leaves goes back at once and the one it goes to comes forward on arrival. The goal is
+     dropped on arrival, when the reader scrolls meanwhile, or after the longest glide. */
   let goal = -1;
   let goalUntil = 0;
-  function goChapter(c: number) {
-    st.go(c + 1);
-    if (Math.abs(c + 1 - lastStop) <= 1) return;
-    goal = c + 1;
+  function goStop(s: number) {
+    st.go(s);
+    if (Math.abs(s - lastStop) <= 1) return;
+    goal = s;
     goalUntil = performance.now() + 2800;
     release();
-    names.hide();
-    langs.forEach((b, k) => b.setAttribute('aria-current', String(k === c)));
+    showStop(s, s > lastStop ? 1 : -1);
   }
   const drop = () => void (goal = -1);
   window.addEventListener('wheel', drop, { passive: true });
   window.addEventListener('touchstart', drop, { passive: true });
 
-  /* Chooses book i. In the chapter on screen the view turns to it; a book of another chapter (a
-     neighbour tapped across the gap, or an arrow or swipe past the chapter's last book) takes the
-     scroll on to that chapter, which opens on it. */
+  /* To book i, by the scroll; past the last book of one language comes the first of the next. */
   function goBook(i: number) {
-    const c = chapterOf(chapters, i);
-    if (c < 0) return;
-    pick[c] = i;
-    if (c + 1 === lastStop) {
-      gsap.to(view[c], { yaw: az[i], duration: reduceMotion ? 0 : 1.3, ease: 'power2.inOut', overwrite: true });
-      select(i);
-      history.replaceState(null, '', `?book=${books[i].id}`);
-    } else {
-      gsap.killTweensOf(view[c]);
-      view[c].yaw = az[i];
-      goChapter(c);
-    }
+    if (i < 0 || i >= n) return;
+    goStop(i + 1);
   }
   /* At once, to book i: the address's ?book=, and scripted checks. */
   function jumpTo(i: number) {
-    const c = chapterOf(chapters, i);
-    if (c < 0) return;
-    pick[c] = i;
-    gsap.killTweensOf(view[c]);
-    view[c].yaw = az[i];
-    if (c + 1 === lastStop) select(i);
-    st.jump(c + 1);
+    if (i < 0 || i >= n) return;
+    st.jump(i + 1);
   }
 
   /* ---------- pointing ---------- */
@@ -536,9 +523,9 @@ function boot() {
     else goBook(i);
   });
   host.querySelectorAll<HTMLButtonElement>('[data-pick]').forEach((b) => b.addEventListener('click', () => goBook(Number(b.dataset.pick))));
-  langs.forEach((b, c) => b.addEventListener('click', () => goChapter(c)));
+  langs.forEach((b, c) => b.addEventListener('click', () => goBook(chapters[c].first)));
 
-  /* Left and right go to the next book that way (the scroll keeps up and down, chapter by chapter). */
+  /* Left and right go to the next book that way, as the scroll does. */
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
     if (active < 0 || sheetOpen() || !st.inside() || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
@@ -609,10 +596,10 @@ function boot() {
        first chapter's chosen book keeps ahead of it, coming in no faster than the scroll. */
     const pull = 1 - smooth(at.u);
     if (pull > 0) {
-      const p = objs[pick[0]].group.position;
-      const least = step(pick[0]) + (R - step(pick[0])) * pull;
+      const p = objs[0].group.position;
+      const least = step(0) + (R - step(0)) * pull;
       if (Math.hypot(p.x, p.z) < least) {
-        const q = ring(pick[0], least);
+        const q = ring(0, least);
         p.x = q.x;
         p.z = q.z;
       }
@@ -627,7 +614,7 @@ function boot() {
       const from = lastStop;
       lastStop = stop;
       if (stop === 0) wholeSky();
-      else select(pick[stop - 1]);
+      else select(stop - 1);
       showStop(stop, stop > from ? 1 : -1);
     }
     hover(dt);
@@ -667,12 +654,12 @@ function boot() {
     (window as unknown as { __books: object }).__books = {
       ready: true,
       go: jumpTo,
-      y: (i: number) => st.y(chapterOf(chapters, i) + 1),
+      y: (i: number) => st.y(i + 1),
       night: () => night.value,
       bookAt,
       bookBox,
       active: () => active,
-      chapter: () => lastStop - 1,
+      chapter: () => chapterOfStop(lastStop),
     };
   });
 }

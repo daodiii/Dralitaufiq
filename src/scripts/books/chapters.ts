@@ -1,5 +1,5 @@
 /* The books page scrolls by language: each run of books in one language (they come in page order,
-   English, Arabic, Somali) is a chapter, and a book is chosen inside its chapter. Indices are the
+   English, Arabic, Somali) is a chapter, titled in the sky while its books pass. Indices are the
    books' places on the page. */
 
 export interface Chapter {

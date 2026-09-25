@@ -3,10 +3,11 @@
  * "Northern lights". Night over a frozen lake in Norway (nordlys, "north light"). The page
  * opens inside a ring of the 18 books standing on the ice, a curtain of aurora in its colours
  * above each, the library's name in the sky; the view turns along the ring with the mouse, or a
- * drag. Scrolling then goes language by language, one chapter each (English, Arabic, Somali),
- * titled in the sky in the language's own words, its curtains lit together; inside a chapter a
- * tap, a swipe or the arrow keys choose the book, which comes close into the middle of the screen
- * as its curtain surges. The scene lives in scripts/books/aurora.ts.
+ * drag. Scrolling then goes book by book, left to right, English, then Arabic, then Somali, each
+ * language titled in the sky in its own words, its curtains lit together; the chosen book comes
+ * close into the middle of the screen as its curtain surges. A tap, a swipe or the arrow keys go
+ * to a book as well, and the languages' row to each language's first book. The scene lives in
+ * scripts/books/aurora.ts.
  */
 import type { Book } from '../../lib/books';
 import { languageLabel, languageName } from '../../lib/books';
@@ -25,7 +26,7 @@ const { books } = Astro.props;
 const chapters = byLanguage(books).filter((g) => g.books.length);
 ---
 
-<section class="aur" aria-label="The books" style={`--lead:0;--per:1;--n:${chapters.length + 1}`}>
+<section class="aur" aria-label="The books" style={`--lead:0;--per:1;--n:${books.length + 1}`}>
   <div class="aur__stage">
     <div class="aur__shade" aria-hidden="true"></div>
     <div class="aur__head">
