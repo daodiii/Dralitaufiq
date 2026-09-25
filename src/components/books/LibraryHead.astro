@@ -34,4 +34,19 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* With the scene the page opens straight under the whole sky, the library's name written in it
+     (Aurora.astro); the headline stays here, unseen, for screen readers, and shows again when
+     there is no scene (no script, no WebGL). */
+  :global(html.js:not(:has(.aur.no-gl))) .libhead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 </style>

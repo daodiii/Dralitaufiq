@@ -1,11 +1,11 @@
 ---
 /**
  * "Northern lights". Night over a frozen lake in Norway (nordlys, "north light"). The page
- * opens white; scrolling brings the night. The 18 books stand on the ice in an arc around the
- * reader, and above each hangs a curtain of aurora in its colours. Scrolling goes language by
- * language, one chapter each (English, Arabic, Somali), titled in the sky in the language's own
- * words, its curtains lit together; inside a chapter a tap, a swipe or the arrow keys choose the
- * book, whose curtain surges as it steps forward. At the end, the whole sky. The scene lives in
+ * opens under the whole sky: the 18 books stand on the ice in an arc around the reader, a curtain
+ * of aurora in its colours above each, the library's name in the sky. Scrolling then goes
+ * language by language, one chapter each (English, Arabic, Somali), titled in the sky in the
+ * language's own words, its curtains lit together; inside a chapter a tap, a swipe or the arrow
+ * keys choose the book, whose curtain surges as it steps forward. The scene lives in
  * scripts/books/aurora.ts.
  */
 import type { Book } from '../../lib/books';
@@ -25,11 +25,12 @@ const { books } = Astro.props;
 const chapters = byLanguage(books).filter((g) => g.books.length);
 ---
 
-<section class="aur" aria-label="The books" style={`--lead:1.1;--per:1;--n:${chapters.length + 1}`}>
+<section class="aur" aria-label="The books" style={`--lead:0;--per:1;--n:${chapters.length + 1}`}>
   <div class="aur__stage">
     <div class="aur__shade" aria-hidden="true"></div>
     <div class="aur__head">
       <div class="aur__names" aria-hidden="true">
+        <p class="aur__name">The library</p>
         {
           chapters.map((c) => (
             <p class="aur__name" lang={c.lang} dir={c.lang === 'ar' ? 'rtl' : 'ltr'}>
@@ -48,6 +49,10 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
         }
       </nav>
     </div>
+    <p class="aur__about" aria-hidden="true">
+      Jurisprudence for Muslims in the West, dialogue between the Abrahamic faiths, the family and the unseen, in Arabic,
+      English and Somali.
+    </p>
     <BookCaption books={books} tone="dark" class="aur__caps" />
     <BookPicker books={books} />
   </div>
@@ -59,15 +64,22 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
   .aur {
     position: relative;
     height: calc((var(--lead) + var(--per) * (var(--n) - 1) + 1) * 100svh);
+  }
+
+  /* Without the scene (no script, no WebGL) the page opens on its headline (LibraryHead.astro) and
+     the books follow it. */
+  .aur.no-gl,
+  :global(html:not(.js)) .aur {
     margin-top: clamp(1.5rem, 4vw, 3rem);
   }
 
+  /* The night's own dark while the scene loads, so the page never flashes white. */
   .aur__stage {
     position: sticky;
     top: 0;
     height: 100svh;
     overflow: hidden;
-    background: #fbfaf7;
+    background: #03060d;
   }
 
   .aur__stage :global(.gl__canvas) {
@@ -138,9 +150,25 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
   }
 
   :global(html.js) .aur__name,
-  :global(html.js) .aur__langs {
+  :global(html.js) .aur__langs,
+  :global(html.js) .aur__about {
     visibility: hidden;
     opacity: 0;
+  }
+
+  /* Under the whole sky, a line on the works where a book's words stand in a chapter. */
+  .aur__about {
+    position: absolute;
+    z-index: 3;
+    left: var(--gutter);
+    bottom: 3rem;
+    width: min(25rem, 34vw);
+    font-size: 1rem;
+    line-height: 1.55;
+    color: oklch(90% 0.012 85 / 0.82);
+    text-shadow: 0 1px 10px oklch(8% 0.02 260 / 0.7);
+    text-wrap: pretty;
+    pointer-events: none;
   }
 
   .aur__langs {
@@ -194,6 +222,13 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
       right: var(--gutter);
       bottom: 1rem;
       width: auto;
+    }
+
+    .aur__about {
+      right: var(--gutter);
+      bottom: 1.5rem;
+      width: auto;
+      font-size: 0.92rem;
     }
 
     .aur__shade {

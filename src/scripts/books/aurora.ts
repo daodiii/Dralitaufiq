@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { reduceMotion } from '../smooth';
+import { steps } from '../steps';
 import { nav, showNav } from '../nav';
 import { reveals } from '../reveals';
 import { openSheet, sheetOpen } from './sheet';
@@ -18,14 +19,14 @@ import { auroraColours, makeCurtain, type Curtain } from './aurora/curtains';
 import { makeIce } from './aurora/ice';
 import { gradePass } from './aurora/grade';
 
-/* "Northern lights". The stage opens white, like the page; the first stretch of scrolling brings
-   the night: the sky darkens, the mountains and the ice come out of the white, stars appear and the
-   aurora kindles. The books stand on the ice in an arc around a low camera, and above each hangs
-   its curtain of aurora in its colours (curtains.ts). Scrolling goes language by language (a
-   chapter each, chapters.ts): the view turns to the book chosen in that language, its curtains
-   light together and its name stands in the sky. Inside a chapter a tap, a swipe or the arrow keys
+/* "Northern lights". The page opens by night under the whole sky: every book on the ice in an arc
+   around a low camera, every curtain of aurora alight above them in their colours (curtains.ts),
+   the library's name in the sky. Scrolling then goes language by language (a chapter each,
+   chapters.ts): the view comes down to the book chosen in that language, its curtains light
+   together and its name stands in the sky. Inside a chapter a tap, a swipe or the arrow keys
    choose the book; the chosen book steps forward while its curtain surges across the sky and tints
-   the ice. At the end the view draws back under the whole sky, every curtain alight. */
+   the ice. On wide screens the wheel and the keys move by the same carry as the home page
+   (steps.ts). */
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!;
 const section = $('.aur');
@@ -33,6 +34,7 @@ const host = $('.aur__stage', section);
 const shade = $('.aur__shade', host);
 const head = $('.aur__head', host);
 const langBar = $('.aur__langs', head);
+const about = $('.aur__about', host);
 const navBar = document.querySelector<HTMLElement>('.nav');
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const smooth = (t: number) => {
@@ -77,7 +79,7 @@ function boot() {
      receives one full-screen quad. Phones draw at up to twice their CSS pixels: at the 1.25 larger
      screens keep, a phone's 3x screen stretched the picture more than twice over and it looked soft. */
   const small = Math.min(screen.width, screen.height) < 760;
-  const stage = createStage(host, { fov: 46, near: 0.05, far: 6000, maxDpr: small ? 2 : 1.25, clear: '#fbfaf7', antialias: false });
+  const stage = createStage(host, { fov: 46, near: 0.05, far: 6000, maxDpr: small ? 2 : 1.25, clear: '#03060d', antialias: false });
   if (!stage || !books.length) {
     section.classList.add('no-gl');
     return;
@@ -173,14 +175,14 @@ function boot() {
   const grade = gradePass();
   composer.addPass(grade);
   /* Draw only when the picture changes: every frame while anything moves (the scroll, a choice, the
-     pointer, a resize), every other frame while only the aurora's slow ripple runs, and not at all
-     while the stage stands still before the night. */
+     pointer, a resize), and every other frame while only the aurora's slow ripple runs (not at all
+     with reduced motion, where the sky holds still). */
   let busyUntil = performance.now() + 1000;
   const busy = (sec: number) => void (busyUntil = Math.max(busyUntil, performance.now() + sec * 1000));
   let skip = false;
   stage.setRender(() => {
     if (performance.now() > busyUntil) {
-      if (reduceMotion || night.value < 0.45) return;
+      if (reduceMotion) return;
       skip = !skip;
       if (skip) return;
     }
@@ -188,7 +190,7 @@ function boot() {
   });
   window.addEventListener('scroll', () => busy(0.4), { passive: true });
   host.addEventListener('pointermove', () => busy(0.6));
-  /* A cover that arrives late must still be drawn, even on the still white stage. */
+  /* A cover that arrives late must still be drawn, even while nothing moves. */
   objs.forEach((o) => o.loaded.then(() => busy(0.3)));
   sky.dpr.value = stage.size.dpr;
 
@@ -274,22 +276,17 @@ function boot() {
     navBar?.classList.toggle('is-light', r.top <= 1 && r.bottom > 80 && k > 0.45);
   }
 
-  /* ---------- the camera: from chapter to chapter with the scroll, back for the whole sky ---------- */
+  /* ---------- the camera: down from the whole sky to the first chapter, then chapter to chapter ---------- */
 
-  function aim(at: { intro: number; u: number }) {
+  function aim(at: { u: number }) {
     const up = upright();
-    let yaw: number;
-    let low = frames[0].pitch;
-    if (at.intro < 1) yaw = view[0].yaw * smooth((at.intro - 0.55) / 0.45);
-    else {
-      const u = Math.min(at.u, C - 1);
-      const i = Math.floor(u);
-      const f = smooth(u - i);
-      yaw = i >= C - 1 ? view[C - 1].yaw : view[i].yaw + (view[i + 1].yaw - view[i].yaw) * f;
-      low = i >= C - 1 ? frames[C - 1].pitch : frames[i].pitch + (frames[i + 1].pitch - frames[i].pitch) * f;
-      if (at.u > C - 1) yaw *= 1 - smooth(at.u - (C - 1));
-    }
-    const pull = at.u > C - 1 ? smooth(at.u - (C - 1)) : 0;
+    /* Stop 0 is the whole sky, stop c + 1 chapter c. */
+    const pull = 1 - smooth(at.u);
+    const u = clamp(at.u - 1, 0, C - 1);
+    const i = Math.floor(u);
+    const f = smooth(u - i);
+    const yaw = (i >= C - 1 ? view[C - 1].yaw : view[i].yaw + (view[i + 1].yaw - view[i].yaw) * f) * (1 - pull);
+    let low = i >= C - 1 ? frames[C - 1].pitch : frames[i].pitch + (frames[i + 1].pitch - frames[i].pitch) * f;
     const fov = (up ? FOV.upright : FOV.desk) + pull * (up ? 14 : 18);
     if (Math.abs(camera.fov - fov) > 0.01) {
       camera.fov = fov;
@@ -357,18 +354,6 @@ function boot() {
     if (prev >= 0) stepBook(prev, false);
     caps.show(i, prev < 0 || i > prev ? 1 : -1);
   }
-  function rest() {
-    busy(2);
-    release();
-    whole = false;
-    history.replaceState(null, '', location.pathname);
-    curtainsTo(
-      () => LIGHT.rest,
-      () => 1,
-      (k) => curtains[k].height
-    );
-    tintTo(CLASSIC);
-  }
   function wholeSky() {
     if (whole) return;
     busy(2);
@@ -381,25 +366,29 @@ function boot() {
     );
     tintTo(CLASSIC);
   }
-  /* The chapter's name in the sky, and which language the index marks. */
-  function showChapter(c: number, dir: number) {
-    if (c < 0) names.hide();
-    else names.show(c, dir);
-    langs.forEach((b, k) => b.setAttribute('aria-current', String(k === c)));
+  /* The name in the sky (the library's under the whole sky, else the chapter's), which language the
+     index marks, and a line on the works while the whole sky is up. */
+  function showStop(s: number, dir: number) {
+    names.show(s, dir);
+    langs.forEach((b, k) => b.setAttribute('aria-current', String(k === s - 1)));
+    gsap.to(about, { autoAlpha: s === 0 ? 1 : 0, y: s === 0 ? 0 : -10 * dir, duration: reduceMotion ? 0 : s === 0 ? 0.8 : 0.35, delay: s === 0 && !reduceMotion ? 0.18 : 0, ease: s === 0 ? 'power3.out' : 'power2.in', overwrite: true });
   }
 
-  /* The scroll stops once per chapter, then for the whole sky; one gesture goes one stop. The
-     address follows the book the scroll rests on, not every stop a glide passes (WebKit throws after
-     a hundred rewrites in half a minute). */
+  /* The scroll stops for the whole sky, then once per chapter; one gesture goes one stop. On wide
+     screens the carry (steps.ts) moves the page between them; it is set up first, so its keys come
+     before the stops'. The address follows the book the scroll rests on, not every stop a glide
+     passes (WebKit throws after a hundred rewrites in half a minute). */
+  const carrying = steps(() => ({ zones: [Array.from({ length: C + 1 }, (_, s) => st.y(s))], marks: [] }));
   const st = stops({
     section,
     stage: host,
     count: C + 1,
-    lead: 1.1,
+    lead: 0,
     per: 1,
     carry: true,
     keys: 'vertical',
-    onRest: (c) => history.replaceState(null, '', c < C ? `?book=${books[pick[c]].id}` : location.pathname),
+    carried: () => carrying.active(),
+    onRest: (s) => history.replaceState(null, '', s > 0 ? `?book=${books[pick[s - 1]].id}` : location.pathname),
   });
 
   let lastStop = -2;
@@ -411,9 +400,9 @@ function boot() {
   let goal = -1;
   let goalUntil = 0;
   function goChapter(c: number) {
-    st.go(c);
-    if (Math.abs(c - lastStop) <= 1) return;
-    goal = c;
+    st.go(c + 1);
+    if (Math.abs(c + 1 - lastStop) <= 1) return;
+    goal = c + 1;
     goalUntil = performance.now() + 2800;
     release();
     names.hide();
@@ -430,7 +419,7 @@ function boot() {
     const c = chapterOf(chapters, i);
     if (c < 0) return;
     pick[c] = i;
-    if (c === lastStop) {
+    if (c + 1 === lastStop) {
       gsap.to(view[c], { yaw: az[i], duration: reduceMotion ? 0 : 1.3, ease: 'power2.inOut', overwrite: true });
       select(i);
       history.replaceState(null, '', `?book=${books[i].id}`);
@@ -447,8 +436,8 @@ function boot() {
     pick[c] = i;
     gsap.killTweensOf(view[c]);
     view[c].yaw = az[i];
-    if (c === lastStop) select(i);
-    st.jump(c);
+    if (c + 1 === lastStop) select(i);
+    st.jump(c + 1);
   }
 
   /* ---------- pointing ---------- */
@@ -542,22 +531,21 @@ function boot() {
   objs.forEach((o) => (o.front.emissiveIntensity = 0));
   stage.frame((dt, t) => {
     const at = st.at();
-    const k = reduceMotion ? 1 : smooth(at.intro);
-    applyNight(k);
+    /* Night throughout: the page opens under the whole sky. */
+    applyNight(1);
     aim(at);
     /* With reduced motion the sky holds still: no rippling curtains, no twinkling stars. */
     const clock = reduceMotion ? 12 : t;
     sky.time.value = clock;
     curtains.forEach((c) => (c.u.uTime.value = clock));
-    const stop = at.intro < 0.999 ? -1 : at.i;
+    const stop = at.i;
     if (goal >= 0 && (stop === goal || performance.now() > goalUntil)) goal = -1;
     if (stop !== lastStop && goal < 0) {
       const from = lastStop;
       lastStop = stop;
-      if (stop < 0) rest();
-      else if (stop >= C) wholeSky();
-      else select(pick[stop]);
-      showChapter(stop < C ? stop : -1, stop > from ? 1 : -1);
+      if (stop === 0) wholeSky();
+      else select(pick[stop - 1]);
+      showStop(stop, stop > from ? 1 : -1);
     }
     hover(dt);
   });
@@ -596,12 +584,12 @@ function boot() {
     (window as unknown as { __books: object }).__books = {
       ready: true,
       go: jumpTo,
-      y: (i: number) => st.y(chapterOf(chapters, i)),
+      y: (i: number) => st.y(chapterOf(chapters, i) + 1),
       night: () => night.value,
       bookAt,
       bookBox,
       active: () => active,
-      chapter: () => lastStop,
+      chapter: () => lastStop - 1,
     };
   });
 }

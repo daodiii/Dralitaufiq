@@ -28,12 +28,17 @@ const TRICKLE = 180; /* px of a spent gesture's momentum swallowed after the gli
 const HALF = 0.45; /* a new push the same way past this much of a glide asks for the next beat */
 const SPIN = 300; /* px of notches more in a spent spin of the wheel that move on another beat */
 
+/* Returns whether it is carrying the page now (wide screens without reduced motion), so a page with
+   its own way of settling (the books page's stops) can leave the wheel and the keys to it. */
 export function steps(read: () => Beats) {
   const lenis = getLenis();
-  if (!lenis) return;
+  let on = false;
+  const handle = { active: () => on };
+  if (!lenis) return handle;
   const mm = gsap.matchMedia();
 
   mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
+    on = true;
     let quiet = 0;
     let wasNative = false;
 
@@ -174,8 +179,9 @@ export function steps(read: () => Beats) {
     });
 
     const onKey = (e: KeyboardEvent) => {
-      /* Taken already: the arrow keys walking a stack of lectures. */
-      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+      /* Taken already: the arrow keys walking a stack of lectures; or the page is held still under
+         an open sheet. */
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || lenis.isStopped) return;
       const t = e.target as HTMLElement | null;
       if (t && (t.isContentEditable || /^(input|textarea|select)$/i.test(t.tagName))) return;
       if (e.key === ' ' && t && /^(a|button)$/i.test(t.tagName)) return; /* space activates it */
@@ -228,6 +234,7 @@ export function steps(read: () => Beats) {
     lenis.on('scroll', onScroll);
 
     return () => {
+      on = false;
       window.clearTimeout(quiet);
       gsap.ticker.remove(sample);
       setGestureHandler(null);
@@ -237,4 +244,5 @@ export function steps(read: () => Beats) {
       spent = -1;
     };
   });
+  return handle;
 }

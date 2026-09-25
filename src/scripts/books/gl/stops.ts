@@ -6,8 +6,10 @@ import { settleIndex } from './settle';
    screen; the scroll position picks the current stop; when the scroll comes to rest between stops
    it glides on to the nearest, or with `carry` on to the next in the direction of travel (one
    gesture, one stop); an opening beat (`lead` screens) plays out before the first stop and, left
-   half way, carries on in the direction of travel. The section's height comes from CSS (--lead,
-   --per, --n), so it is right before any script runs. */
+   half way, carries on in the direction of travel. While `carried` says the page's own carry
+   (steps.ts) moves it from stop to stop, the wheel and the keys are its, and a scroll that comes
+   to rest is only reported. The section's height comes from CSS (--lead, --per, --n), so it is
+   right before any script runs. */
 
 export interface Stops {
   count: number;
@@ -34,6 +36,7 @@ export function stops(o: {
   /* 'vertical' leaves the left and right arrows to the page. */
   keys?: boolean | 'vertical';
   carry?: boolean;
+  carried?: () => boolean;
 }): Stops {
   const lenis = getLenis();
   const r = { top: 0, H: 1 };
@@ -87,7 +90,7 @@ export function stops(o: {
       return;
     }
     const s = window.scrollY;
-    if (s < r.top + 2 || s > last() + 2) return;
+    if (s < r.top - 2 || s > last() + 2) return;
     if (o.lead > 0 && s < y(0) - 1) {
       glide(dir > 0 ? y(0) : r.top, 1.1, () => (dir > 0 ? o.onRest?.(0) : undefined));
       return;
@@ -98,6 +101,7 @@ export function stops(o: {
       o.onRest?.(i);
       return;
     }
+    if (o.carried?.()) return;
     glide(y(i), 0.9, () => o.onRest?.(i));
   }
 
@@ -119,7 +123,7 @@ export function stops(o: {
   }
   if (o.keys !== false)
     window.addEventListener('keydown', (e) => {
-      if (sheetOpen() || !inside() || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.defaultPrevented || o.carried?.() || sheetOpen() || !inside() || e.altKey || e.ctrlKey || e.metaKey) return;
       if ((e.target as HTMLElement | null)?.closest('input, textarea, select')) return;
       /* Space on a focused button or link presses it. */
       if (e.key === ' ' && (e.target as HTMLElement | null)?.closest('button, a')) return;
