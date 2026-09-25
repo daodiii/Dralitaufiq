@@ -214,9 +214,8 @@ function works() {
       start: 'top top',
       end: () => `+=${Math.round(window.innerHeight * (n + 1.7))}`,
       pin: true,
-      scrub: 1,
+      scrub: true,
       animation: tl,
-      anticipatePin: 1,
       invalidateOnRefresh: true,
       onRefresh: render,
     });
@@ -319,9 +318,8 @@ function about() {
       start: 'top top',
       end: () => `+=${Math.round(window.innerHeight * 2.4)}`,
       pin: true,
-      scrub: 1,
+      scrub: true,
       animation: tl,
-      anticipatePin: 1,
       invalidateOnRefresh: true,
       onRefresh: render,
     });

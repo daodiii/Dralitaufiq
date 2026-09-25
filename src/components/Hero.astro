@@ -843,7 +843,8 @@ const facebook = profile.social[0];
 
     /* Phones get no stepping (steps.ts starts at 760px), so a swipe that stops inside the
        pull-back glides on the way it was going: one swipe assembles the page, or brings the
-       banner back. The photo also trails the finger less. */
+       banner back. There the photo trails the finger a little; on wider screens the carry
+       already eases every move, so the pull-back follows the scroll exactly. */
     const phone = !window.matchMedia('(min-width: 760px)').matches;
 
     st = ScrollTrigger.create({
@@ -851,12 +852,11 @@ const facebook = profile.social[0];
       start: 'top top',
       end: () => `+=${Math.round(window.innerHeight * PIN)}`,
       pin: true,
-      scrub: phone ? 0.3 : 0.6,
+      scrub: phone ? 0.3 : true,
       snap: phone
         ? { snapTo: 1, directional: true, inertia: false, delay: 0.08, duration: { min: 0.3, max: 0.8 }, ease: 'power2.inOut' }
         : undefined,
       animation: scrub,
-      anticipatePin: 1,
       refreshPriority: 1,
       onUpdate: (self) => {
         const p = self.progress;
