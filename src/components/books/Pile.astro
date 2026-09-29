@@ -1,0 +1,525 @@
+---
+/**
+ * The books on a phone: every book lying in one pile on white, spines to the reader, each as long
+ * as the book is tall and as thick as its pages make it, so every title can be read at once;
+ * English on top, then Arabic, then Somali. The pile builds itself book by book as the page opens.
+ * A tap (or a pull sideways) draws a book out: the books above drop into its place and it comes
+ * round to face the reader with its words, the Amazon listing and the whole text (BookSheet);
+ * put back, it lands on top of the pile, so the pile keeps the order it was read in. The three
+ * languages lift their books a little out of the pile. On a wider screen the page is the Northern
+ * lights instead (Aurora.astro); books.astro decides which as the page loads. Scripts:
+ * scripts/books/pile.ts.
+ */
+import { getImage } from 'astro:assets';
+import type { Book } from '../../lib/books';
+import { languageLabel, languageName, shortRole } from '../../lib/books';
+import { amazonLabel, blurb, bookStyle, titles } from '../../lib/library';
+import { ordered } from '../../lib/glbooks';
+import profile from '../../data/profile.json';
+
+interface Props {
+  books: Book[];
+}
+
+/* The name on the spine, in the book's own language. */
+const author = {
+  en: 'Ali Mohamed Salah',
+  so: profile.nameSomali.replace(/^Dr\.\s*/, ''),
+  ar: profile.nameArabic.replace(/^الدكتور\s*/, ''),
+};
+
+const books = await Promise.all(
+  ordered(Astro.props.books).map(async (b, i) => {
+    const d = b.data;
+    const [lid, cover] = await Promise.all([
+      getImage({ src: d.cover, width: 360, format: 'webp', quality: 80 }),
+      getImage({ src: d.cover, width: Math.min(900, d.coverWidth), format: 'webp', quality: 86 }),
+    ]);
+    return {
+      b,
+      d,
+      i,
+      t: titles(b),
+      rtl: d.language === 'ar',
+      style: `${await bookStyle(b)};--tcm:${d.size.t};--hcm:${d.size.h};--wcm:${d.size.w}`,
+      meta: [languageLabel[d.language], d.role === 'Author' ? null : shortRole(d.role), d.publisher, d.year].filter(Boolean).join(' · '),
+      sub: d.language === 'ar' ? titles(b).english : d.subtitle,
+      blurb: blurb(b, 40),
+      lid: lid.src,
+      cover: cover.src,
+    };
+  })
+);
+---
+
+<section class="pile" aria-label="The books">
+  <div class="pile__head">
+    <p class="display pile__h" aria-hidden="true">The library</p>
+    <nav class="pile__langs" aria-label="Languages">
+      {
+        (['en', 'ar', 'so'] as const).map((lang) => (
+          <button type="button" data-lang={lang} lang={lang === 'ar' ? 'ar' : undefined} aria-pressed="false">
+            {languageName[lang]}
+          </button>
+        ))
+      }
+    </nav>
+  </div>
+
+  <div class="pile__table">
+    <div class="pile__stack">
+      {
+        books.map(({ b, d, i, t, rtl, style, lid }) => (
+          <button
+            class="pile__book"
+            type="button"
+            data-i={i}
+            data-id={b.id}
+            data-lang={d.language}
+            data-rtl={rtl ? '1' : '0'}
+            style={style}
+            aria-label={t.latin || d.title}
+          >
+            <span class="pile__lid" aria-hidden="true">
+              <img src={lid} alt="" loading="lazy" decoding="async" draggable="false" />
+            </span>
+            <span class="pile__spine" dir={rtl ? 'rtl' : 'ltr'} aria-hidden="true">
+              <span class="pile__t" lang={d.language}>
+                {d.title}
+              </span>
+              <span class="pile__a" lang={rtl ? 'ar' : undefined}>
+                {author[d.language]}
+              </span>
+            </span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<div class="pview" role="dialog" aria-modal="true" hidden>
+  <div class="pview__scrim"></div>
+  <div class="pview__body" data-lenis-prevent>
+    <button class="pview__close" type="button" aria-label="Put the book back">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+        <path d="M3.5 3.5l9 9M12.5 3.5l-9 9"></path>
+      </svg>
+    </button>
+    {
+      books.map(({ b, d, i, t, rtl, style, meta, sub, blurb, cover }) => (
+        <article class="pview__book" data-i={i} dir={rtl ? 'rtl' : 'ltr'} style={style} hidden>
+          <div class="pview__cover">
+            <img src={cover} alt={d.title} loading="lazy" decoding="async" />
+          </div>
+          <div class="pview__words">
+            {d.badge && <p class="pview__badge">{d.badge}</p>}
+            <h2 class="pview__title" lang={d.language}>
+              {d.title}
+            </h2>
+            {t.latin && <p class="pview__latin">{t.latin}</p>}
+            {sub && (
+              <p class="pview__sub" dir="ltr">
+                {sub}
+              </p>
+            )}
+            <p class="pview__meta" dir="ltr">
+              {meta}
+            </p>
+            <p class="pview__blurb" lang={blurb.lang} dir={blurb.dir}>
+              {blurb.text}
+            </p>
+            <div class="pview__acts" dir="ltr">
+              <a class="btn" href={d.amazon[0].url} target="_blank" rel="noopener">
+                {amazonLabel(d.amazon[0].label)}
+                <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                  <path d="M4 12L12 4M6 4h6v6" />
+                </svg>
+              </a>
+              <button class="link" type="button" data-sheet={b.id}>
+                About this book
+              </button>
+            </div>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</div>
+
+<style is:global>
+  /* Shown only where the page chose the pile (books.astro) and the script can lay it out. */
+  .pile {
+    display: none;
+  }
+
+  html.js.books-pile .pile {
+    display: block;
+  }
+
+  .pile {
+    /* A centimetre of book: the longest spine (24.41 cm, the Arabic books) fills the width. */
+    --cm: min(13.8px, (100vw - 3.4rem) / 24.41);
+    padding: calc(var(--nav-h) + 0.6rem) 0 5rem;
+    background:
+      radial-gradient(80% 50% at 50% 70%, oklch(99.5% 0.003 85), transparent 80%),
+      var(--paper);
+  }
+
+  .pile__head {
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin-inline: auto;
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .pile__h {
+    font-size: clamp(2.6rem, 12vw, 4rem);
+  }
+
+  .pile__langs {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .pile__langs button {
+    position: relative;
+    padding: 0.35rem 0;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--ink-3);
+    transition: color 0.4s;
+  }
+
+  .pile__langs button[lang='ar'] {
+    font-size: 1.04rem;
+    line-height: 1.1;
+  }
+
+  .pile__langs button[aria-pressed='true'] {
+    color: var(--ink);
+  }
+
+  .pile__langs button::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.05rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .pile__langs button[aria-pressed='true']::after {
+    transform: scaleX(1);
+  }
+
+  /* ---------- the pile ---------- */
+
+  /* The books fall in from the top of the table's room, not across the heading. */
+  .pile__table {
+    position: relative;
+    margin-top: 1.2rem;
+    padding: 1rem var(--gutter) 0;
+    overflow-y: clip;
+    overflow-x: visible;
+    overflow-clip-margin: 2rem;
+  }
+
+  /* The pile's shadow on the table. */
+  .pile__table::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -0.5rem;
+    width: min(92vw, 25rem);
+    height: 1.6rem;
+    transform: translateX(-50%);
+    background: radial-gradient(50% 50% at 50% 30%, oklch(19% 0.012 60 / 0.28), transparent 72%);
+    pointer-events: none;
+  }
+
+  .pile__stack {
+    position: relative;
+    height: var(--pile-h, 40rem);
+  }
+
+  .pile__book {
+    --t: calc(8px + var(--tcm) * 16px);
+    --len: calc(var(--hcm) * var(--cm));
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: var(--len);
+    height: var(--t);
+    margin-left: calc(var(--len) / -2);
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+    will-change: transform;
+    transition: opacity 0.5s var(--ease-out);
+  }
+
+  .pile__book:focus-visible {
+    outline-offset: 3px;
+  }
+
+  .pile__stack.is-filtered .pile__book:not(.is-chosen) {
+    opacity: 0.28;
+  }
+
+  /* The spine: the cover's own colour at its bound edge, rounded a little by the light from above. */
+  .pile__spine {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0 0.7rem;
+    border-radius: 2px;
+    color: var(--ground-ink);
+    background:
+      linear-gradient(180deg, oklch(100% 0 0 / 0.22), oklch(100% 0 0 / 0.04) 22%, transparent 55%, oklch(0% 0 0 / 0.2)),
+      var(--ground);
+    box-shadow:
+      inset 0 1px 0 oklch(100% 0 0 / 0.28),
+      inset 0 -1px 0 oklch(0% 0 0 / 0.25),
+      0 1px 1px oklch(19% 0.012 60 / 0.3),
+      0 3px 6px -2px oklch(19% 0.012 60 / 0.25);
+  }
+
+  /* The ends of the spine turn into the boards. */
+  .pile__spine::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, oklch(0% 0 0 / 0.22), transparent 1.8%, transparent 98.2%, oklch(0% 0 0 / 0.22));
+    pointer-events: none;
+  }
+
+  /* The title as large as the spine allows; the script brings a long one down to fit (--fs). */
+  .pile__t {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: var(--fs, clamp(9px, calc(var(--t) * 0.34), 12.5px));
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .pile__t:lang(ar) {
+    font-size: var(--fs, clamp(12px, calc(var(--t) * 0.5), 18px));
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.3;
+  }
+
+  .pile__a {
+    flex: none;
+    font-size: clamp(7px, calc(var(--t) * 0.22), 9px);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.78;
+  }
+
+  .pile__a:lang(ar) {
+    font-size: clamp(10px, calc(var(--t) * 0.32), 12px);
+    letter-spacing: 0;
+  }
+
+  /* The cover of the book on top, seen lying face up. Its top is to the left of an English book
+     (to the right of an Arabic one), so the picture lies on its side. Only the top book's is
+     shown, so only its picture is fetched. */
+  .pile__lid {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    display: none;
+    height: calc(var(--wcm) * var(--cm));
+    transform-origin: 50% 100%;
+    transform: perspective(900px) rotateX(79deg);
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--ground);
+    pointer-events: none;
+  }
+
+  .pile__book.is-top .pile__lid {
+    display: block;
+  }
+
+  .pile__lid img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: calc(var(--wcm) * var(--cm));
+    height: calc(var(--hcm) * var(--cm));
+    max-width: none;
+    object-fit: cover;
+    transform: translate(-50%, -50%) rotate(-90deg);
+  }
+
+  .pile__book[data-rtl='1'] .pile__lid img {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  .pile__lid::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, oklch(0% 0 0 / 0.12), oklch(100% 0 0 / 0.1));
+  }
+
+  /* ---------- the book drawn out ---------- */
+
+  .pview {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+  }
+
+  .pview__scrim {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in oklab, var(--paper) 86%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .pview__body {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4.4rem var(--gutter) 3rem;
+  }
+
+  .pview__close {
+    position: fixed;
+    z-index: 2;
+    top: 0.9rem;
+    right: 0.9rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    color: var(--ink);
+    background: var(--paper);
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 8px 20px -10px oklch(19% 0.012 60 / 0.4);
+  }
+
+  .pview__close svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .pview__book {
+    display: grid;
+    justify-items: center;
+    gap: 1.6rem;
+  }
+
+  .pview__book[hidden] {
+    display: none;
+  }
+
+  .pview__cover {
+    width: min(62vw, 16rem);
+    aspect-ratio: var(--ar);
+    perspective: 900px;
+  }
+
+  .pview__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 1px 3px 3px 1px;
+    box-shadow:
+      0 1px 2px oklch(19% 0.012 60 / 0.12),
+      0 34px 50px -22px oklch(19% 0.012 60 / 0.5);
+  }
+
+  .pview__book[dir='rtl'] .pview__cover img {
+    border-radius: 3px 1px 1px 3px;
+  }
+
+  .pview__words {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    max-width: 22rem;
+    text-align: center;
+  }
+
+  .pview__badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .pview__title {
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .pview__title:lang(ar) {
+    font-family: var(--font-arabic);
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  .pview__latin,
+  .pview__sub {
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: var(--ink-2);
+    text-wrap: balance;
+  }
+
+  .pview__latin {
+    font-style: italic;
+  }
+
+  .pview__meta {
+    margin-top: 0.2rem;
+    font-size: 0.78rem;
+    color: var(--ink-3);
+  }
+
+  .pview__blurb {
+    margin-top: 0.9rem;
+    font-size: 0.94rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+    text-wrap: pretty;
+  }
+
+  .pview__blurb:lang(ar) {
+    font-family: var(--font-arabic);
+    font-size: 1.12rem;
+    line-height: 1.9;
+  }
+
+  .pview__acts {
+    display: grid;
+    justify-items: center;
+    gap: 0.9rem;
+    margin-top: 1.3rem;
+  }
+</style>

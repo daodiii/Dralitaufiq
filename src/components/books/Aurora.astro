@@ -67,6 +67,11 @@ const chapters = byLanguage(books).filter((g) => g.books.length);
     height: calc((var(--lead) + var(--per) * (var(--n) - 1) + 1) * 100svh);
   }
 
+  /* On a phone the books lie in a pile instead (Pile.astro; books.astro decides). */
+  :global(html.books-pile) .aur {
+    display: none;
+  }
+
   /* Without the scene (no script, no WebGL) the page opens on its headline (LibraryHead.astro) and
      the books follow it. */
   .aur.no-gl,

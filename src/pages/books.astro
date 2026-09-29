@@ -1,11 +1,14 @@
 ---
-/* The books: "Northern lights" (scripts/books/aurora.ts). The wall on the home page links here, to
-   one book with ?book=<id>. */
+/* The books: "Northern lights" (scripts/books/aurora.ts), and on a phone the pile
+   (scripts/books/pile.ts). The wall and the fan on the home page link here, to one book with
+   ?book=<id>. A screen narrower than 760px (the home page's split) gets the pile: decided once,
+   before the first paint, so a phone neither flashes the night nor downloads its scene. */
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import LibraryHead from '../components/books/LibraryHead.astro';
 import Aurora from '../components/books/Aurora.astro';
+import Pile from '../components/books/Pile.astro';
 import BookSheet from '../components/books/BookSheet.astro';
 import { allBooks } from '../lib/books';
 
@@ -13,15 +16,21 @@ const books = await allBooks();
 ---
 
 <Base title="Books · Prof. Dr. Ali Mohamed Salah" description="The books of Prof. Dr. Ali Mohamed Salah in Arabic, English and Somali.">
+  <script is:inline>
+    if (!window.matchMedia('(min-width: 760px)').matches) document.documentElement.classList.add('books-pile');
+  </script>
   <Nav page="inner" />
   <main>
     <LibraryHead />
     <Aurora books={books} />
+    <Pile books={books} />
   </main>
   <Footer page="inner" />
   <BookSheet books={books} />
   <script>
     import '../scripts/smooth';
-    import '../scripts/books/aurora';
+
+    if (document.documentElement.classList.contains('books-pile')) import('../scripts/books/pile');
+    else import('../scripts/books/aurora');
   </script>
 </Base>
