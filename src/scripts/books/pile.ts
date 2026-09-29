@@ -121,14 +121,14 @@ function wake() {
 function tick(now: number) {
   const dt = Math.min(0.033, (now - last) / 1000);
   last = now;
-  let busy = false;
+  let moving = false;
   /* From the table up: each book's floor is the book under it, where that book is now. */
   let floor = 0;
   for (let k = order.length - 1; k >= 0; k--) {
     const b = S[order[k]];
     if (b.out) continue;
     if (now < b.wait) {
-      busy = true;
+      moving = true;
       continue;
     }
     if (!b.shown) {
@@ -142,7 +142,7 @@ function tick(now: number) {
         b.y = floor;
         b.v = -b.v > 260 ? -b.v * 0.2 : 0;
       }
-      busy = true;
+      moving = true;
     } else if (b.y < floor) b.y = floor;
     floor = b.y + b.t;
   }
@@ -151,13 +151,47 @@ function tick(now: number) {
       const dx = b.xTo - b.x;
       if (Math.abs(dx) > 0.05) {
         b.x += dx * 0.2;
-        busy = true;
+        moving = true;
       } else b.x = b.xTo;
     }
     draw(b);
   });
-  if (busy) requestAnimationFrame(tick);
-  else running = false;
+  if (moving) requestAnimationFrame(tick);
+  else {
+    running = false;
+    const then = landed;
+    landed = null;
+    then?.();
+  }
+}
+
+/* ---------- once the pile has landed, the top book comes out a little and goes back ---------- */
+
+/* Without a word, this shows that the books come out of the pile. Once a page, and not once the
+   reader has touched a book or a language. */
+let landed: (() => void) | null = null;
+let hint: { tl: gsap.core.Timeline; b: Body } | null = null;
+let hinted = false;
+
+function nudge() {
+  const b = S[inPile()[0]];
+  if (!b || hinted || open || busy || grip) return;
+  hinted = true;
+  const tl = gsap
+    .timeline({ onUpdate: () => draw(b), onComplete: () => (hint = null) })
+    .to(b, { lift: 38, duration: 0.55, ease: 'power3.out' })
+    .to(b, { lift: 0, duration: 0.7, ease: 'power2.inOut' }, '+=0.25');
+  hint = { tl, b };
+}
+
+/* Cut short, the book goes back where it lay. */
+function stopHint() {
+  hinted = true;
+  if (!hint) return;
+  hint.tl.kill();
+  hint.b.lift = rest(hint.b);
+  hint = null;
+  wake();
 }
 
 /* ---------- the pile builds itself ---------- */
@@ -182,6 +216,7 @@ function build() {
     b.el.style.opacity = '0';
     draw(b);
   }
+  landed = () => setTimeout(nudge, 450);
   wake();
 }
 
@@ -213,6 +248,7 @@ const articleOf = (b: Body) => articles.find((a) => a.dataset.i === String(b.i))
 
 function pull(b: Body, dir = b.rtl ? -1 : 1) {
   if (busy || b.out) return;
+  stopHint();
   busy = true;
   b.held = true;
   b.lift = 0;
@@ -350,6 +386,7 @@ S.forEach((b) => {
   const el = b.el;
   el.addEventListener('pointerdown', (e) => {
     if (b.out || busy) return;
+    stopHint();
     grip = { b, id: e.pointerId, x0: e.clientX, y0: e.clientY, live: false, lastX: e.clientX, lastT: performance.now(), v: 0 };
     el.setPointerCapture(e.pointerId);
     /* The book gives a little under the finger. */
@@ -430,6 +467,7 @@ S.forEach((b) => {
 
 langs.forEach((btn) =>
   btn.addEventListener('click', () => {
+    stopHint();
     chosen = chosen === btn.dataset.lang ? null : btn.dataset.lang!;
     langs.forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.lang === chosen)));
     stack.classList.toggle('is-filtered', !!chosen);

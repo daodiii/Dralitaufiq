@@ -1,8 +1,10 @@
 ---
 /* The books: "Northern lights" (scripts/books/aurora.ts), and on a phone the pile
    (scripts/books/pile.ts). The wall and the fan on the home page link here, to one book with
-   ?book=<id>. A screen narrower than 760px (the home page's split) gets the pile: decided once,
-   before the first paint, so a phone neither flashes the night nor downloads its scene. */
+   ?book=<id>. A phone gets the pile however it is held (its screen's short side is under 600px;
+   tablets start at 744), and so does any window narrower than 760px, the home page's split.
+   Decided once, before the first paint, so a phone neither flashes the night nor downloads its
+   scene. */
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
@@ -17,7 +19,8 @@ const books = await allBooks();
 
 <Base title="Books · Prof. Dr. Ali Mohamed Salah" description="The books of Prof. Dr. Ali Mohamed Salah in Arabic, English and Somali.">
   <script is:inline>
-    if (!window.matchMedia('(min-width: 760px)').matches) document.documentElement.classList.add('books-pile');
+    if (!window.matchMedia('(min-width: 760px)').matches || Math.min(screen.width, screen.height) < 600)
+      document.documentElement.classList.add('books-pile');
   </script>
   <Nav page="inner" />
   <main>

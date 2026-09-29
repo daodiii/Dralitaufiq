@@ -5,8 +5,9 @@
  * English on top, then Arabic, then Somali. The pile builds itself book by book as the page opens.
  * A tap (or a pull sideways) draws a book out: the books above drop into its place and it comes
  * round to face the reader with its words, the Amazon listing and the whole text (BookSheet);
- * put back, it lands on top of the pile, so the pile keeps the order it was read in. The three
- * languages lift their books a little out of the pile. On a wider screen the page is the Northern
+ * put back, it lands on top of the pile, so the pile keeps the order it was read in. Once the pile
+ * has landed its top book comes out a little and goes back, to show that they come out. The three
+ * languages lift their books a little out of the pile. Tablets and wider screens get the Northern
  * lights instead (Aurora.astro); books.astro decides which as the page loads. Scripts:
  * scripts/books/pile.ts.
  */
@@ -433,8 +434,9 @@ const books = await Promise.all(
     display: none;
   }
 
+  /* As large as a phone held upright allows; held sideways, the cover still fits the height. */
   .pview__cover {
-    width: min(62vw, 16rem);
+    width: min(62vw, 16rem, (100svh - 8rem) * var(--ar));
     aspect-ratio: var(--ar);
     perspective: 900px;
   }
