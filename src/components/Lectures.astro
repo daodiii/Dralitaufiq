@@ -7,7 +7,8 @@
  * the lesson, and a click opens it on YouTube inside its series. Monochrome like the wall.
  * The table is drawn in one unit (--lu) sized so the row spans the text column. The 3D is only
  * for looks: pointing and clicking go through flat hit areas laid over it, since hit-testing in
- * a tilted preserve-3d layer is unreliable. The script is scripts/lectures.ts.
+ * a tilted preserve-3d layer is unreliable. The script is scripts/lectures.ts. Phones get "the
+ * screen" instead (LecturesScreen); without the script, the series are a plain list.
  */
 import { Image } from 'astro:assets';
 import LESSONS from '../data/lessons.json';
@@ -18,6 +19,7 @@ import riyad from '../assets/lectures/riyad.jpg';
 import quran from '../assets/lectures/quran.jpg';
 import companions from '../assets/lectures/companions.jpg';
 import bulugh from '../assets/lectures/bulugh.jpg';
+import LecturesScreen from './LecturesScreen.astro';
 
 /* A frame of each series for the top of its stack. */
 const FRAMES = { sira, brief, riyad, quran, companions, bulugh };
@@ -43,7 +45,7 @@ const client = stacks.map(({ key, s, n, h, meta, href }) => ({ key, title: s.tit
   </div>
 
   <div data-reveal data-y="40">
-    <div class="lectures__stage" data-scroll-x>
+    <div class="lectures__stage">
       <div class="lectures__world">
         <div class="lectures__scene" aria-hidden="true">
           <div class="lectures__table">
@@ -99,6 +101,8 @@ const client = stacks.map(({ key, s, n, h, meta, href }) => ({ key, title: s.tit
       <p class="sr-only" aria-live="polite" data-live></p>
       <script type="application/json" data-stacks set:html={JSON.stringify(client)} />
     </div>
+
+    <LecturesScreen />
 
     <ul class="container lectures__list">
       {
@@ -180,26 +184,10 @@ const client = stacks.map(({ key, s, n, h, meta, href }) => ({ key, title: s.tit
     height: 100%;
   }
 
-  /* A phone keeps the one row at a size that reads, and swipes along it. */
-  @media (max-width: 759px) {
-    .lectures__stage {
-      --lu: clamp(0.62px, 100cqi / 560, 0.8px);
-      overflow: auto clip;
-      overscroll-behavior-x: contain;
-      scroll-snap-type: x proximity;
-      scrollbar-width: none;
-    }
-
-    .lectures__stage::-webkit-scrollbar {
+  /* A phone has the screen (LecturesScreen) in its place: the same query as the script's. */
+  @media not all and (min-width: 760px) {
+    html.js .lectures__stage {
       display: none;
-    }
-
-    .lectures__world {
-      width: calc(1086 * var(--lu) + 2 * var(--gutter));
-    }
-
-    .lectures__hit {
-      scroll-snap-align: center;
     }
   }
 

@@ -1,0 +1,473 @@
+---
+/**
+ * The lectures on a phone: "the screen", in place of the table of stacks (made for a pointer and
+ * a wide screen). One picture of him the width of the phone, from the series chosen above it,
+ * slowly drawing closer; under it the series' newest lesson, one tap from playing, and the
+ * lessons before it in a row to swipe. The series sit over the screen as their names, in Arabic
+ * and in English, longest first; a sideways swipe across the screen goes to the next.
+ * Only the chosen series' pictures load; the script (scripts/screen.ts) fetches the others when
+ * they are chosen. Shown below 760px with the script; without it, phones keep the plain list.
+ */
+import { getImage } from 'astro:assets';
+import LESSONS from '../data/lessons.json';
+import { SERIES, playlist, seriesMeta, describe, type Lesson, type Lessons } from '../lib/lectures';
+import { still, pictureOf } from '../lib/stills';
+import quran from '../assets/lectures/screen/quran.jpg';
+import riyad from '../assets/lectures/screen/riyad.jpg';
+import brief from '../assets/lectures/screen/brief.jpg';
+import companions from '../assets/lectures/screen/companions.jpg';
+import sira from '../assets/lectures/screen/sira.jpg';
+import bulugh from '../assets/lectures/screen/bulugh.jpg';
+
+/* A picture of him from each series, chosen by eye (tools/lecture-pictures). */
+const PICS = { quran, riyad, brief, companions, sira, bulugh };
+const ORDER = ['quran', 'riyad', 'brief', 'companions', 'sira', 'bulugh'] as const;
+const EARLIER = 8;
+
+const data = LESSONS as Lessons;
+const all = await Promise.all(
+  ORDER.map(async (key) => {
+    const s = SERIES[key];
+    const { pl, lessons } = data[key];
+    const told = (l: Lesson) => {
+      const p = pictureOf(l);
+      return { ...describe(key, l, pl), pic: still(p.id, p.f, 'mq') };
+    };
+    const img = await getImage({ src: PICS[key], widths: [480, 720, 960, 1280] });
+    return {
+      key,
+      title: s.title,
+      ar: s.ar,
+      meta: seriesMeta(s),
+      href: playlist(pl),
+      img,
+      newest: told(lessons[lessons.length - 1]),
+      earlier: lessons.slice(-EARLIER - 1, -1).reverse().map(told),
+    };
+  })
+);
+const line = (x: { num: string; len: string }) => [x.num && `Lesson ${x.num}`, x.len].filter(Boolean).join(' · ');
+/* The newest lesson's heading: what it covers, or, where a series names its lessons only by
+   number, the series itself, with "Lesson 24" under it. */
+const heading = (x: { num: string; title: string; len: string }, series: string) =>
+  x.num ? { t: x.title, m: line(x) } : { t: series, m: [x.title, x.len].join(' · ') };
+---
+
+<div class="screen">
+  <div class="screen__names" data-scroll-x>
+    {
+      all.map((s, k) => (
+        <button class:list={['screen__name', k === 0 && 'is-on']} type="button" data-k={k} aria-pressed={k === 0 ? 'true' : 'false'}>
+          <span class="screen__name-ar" lang="ar">
+            {s.ar}
+          </span>
+          <span class="screen__name-t">{s.title}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="screen__view">
+    {
+      all.map((s, k) => (
+        <a
+          class:list={['screen__shot', k === 0 && 'is-on']}
+          data-k={k}
+          href={s.newest.href}
+          target="_blank"
+          rel="noopener"
+          aria-label={`Watch ${s.newest.title}, ${s.title}, on YouTube`}
+          draggable="false"
+        >
+          <img
+            src={k === 0 ? s.img.src : undefined}
+            srcset={k === 0 ? s.img.srcSet.attribute : undefined}
+            data-src={s.img.src}
+            data-srcset={s.img.srcSet.attribute}
+            sizes="100vw"
+            width={s.img.attributes.width}
+            height={s.img.attributes.height}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
+        </a>
+      ))
+    }
+    <span class="screen__play" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor"></path></svg>
+    </span>
+  </div>
+
+  <div class="screen__now container">
+    {
+      all.map((s, k) => (
+        <div class:list={['screen__lesson', k === 0 && 'is-on']} data-k={k}>
+          {s.newest.ar !== s.ar && (
+            <p class="screen__lesson-ar" lang="ar">
+              {s.newest.ar}
+            </p>
+          )}
+          <h3 class="screen__lesson-t">{heading(s.newest, s.title).t}</h3>
+          <p class="screen__lesson-m">{heading(s.newest, s.title).m}</p>
+          <p class="screen__series">
+            <a class="link" href={s.href} target="_blank" rel="noopener">
+              The whole series
+            </a>
+            <span>{s.meta}</span>
+          </p>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="screen__rows">
+    {
+      all.map((s, k) => (
+        <ul class:list={['screen__row', k === 0 && 'is-on']} data-k={k} data-scroll-x>
+          {s.earlier.map((l) => (
+            <li>
+              <a href={l.href} target="_blank" rel="noopener">
+                <span class="screen__thumb">
+                  <img
+                    src={k === 0 ? l.pic : undefined}
+                    data-src={l.pic}
+                    width="320"
+                    height="180"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </span>
+                <span class="screen__thumb-t">{l.title}</span>
+                <span class="screen__thumb-m">{line(l)}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .screen {
+    display: none;
+  }
+
+  /* The same query as the table's, turned round, so exactly one of them shows. */
+  @media not all and (min-width: 760px) {
+    html.js .screen {
+      display: block;
+    }
+  }
+
+  /* ---------- the series' names ---------- */
+
+  .screen__names {
+    display: flex;
+    gap: 1.6rem;
+    padding: 0 var(--gutter) 1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 var(--gutter), #000 calc(100% - 2.5rem), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 var(--gutter), #000 calc(100% - 2.5rem), transparent);
+  }
+
+  .screen__names::-webkit-scrollbar {
+    display: none;
+  }
+
+  .screen__name {
+    position: relative;
+    display: grid;
+    flex: none;
+    justify-items: start;
+    gap: 0.1rem;
+    padding-bottom: 0.55rem;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .screen__name-ar {
+    font-size: 1.1rem;
+    line-height: 1.4;
+    color: var(--gold);
+    opacity: 0.55;
+    transition: opacity 0.4s;
+  }
+
+  .screen__name-t {
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink-4);
+    white-space: nowrap;
+    transition: color 0.4s;
+  }
+
+  .screen__name::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--ink);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .screen__name.is-on .screen__name-ar {
+    opacity: 1;
+  }
+
+  .screen__name.is-on .screen__name-t {
+    color: var(--ink);
+  }
+
+  .screen__name.is-on::after {
+    transform: scaleX(1);
+  }
+
+  /* ---------- the screen ---------- */
+
+  .screen__view {
+    position: relative;
+    display: grid;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: oklch(19% 0.012 60);
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .screen__shot {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.7s var(--ease-out),
+      visibility 0s 0.7s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .screen__shot.is-on {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.7s var(--ease-out),
+      visibility 0s;
+  }
+
+  .screen__shot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform-origin: 50% 30%;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  /* The picture draws slowly closer, as a camera would. */
+  .screen__shot.is-on img {
+    animation: screen-closer 18s ease-in-out infinite alternate;
+  }
+
+  @keyframes screen-closer {
+    from {
+      transform: scale(1.01);
+    }
+    to {
+      transform: scale(1.12);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .screen__shot.is-on img {
+      animation: none;
+    }
+  }
+
+  .screen__shot:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .screen__view::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, oklch(19% 0.012 60 / 0.45), transparent 40%);
+    pointer-events: none;
+  }
+
+  .screen__play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 4rem;
+    height: 4rem;
+    margin: -2rem 0 0 -2rem;
+    border-radius: 50%;
+    background: oklch(98.6% 0.004 85 / 0.9);
+    color: var(--ink);
+    box-shadow: 0 12px 30px -10px oklch(0% 0 0 / 0.55);
+    pointer-events: none;
+  }
+
+  .screen__play svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: 3px;
+  }
+
+  /* ---------- the newest lesson ---------- */
+
+  .screen__now {
+    display: grid;
+    padding-top: 1.2rem;
+  }
+
+  .screen__lesson {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition:
+      opacity 0.3s,
+      transform 0.5s var(--ease-out),
+      visibility 0s 0.3s;
+  }
+
+  .screen__lesson.is-on {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 0.5s 0.12s,
+      transform 0.7s 0.12s var(--ease-out),
+      visibility 0s;
+  }
+
+  .screen__lesson-ar {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    color: var(--gold);
+    text-align: left;
+  }
+
+  .screen__lesson-t {
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .screen__lesson-m {
+    margin-top: 0.45rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--ink-3);
+  }
+
+  .screen__series {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-top: 0.8rem;
+  }
+
+  .screen__series span {
+    font-size: 0.8rem;
+    color: var(--ink-3);
+  }
+
+  /* ---------- the lessons before it ---------- */
+
+  .screen__rows {
+    display: grid;
+    padding-top: 1.6rem;
+  }
+
+  .screen__row {
+    grid-area: 1 / 1;
+    display: flex;
+    gap: 0.9rem;
+    padding: 0 var(--gutter) 0.4rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.3s,
+      visibility 0s 0.3s;
+  }
+
+  .screen__row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .screen__row.is-on {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 0.5s 0.15s,
+      visibility 0s;
+  }
+
+  .screen__row li {
+    flex: none;
+    width: min(44vw, 190px);
+    scroll-snap-align: start;
+  }
+
+  .screen__row a {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .screen__thumb {
+    display: block;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 0.45rem;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--paper-3);
+  }
+
+  .screen__thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .screen__thumb-t {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 0.86rem;
+    font-weight: 500;
+    line-height: 1.3;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .screen__thumb-m {
+    font-size: 0.76rem;
+    color: var(--ink-3);
+  }
+</style>
+
+<script>
+  import '../scripts/screen';
+</script>

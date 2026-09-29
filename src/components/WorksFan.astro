@@ -1,0 +1,315 @@
+---
+/**
+ * The books on a phone: the books of one language held as a fanned hand of covers, in place of
+ * the wall (too big a flight for a small screen). Dragging across the hand turns it under the
+ * finger, one cover to the front at a time; a tap brings a cover to the front, and a tap on the
+ * front one opens it on the books page. The three languages, each in its own words, deal a new
+ * hand: the one held folds away and the next fans out. The Arabic hand runs right to left.
+ * Shown below 760px with the script (scripts/fan.ts); without it, phones keep the wall's index.
+ */
+import { Image } from 'astro:assets';
+import { allBooks, caption, languageName } from '../lib/books';
+import { bookStyle } from '../lib/library';
+
+const all = await allBooks();
+const books = await Promise.all(all.map(async (b) => ({ b, style: await bookStyle(b), ...caption(b) })));
+const hands = (['en', 'ar', 'so'] as const).map((lang) => ({ lang, books: books.filter((x) => x.b.data.language === lang) }));
+---
+
+<div class="fan">
+  <div class="fan__tabs container">
+    {
+      hands.map((h, k) => (
+        <button
+          class:list={['fan__tab', k === 0 && 'is-on']}
+          type="button"
+          data-lang={h.lang}
+          lang={h.lang === 'ar' ? 'ar' : undefined}
+          aria-pressed={k === 0 ? 'true' : 'false'}
+        >
+          {languageName[h.lang]}
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="fan__stage">
+    {
+      hands.map((h, k) => (
+        <div class:list={['fan__hand', k === 0 && 'is-on']} data-lang={h.lang} data-dir={h.lang === 'ar' ? -1 : 1}>
+          {h.books.map((x) => (
+            <a class="fan__card" href={x.href} data-id={x.b.id} style={x.style} draggable="false">
+              <span class="fan__lift">
+                <Image
+                  src={x.b.data.cover}
+                  alt={x.b.data.title}
+                  widths={[240, 360, 480]}
+                  sizes="160px"
+                  loading="lazy"
+                  decoding="async"
+                  draggable="false"
+                />
+              </span>
+            </a>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="fan__caps container">
+    {
+      books.map((x) => (
+        <div class="fan__cap" data-id={x.b.id}>
+          {x.b.data.badge && <p class="fan__badge">{x.b.data.badge}</p>}
+          <h3 class="fan__title" lang={x.b.data.language}>
+            {x.b.data.title}
+          </h3>
+          {x.secondary && <p class="fan__sec">{x.secondary}</p>}
+          <p class="fan__meta">{x.meta}</p>
+          <a class="link fan__open" href={x.href}>
+            Open the book
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M4 12L12 4M6 4h6v6"></path>
+            </svg>
+          </a>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .fan {
+    --fw: min(40vw, 160px);
+    display: none;
+    overflow-x: clip;
+  }
+
+  /* The same query as the wall's (motion.ts), turned round, so exactly one of them shows. */
+  @media not all and (min-width: 760px) {
+    html.js .fan {
+      display: block;
+    }
+  }
+
+  /* ---------- the languages ---------- */
+
+  .fan__tabs {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 1.7rem;
+  }
+
+  .fan__tab {
+    position: relative;
+    padding: 0.4rem 0.1rem;
+    font-size: 1.3rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    color: var(--ink-4);
+    transition: color 0.45s var(--ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .fan__tab[lang='ar'] {
+    font-size: 1.55rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1.1;
+  }
+
+  .fan__tab::after {
+    content: '';
+    position: absolute;
+    left: 30%;
+    right: 30%;
+    bottom: -0.1rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.5s var(--ease-out);
+  }
+
+  .fan__tab.is-on {
+    color: var(--ink);
+  }
+
+  .fan__tab.is-on::after {
+    transform: scaleX(1);
+  }
+
+  /* ---------- the hand ---------- */
+
+  .fan__stage {
+    position: relative;
+    height: calc(var(--fw) * 1.5 + 5.5rem);
+    margin-top: 0.6rem;
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .fan__hand {
+    position: absolute;
+    inset: 0;
+    visibility: hidden;
+  }
+
+  .fan__hand.is-on,
+  .fan__hand.is-leaving {
+    visibility: visible;
+  }
+
+  /* Every cover turns about one point far below the hand, as a hand of cards does. */
+  .fan__card {
+    --v: 1;
+    position: absolute;
+    left: calc(50% - var(--fw) / 2);
+    top: 2.6rem;
+    width: var(--fw);
+    aspect-ratio: 2 / 3;
+    transform-origin: 50% calc(100% + var(--fw) * 2.6);
+    will-change: transform;
+  }
+
+  .fan__lift {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 2px 4px 4px 2px;
+    background: var(--ground);
+    box-shadow:
+      0 0 0 0.5px oklch(0% 0 0 / 0.12),
+      -6px 10px 22px -10px oklch(19% 0.012 60 / 0.45);
+    transform-origin: 50% 100%;
+  }
+
+  .fan__lift :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: inherit;
+    filter: grayscale(1);
+    transition: filter 0.6s var(--ease-out);
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  /* The covers behind the front one wait under a veil of paper, as on the wall. */
+  .fan__lift::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--paper);
+    opacity: calc(var(--v) * 0.42);
+    pointer-events: none;
+  }
+
+  .fan__card.is-front .fan__lift {
+    box-shadow:
+      0 0 0 0.5px oklch(0% 0 0 / 0.12),
+      0 30px 44px -22px oklch(19% 0.012 60 / 0.65);
+  }
+
+  .fan__card.is-front .fan__lift :global(img) {
+    filter: none;
+  }
+
+  .fan__card:focus-visible {
+    outline: none;
+  }
+
+  .fan__card:focus-visible .fan__lift {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  /* ---------- captions ---------- */
+
+  .fan__caps {
+    display: grid;
+    min-height: 11rem;
+    text-align: center;
+  }
+
+  .fan__cap {
+    grid-area: 1 / 1;
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition:
+      opacity 0.3s,
+      transform 0.5s var(--ease-out),
+      visibility 0s 0.3s;
+  }
+
+  .fan__cap.is-on {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 0.5s 0.1s,
+      transform 0.7s 0.1s var(--ease-out),
+      visibility 0s;
+  }
+
+  .fan__badge {
+    margin-bottom: 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .fan__title {
+    max-width: 20ch;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .fan__title[lang='ar'] {
+    font-size: 1.7rem;
+    font-weight: 400;
+    line-height: 1.45;
+    letter-spacing: 0;
+  }
+
+  .fan__sec {
+    max-width: 30ch;
+    margin-top: 0.45rem;
+    font-weight: 300;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--ink-2);
+    text-wrap: balance;
+  }
+
+  .fan__meta {
+    max-width: 34ch;
+    margin-top: 0.7rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--ink-3);
+    text-wrap: balance;
+  }
+
+  .fan__open {
+    margin-top: 1rem;
+  }
+</style>
+
+<script>
+  import '../scripts/fan';
+</script>

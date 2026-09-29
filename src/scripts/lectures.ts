@@ -4,7 +4,8 @@
  * of the pointer on a stack picks a lesson, whose card slides out and stands up in colour while
  * the cards around it fan out; the label names it and a click opens it on YouTube, inside its
  * series. From the keyboard, a focused stack shows its latest lesson and the arrow keys walk it.
- * A tap is left alone: on a touch screen a stack opens its whole series.
+ * A tap is left alone: on a touch screen a stack opens its whole series. Phones have the screen
+ * instead (scripts/screen.ts), so the table is only set up once the page is 760px wide or more.
  */
 import { W, D, watch, minutes, type Lesson, type Lessons } from '../lib/lectures';
 import { still, pictureOf } from '../lib/stills';
@@ -38,7 +39,16 @@ const frame = (L: Lesson, size: '' | 'mq') => {
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
 const root = document.querySelector<HTMLElement>('.lectures');
-if (root) mount(root);
+if (root) {
+  const wide = window.matchMedia('(min-width: 760px)');
+  const start = () => {
+    if (!wide.matches) return;
+    wide.removeEventListener('change', start);
+    mount(root);
+  };
+  wide.addEventListener('change', start);
+  start();
+}
 
 function mount(root: HTMLElement) {
   const stage = root.querySelector<HTMLElement>('.lectures__stage')!;
@@ -422,7 +432,6 @@ function mount(root: HTMLElement) {
   /* ---------- sizes ---------- */
 
   let frameReq = 0;
-  let width = 0;
   const refit = () => {
     /* The table is redrawn at its new size: a stack left open is opened again at the same lesson
        if the pointer or the keyboard is still on it. */
@@ -433,13 +442,6 @@ function mount(root: HTMLElement) {
     paint();
     if (was >= 0 && lesson >= 0 && (over === was || (document.activeElement === hits[was] && hits[was].matches(':focus-visible'))))
       enter(was, lesson);
-    /* On a phone the row is wider than the screen: open it on the tower, the others either side. */
-    if (stage.clientWidth !== width) {
-      width = stage.clientWidth;
-      const tower = data.reduce((a, st, i) => (st.h > data[a].h ? i : a), 0);
-      const box = hits[tower];
-      stage.scrollLeft = box.offsetLeft + box.offsetWidth / 2 - width / 2;
-    }
   };
   window.addEventListener('resize', () => {
     cancelAnimationFrame(frameReq);

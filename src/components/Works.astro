@@ -5,10 +5,12 @@
  * wall, stop by stop: the featured cover blooms to colour at full height with
  * its caption beside it, the camera lifts and crosses the wall to the next,
  * and at the end pulls all the way out to the whole library, lit and labelled.
- * The flight itself lives in scripts/motion.ts (works()).
+ * The flight itself lives in scripts/motion.ts (works()). Phones hold the books as a fanned hand
+ * instead (WorksFan); without the script they, like reduced motion, get the wall as an index.
  */
 import { Image } from 'astro:assets';
 import { allBooks, featuredBooks, caption, dominantColour } from '../lib/books';
+import WorksFan from './WorksFan.astro';
 
 const all = await allBooks();
 /* Three stops, one per row and one per language (see FEATURED in lib/books). */
@@ -114,6 +116,8 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
       }
     </div>
   </div>
+
+  <WorksFan />
 
   <div class="container works__all" data-reveal>
     <a class="btn btn--ghost" href="/books">
@@ -319,7 +323,15 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
     padding-block: clamp(3rem, 7vw, 6rem) 0;
   }
 
-  /* ---------- flowing layout (small screens, reduced motion): the index ---------- */
+  /* ---------- phones: the fan (WorksFan) in its place ---------- */
+
+  @media not all and (min-width: 760px) {
+    html.js .works__pin {
+      display: none;
+    }
+  }
+
+  /* ---------- flowing layout (reduced motion, no script): the index ---------- */
 
   .works__pin:not(.is-3d) .works__grid {
     width: min(100% - 2 * var(--gutter), var(--max));
