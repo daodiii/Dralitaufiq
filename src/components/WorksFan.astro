@@ -5,7 +5,8 @@
  * finger, one cover to the front at a time; a tap brings a cover to the front, and a tap on the
  * front one opens it on the books page. The three languages, each in its own words, deal a new
  * hand: the one held folds away and the next fans out. The Arabic hand runs right to left.
- * Shown below 760px with the script (scripts/fan.ts); without it, phones keep the wall's index.
+ * Shown below 760px, and on a phone held sideways (html.phone, Base.astro), with the script
+ * (scripts/fan.ts); without it, phones keep the wall's index.
  */
 import { Image } from 'astro:assets';
 import { allBooks, caption, languageName } from '../lib/books';
@@ -86,7 +87,12 @@ const hands = (['en', 'ar', 'so'] as const).map((lang) => ({ lang, books: books.
     overflow-x: clip;
   }
 
-  /* The same query as the wall's (motion.ts), turned round, so exactly one of them shows. */
+  /* The same query as the wall's (motion.ts), turned round, so exactly one of them shows; and a
+     phone held sideways, which the wall does not start on either. */
+  html.js.phone .fan {
+    display: block;
+  }
+
   @media not all and (min-width: 760px) {
     html.js .fan {
       display: block;

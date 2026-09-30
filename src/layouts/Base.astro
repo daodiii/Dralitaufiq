@@ -14,7 +14,11 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 
 /* The viewport never scales below 1 (zooming in still works). Otherwise a touch device zooms out
    to fit anything that sticks out past the screen, even for the instant the pins are measured,
-   and innerHeight then reads the zoomed-out height: on a touch tablet every pin came out long. */
+   and innerHeight then reads the zoomed-out height: on a touch tablet every pin came out long.
+
+   html.phone marks a phone however it is held (its screen's short side is under 600px; tablets
+   start at 744). Held sideways it is wider than the 760px split, and still gets the phone's parts:
+   the fan, the lectures' screen, the books page's pile. */
 ---
 
 <!doctype html>
@@ -35,6 +39,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="twitter:card" content="summary_large_image" />
     <script is:inline>
       document.documentElement.classList.add('js');
+      if (Math.min(screen.width, screen.height) < 600) document.documentElement.classList.add('phone');
     </script>
   </head>
   <body>

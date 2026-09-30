@@ -331,6 +331,11 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
     }
   }
 
+  /* A phone held sideways too (html.phone, Base.astro). */
+  html.js.phone .works__pin {
+    display: none;
+  }
+
   /* ---------- flowing layout (reduced motion, no script): the index ---------- */
 
   .works__pin:not(.is-3d) .works__grid {

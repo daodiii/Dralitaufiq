@@ -6,7 +6,8 @@
  * lessons before it in a row to swipe. The series sit over the screen as their names, in Arabic
  * and in English, longest first; a sideways swipe across the screen goes to the next.
  * Only the chosen series' pictures load; the script (scripts/screen.ts) fetches the others when
- * they are chosen. Shown below 760px with the script; without it, phones keep the plain list.
+ * they are chosen. Shown below 760px, and on a phone held sideways (html.phone, Base.astro), with
+ * the script; without it, phones keep the plain list.
  */
 import { getImage } from 'astro:assets';
 import LESSONS from '../data/lessons.json';
@@ -156,7 +157,12 @@ const heading = (x: { num: string; title: string; len: string }, series: string)
     display: none;
   }
 
-  /* The same query as the table's, turned round, so exactly one of them shows. */
+  /* The same query as the table's, turned round, so exactly one of them shows; and a phone held
+     sideways, which the table does not start on either. */
+  html.js.phone .screen {
+    display: block;
+  }
+
   @media not all and (min-width: 760px) {
     html.js .screen {
       display: block;
@@ -235,9 +241,13 @@ const heading = (x: { num: string; title: string; len: string }, series: string)
 
   /* ---------- the screen ---------- */
 
+  /* The phone's width, unless the phone is held sideways: then the whole picture fits the screen's
+     height under the bar, in the middle. */
   .screen__view {
     position: relative;
     display: grid;
+    width: min(100%, (100svh - var(--nav-h)) * 16 / 9);
+    margin-inline: auto;
     aspect-ratio: 16 / 9;
     overflow: hidden;
     background: oklch(19% 0.012 60);

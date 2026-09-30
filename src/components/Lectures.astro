@@ -184,11 +184,16 @@ const client = stacks.map(({ key, s, n, h, meta, href }) => ({ key, title: s.tit
     height: 100%;
   }
 
-  /* A phone has the screen (LecturesScreen) in its place: the same query as the script's. */
+  /* A phone has the screen (LecturesScreen) in its place: the same query as the script's, and a
+     phone held sideways too (html.phone, Base.astro). */
   @media not all and (min-width: 760px) {
     html.js .lectures__stage {
       display: none;
     }
+  }
+
+  html.js.phone .lectures__stage {
+    display: none;
   }
 
   /* ---------- the table, tilted away under a north light ---------- */

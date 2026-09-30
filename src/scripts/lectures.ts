@@ -5,7 +5,8 @@
  * the cards around it fan out; the label names it and a click opens it on YouTube, inside its
  * series. From the keyboard, a focused stack shows its latest lesson and the arrow keys walk it.
  * A tap is left alone: on a touch screen a stack opens its whole series. Phones have the screen
- * instead (scripts/screen.ts), so the table is only set up once the page is 760px wide or more.
+ * instead (scripts/screen.ts), so the table is only set up once the page is 760px wide or more,
+ * and never on a phone (html.phone, Base.astro), which keeps its screen when held sideways.
  */
 import { W, D, watch, minutes, type Lesson, type Lessons } from '../lib/lectures';
 import { still, pictureOf } from '../lib/stills';
@@ -39,7 +40,7 @@ const frame = (L: Lesson, size: '' | 'mq') => {
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 
 const root = document.querySelector<HTMLElement>('.lectures');
-if (root) {
+if (root && !document.documentElement.classList.contains('phone')) {
   const wide = window.matchMedia('(min-width: 760px)');
   const start = () => {
     if (!wide.matches) return;

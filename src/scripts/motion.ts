@@ -35,7 +35,8 @@ let wallStops: () => number[] = () => [];
 
 function works() {
   const pin = $('.works__pin');
-  if (!pin) return;
+  /* A phone holds the fan instead (WorksFan), held sideways too (html.phone, Base.astro). */
+  if (!pin || document.documentElement.classList.contains('phone')) return;
   const camera = $('.works__camera', pin);
   const grid = $('.works__grid', pin);
   const tiles = $$('.works__tile', pin);
