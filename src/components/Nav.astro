@@ -177,6 +177,28 @@ const here = (k: 'books' | 'lectures') => !home && current === k;
   }
 
   @media (max-width: 760px) {
+    /* On a phone the bar is its own solid band, so the page never shows through it. No blur: a
+       backdrop-filter makes the bar the containing block of the fixed menu, which then opened
+       squeezed inside the bar, its words printed over the page. Over the banner it stays clear. */
+    .nav,
+    .nav.is-scrolled {
+      background: var(--paper);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      box-shadow: 0 1px 0 var(--line);
+    }
+
+    .nav.is-light:not(.is-open) {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    /* The name stays in the bar above the open menu, beside the close button. */
+    .nav__brand {
+      position: relative;
+      z-index: 2;
+    }
+
     .nav__toggle {
       display: flex;
     }

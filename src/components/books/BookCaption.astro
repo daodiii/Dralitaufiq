@@ -1,7 +1,8 @@
 ---
 /**
  * The captions of a WebGL stage, one per book, shown one at a time by scripts/books/gl/captions.ts:
- * the meta line, the title (in Amiri for an Arabic book), the Latin title, the subtitle or English
+ * the meta line (language, role, year), the title (in Amiri for an Arabic book, smaller so a long
+ * one stays clear of the books), the Latin title, the subtitle or English
  * title, the Amazon listings and "About this book". An Arabic book's caption is set right to left
  * as a whole. `extra` adds a second link to each. The page positions the box (`class`) and sets
  * --bcap-align (start, center or end) for where the words sit in it.
@@ -32,7 +33,7 @@ const items = await Promise.all(
       i,
       tint: L.accent,
       rtl: d.language === 'ar',
-      meta: [languageLabel[d.language], d.role === 'Author' ? null : shortRole(d.role), d.publisher, d.year]
+      meta: [languageLabel[d.language], d.role === 'Author' ? null : shortRole(d.role), d.year]
         .filter(Boolean)
         .join(' · '),
       sub: d.language === 'ar' ? t.english : d.subtitle,
@@ -157,8 +158,8 @@ const items = await Promise.all(
   .bcap__title:lang(ar) {
     font-family: var(--font-arabic);
     font-weight: 400;
-    font-size: clamp(2.3rem, 3.6vw, 4rem);
-    line-height: 1.45;
+    font-size: clamp(1.9rem, 2.5vw, 2.9rem);
+    line-height: 1.4;
     letter-spacing: 0;
   }
 
