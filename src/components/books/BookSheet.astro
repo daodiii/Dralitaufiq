@@ -23,7 +23,6 @@ const sheets = await Promise.all(
     meta: [
       b.data.role === 'Author' ? null : shortRole(b.data.role),
       languageLabel[b.data.language],
-      b.data.publisher,
       b.data.year,
       `${b.data.pages} pages`,
     ]

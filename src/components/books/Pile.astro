@@ -43,7 +43,7 @@ const books = await Promise.all(
       t: titles(b),
       rtl: d.language === 'ar',
       style: `${await bookStyle(b)};--tcm:${d.size.t};--hcm:${d.size.h};--wcm:${d.size.w}`,
-      meta: [languageLabel[d.language], d.role === 'Author' ? null : shortRole(d.role), d.publisher, d.year].filter(Boolean).join(' · '),
+      meta: [languageLabel[d.language], d.role === 'Author' ? null : shortRole(d.role), d.year].filter(Boolean).join(' · '),
       sub: d.language === 'ar' ? titles(b).english : d.subtitle,
       blurb: blurb(b, 40),
       lid: lid.src,

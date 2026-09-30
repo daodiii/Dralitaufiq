@@ -36,7 +36,7 @@ export function featuredBooks(all: Book[], orders: number[] = FEATURED): Book[] 
 export function caption(b: Book) {
   return {
     secondary: b.data.language === 'ar' ? b.data.titleEn : b.data.subtitle || b.data.titleEn,
-    meta: [shortRole(b.data.role), languageLabel[b.data.language], b.data.publisher, b.data.year]
+    meta: [shortRole(b.data.role), languageLabel[b.data.language], b.data.year]
       .filter(Boolean)
       .join(' · '),
     /* The books page opens on this book. */
