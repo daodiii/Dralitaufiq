@@ -127,8 +127,11 @@ const sheets = await Promise.all(
     box-shadow: -30px 0 60px -30px oklch(19% 0.012 60 / 0.45);
   }
 
+  /* Above the text as it scrolls under it: each paragraph rises in with a transform, which puts it
+     on a layer of its own, and without this the text took the taps once the sheet was scrolled. */
   .sheet__close {
     position: sticky;
+    z-index: 2;
     top: 1.2rem;
     float: right;
     margin: 1.2rem 1.2rem 0 0;

@@ -109,7 +109,7 @@ const books = await Promise.all(
     </button>
     {
       books.map(({ b, d, i, t, rtl, style, meta, sub, blurb, cover }) => (
-        <article class="pview__book" data-i={i} dir={rtl ? 'rtl' : 'ltr'} style={style} hidden>
+        <article class="pview__book" data-i={i} data-id={b.id} dir={rtl ? 'rtl' : 'ltr'} style={style} hidden>
           <div class="pview__cover">
             <img src={cover} alt={d.title} loading="lazy" decoding="async" />
           </div>
@@ -147,6 +147,24 @@ const books = await Promise.all(
     }
   </div>
 </div>
+
+<script is:inline>
+  /* A link to one book opens on it from the first paint, before the pile's script arrives. */
+  (function () {
+    var id = document.documentElement.dataset.book;
+    if (!id) return;
+    var book = Array.prototype.find.call(document.querySelectorAll('.pview__book'), function (a) {
+      return a.dataset.id === id;
+    });
+    if (!book) {
+      delete document.documentElement.dataset.book;
+      return;
+    }
+    book.hidden = false;
+    book.querySelector('img').loading = 'eager';
+    document.querySelector('.pview').hidden = false;
+  })();
+</script>
 
 <style is:global>
   /* Shown only where the page chose the pile (books.astro) and the script can lay it out. */
@@ -245,6 +263,12 @@ const books = await Promise.all(
   .pile__stack {
     position: relative;
     height: var(--pile-h, 40rem);
+  }
+
+  /* A page opened on one book (books.astro sets data-book before anything is drawn): the pile is
+     not seen until its script has laid it out under the book, however slowly the page arrives. */
+  html[data-book] .pile {
+    visibility: hidden;
   }
 
   .pile__book {
@@ -441,10 +465,12 @@ const books = await Promise.all(
     perspective: 900px;
   }
 
+  /* The book's own colour stands in while its picture loads. */
   .pview__cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    background: var(--ground);
     border-radius: 1px 3px 3px 1px;
     box-shadow:
       0 1px 2px oklch(19% 0.012 60 / 0.12),

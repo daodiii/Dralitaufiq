@@ -282,7 +282,7 @@ function pull(b: Body, dir = b.rtl ? -1 : 1) {
   });
 }
 
-function show(b: Body, dir: number, focus = true) {
+function show(b: Body, dir: number) {
   open = b;
   articles.forEach((a) => (a.hidden = a.dataset.i !== String(b.i)));
   const art = articleOf(b);
@@ -293,8 +293,7 @@ function show(b: Body, dir: number, focus = true) {
   view.hidden = false;
   viewBody.scrollTop = 0;
   lockScroll(true);
-  /* Focus goes to the way back; not on a page that opened on this book, where no one asked. */
-  if (focus) closeBtn.focus({ preventScroll: true });
+  closeBtn.focus({ preventScroll: true });
   if (reduceMotion) {
     busy = false;
     return;
@@ -488,24 +487,30 @@ langs.forEach((btn) =>
 
 /* ---------- start ---------- */
 
-const wanted = new URLSearchParams(location.search).get('book');
+/* A link to one book: the page already shows it (Pile.astro, as the page was read). The pile
+   takes it over as a book drawn out, and lays itself out underneath, unseen, once the fonts are
+   in; putting the book back then drops it on top as usual. */
+const html = document.documentElement;
+const linked = html.dataset.book ? S.find((x) => x.el.dataset.id === html.dataset.book) : undefined;
+if (linked) {
+  linked.out = true;
+  linked.held = true;
+  linked.x = (linked.rtl ? -1 : 1) * innerWidth * 1.05;
+  open = linked;
+  view.setAttribute('aria-label', linked.el.getAttribute('aria-label') || '');
+  lockScroll(true);
+}
 
 function boot() {
   fitSpines();
-  const b = S.find((x) => x.el.dataset.id === wanted);
-  if (!b) {
+  if (!linked) {
     build();
     return;
   }
-  /* A link to one book: the pile lies ready and that book is already out of it, facing the reader. */
-  b.out = true;
-  b.held = true;
-  b.x = (b.rtl ? -1 : 1) * innerWidth * 1.05;
   measure();
   markTop();
   place();
-  busy = true;
-  show(b, b.rtl ? -1 : 1, false);
+  delete html.dataset.book;
 }
 
 document.fonts.ready.catch(() => undefined).then(boot);
