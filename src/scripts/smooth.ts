@@ -1,6 +1,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis, { type VirtualScrollData } from 'lenis';
+import { hermite } from './carry';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -50,11 +51,20 @@ export function getLenis() {
   return lenis;
 }
 
+/* A trip by link or dot takes longer the further it goes (about 1.1 s for a screen, 1.7 s for four,
+   2.3 s at most) and sets off gently: the old fixed 1.4 s ease-out left at four times the average
+   speed, which for a link from the top to the lectures (7,700 px) was 416 px in the first frame
+   and 20,000 px/s at its fastest, against 120 px and 10,000 px/s now. */
+const trip = hermite(1.6);
+
 export function scrollToY(y: number, immediate = false) {
   if (lenis) {
     /* A jump needs immediate: Lenis reads duration 0 as no duration and glides there on its lerp. */
     if (immediate) lenis.scrollTo(y, { immediate: true, force: true });
-    else lenis.scrollTo(y, { duration: 1.4, easing: (t) => 1 - Math.pow(1 - t, 4) });
+    else {
+      const distance = Math.abs(y - lenis.animatedScroll);
+      lenis.scrollTo(y, { duration: Math.min(2.3, 0.55 + 0.6 * Math.sqrt(distance / 1000)), easing: trip });
+    }
   } else {
     window.scrollTo({ top: y, behavior: immediate || reduceMotion ? 'auto' : 'smooth' });
   }

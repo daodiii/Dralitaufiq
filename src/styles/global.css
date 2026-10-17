@@ -7,6 +7,9 @@
 }
 
 html {
+  /* The scrollbar's room is kept when a sheet or the menu holds the page still (overflow: hidden),
+     or the bar and the page behind would shift sideways by its width. */
+  scrollbar-gutter: stable;
   -webkit-text-size-adjust: 100%;
   background: var(--paper);
   color-scheme: light;
