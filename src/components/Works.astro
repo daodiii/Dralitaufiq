@@ -353,9 +353,12 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
 
   /* ---------- the flight (JS adds .is-3d) ---------- */
 
+  /* Clipped, not hidden: hidden is still a scroll container, and tabbing to a cover that lies off
+     screen made the browser scroll the pin itself (by 138px), leaving the wall displaced. */
   .works__pin.is-3d {
     height: 100svh;
     overflow: hidden;
+    overflow: clip;
   }
 
   .is-3d .works__stage {

@@ -5,6 +5,7 @@ import { steps, type Beats } from './steps';
 import { nav } from './nav';
 import { reveals } from './reveals';
 import { keepPlace } from './place';
+import { revisit } from './revisit';
 
 gsap.registerPlugin(ScrollTrigger);
 (window as unknown as { ScrollTrigger: typeof ScrollTrigger }).ScrollTrigger = ScrollTrigger;
@@ -228,6 +229,17 @@ function works() {
     const onDot = (e: Event) => jump(parseInt((e.currentTarget as HTMLElement).dataset.go || '0', 10));
     dots.forEach((d) => d.addEventListener('click', onDot));
 
+    /* Tabbing to a cover: most are off screen until the wall has pulled back to the index, so the
+       focus would sit on something unseen. The wall goes to the index, at once as a key press is. */
+    const INDEX = 0.25; /* s of the timeline short of its end: the wall whole and lit */
+    const onFocus = (e: FocusEvent) => {
+      if (!(e.target as HTMLElement).closest('.works__tile')) return;
+      const from = st.start + ((tl.duration() - 0.6) / tl.duration()) * (st.end - st.start);
+      if (window.scrollY >= from && window.scrollY <= st.end) return;
+      scrollToY(st.start + ((tl.duration() - INDEX) / tl.duration()) * (st.end - st.start), true);
+    };
+    pin.addEventListener('focusin', onFocus);
+
     let onMove: ((e: PointerEvent) => void) | null = null;
     let onLeave: (() => void) | null = null;
     if (finePointer) {
@@ -259,6 +271,7 @@ function works() {
       st.kill();
       tl.kill();
       dots.forEach((d) => d.removeEventListener('click', onDot));
+      pin.removeEventListener('focusin', onFocus);
       if (onMove) pin.removeEventListener('pointermove', onMove);
       if (onLeave) pin.removeEventListener('pointerleave', onLeave);
       gsap.set([grid, camera], { clearProps: 'all' });
@@ -383,31 +396,47 @@ function beats(): Beats {
 }
 
 /* ------------------------------------------------------------------ */
-/* Deep links                                                           */
+/* Landing: deep links and returns                                      */
 /* ------------------------------------------------------------------ */
 
-/* The browser jumps to a hash before the pinned hero has grown its spacer, so land
-   again after each refresh in the first seconds, unless the reader has started scrolling. */
-function landOnHash() {
-  const id = location.hash.slice(1);
-  const target = id ? document.getElementById(id) : null;
-  if (!target) return;
+/* Taken before anything moves: where the reader left, if this load is a reload or a Back. The
+   browser's own restoring is turned off, as it comes before the pins are built (revisit.ts). */
+ScrollTrigger.clearScrollMemory('manual');
+const left = revisit();
+
+/* The browser jumps to a hash, or back to where it was, before the pinned parts have grown their
+   spacers, so land again after each refresh in the first seconds, unless the reader has started
+   scrolling. The place is kept for the next return from the start, unless one is waiting to be
+   landed on: then once the reader has started scrolling, or the seconds are up. */
+function landAt(where: (() => number) | null) {
+  if (!left.where) left.keep();
   let manual = false;
-  const cancel = () => (manual = true);
   const events = ['wheel', 'touchstart', 'keydown'];
+  const cancel = () => {
+    manual = true;
+    left.keep();
+  };
   events.forEach((ev) => window.addEventListener(ev, cancel, { passive: true }));
   const land = () => {
-    if (manual) return;
+    if (manual || !where) return;
     /* Lenis clamps scrollTo to a limit it re-measures on a debounce, so read the grown pins first. */
     getLenis()?.resize();
-    scrollToY(target.getBoundingClientRect().top + window.scrollY - 24, true);
+    scrollToY(where(), true);
   };
   ScrollTrigger.addEventListener('refresh', land);
   land();
   window.setTimeout(() => {
     ScrollTrigger.removeEventListener('refresh', land);
     events.forEach((ev) => window.removeEventListener(ev, cancel));
+    left.keep();
   }, 4000);
+}
+
+/* Where the reader left wins over a hash: the hash is only where they once clicked. */
+function land() {
+  const id = location.hash.slice(1);
+  const target = id ? document.getElementById(id) : null;
+  landAt(left.where ?? (target ? () => target.getBoundingClientRect().top + window.scrollY - 24 : null));
 }
 
 /* ------------------------------------------------------------------ */
@@ -419,7 +448,7 @@ function init() {
   about();
   ScrollTrigger.refresh();
   keepPlace('.hero, .works__pin, .about__pin');
-  landOnHash();
+  land();
   steps(beats);
 }
 

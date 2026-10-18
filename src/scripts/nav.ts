@@ -1,5 +1,6 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { lockScroll } from './smooth';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,16 +16,26 @@ export function nav() {
   const toggle = bar.querySelector<HTMLElement>('.nav__toggle');
   const menu = bar.querySelector<HTMLElement>('.nav__menu');
   if (toggle && menu) {
-    const close = () => {
-      bar.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-    };
-    toggle.addEventListener('click', () => {
-      const open = bar.classList.toggle('is-open');
+    /* The menu covers the page; the page is held still under it, so closing it shows the place left. */
+    const set = (open: boolean) => {
+      bar.classList.toggle('is-open', open);
       toggle.setAttribute('aria-expanded', String(open));
-    });
+      lockScroll(open);
+    };
+    const close = () => set(false);
+    toggle.addEventListener('click', () => set(!bar.classList.contains('is-open')));
     menu.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('a')) close();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && bar.classList.contains('is-open')) {
+        close();
+        toggle.focus();
+      }
+    });
+    /* A phone turned sideways or a window widened leaves the menu behind as the bar's own links. */
+    window.matchMedia('(min-width: 760px)').addEventListener('change', (e) => {
+      if (e.matches && bar.classList.contains('is-open')) close();
     });
   }
 
