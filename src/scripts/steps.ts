@@ -35,7 +35,7 @@ export function steps(read: () => Beats) {
   const lenis = getLenis();
   let on = false;
   const handle = { active: () => on };
-  if (!lenis) return handle;
+  if (!lenis || document.documentElement.classList.contains('phone')) return handle;
   const mm = gsap.matchMedia();
 
   mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
@@ -152,6 +152,13 @@ export function steps(read: () => Beats) {
         const z = zoneAt(flight.to) ?? zoneAt(lenis.animatedScroll);
         if (g.dir === flight.dir) {
           const to = z && through() >= HALF ? next(z, flight.to, g.dir) : undefined;
+          /* A fresh push beyond the last beat leaves the sequence. Keeping it as spent
+             input here made the wall's exit (and the library's footer) feel stuck. */
+          if (g.fresh && z && through() >= HALF && next(z, flight.to, g.dir) === undefined) {
+            flight = null;
+            spent = -1;
+            return true;
+          }
           if (to !== undefined) go(to, g.id);
           else spent = g.id;
           return swallow(event);

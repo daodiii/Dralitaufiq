@@ -497,17 +497,24 @@ function boot() {
 
   let hot = -1;
   function hover(dt: number) {
-    hot = pointer.type === 'mouse' ? target() : -1;
-    host.classList.toggle('is-hot', hot >= 0);
+    const next = pointer.type === 'mouse' ? target() : -1;
+    if (next !== hot) {
+      hot = next;
+      host.classList.toggle('is-hot', hot >= 0);
+    }
+    const blend = 1 - Math.exp(-dt * 6);
     curtains.forEach((c, k) => {
-      c.u.uHover.value += ((k === hot ? 1 : 0) - c.u.uHover.value) * Math.min(1, dt * 6);
+      const want = k === hot ? 1 : 0;
+      if (Math.abs(want - c.u.uHover.value) > 0.001) busy(0.1);
+      c.u.uHover.value += (want - c.u.uHover.value) * blend;
     });
     objs.forEach((o, k) => {
       const want = k === hot ? 0.12 : 0;
       const cur = o.front.emissiveIntensity;
       if (Math.abs(cur - want) > 0.001) {
+        busy(0.1);
         o.front.emissive.copy(curtains[k].u.uPrimary.value as THREE.Color);
-        o.front.emissiveIntensity = cur + (want - cur) * Math.min(1, dt * 6);
+        o.front.emissiveIntensity = cur + (want - cur) * blend;
       }
     });
   }
