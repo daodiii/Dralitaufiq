@@ -167,9 +167,8 @@ export function createStage(host: HTMLElement, o: StageOptions = {}): Stage | nu
     last = now;
     if (!onScreen()) return;
     if (now - lastMove > 50) {
-      const decay = Math.exp(-12 * dt);
-      pointer.vx *= decay;
-      pointer.vy *= decay;
+      pointer.vx *= 0.82;
+      pointer.vy *= 0.82;
     }
     for (const fn of frames) fn(dt, now / 1000);
     render();

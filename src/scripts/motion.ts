@@ -61,7 +61,6 @@ function works() {
     x: (i % cols) * (TW + GAP) + TW / 2,
     y: Math.floor(i / cols) * (CELL + GAP) + TH / 2,
   });
-  const centres = tiles.map((_, i) => centre(i));
 
   const mm = gsap.matchMedia();
 
@@ -98,8 +97,6 @@ function works() {
     };
 
     const cam = { ...wide() };
-    const setGrid = gsap.quickSetter(grid, 'css');
-    const setFill = fill ? gsap.quickSetter(fill, 'scaleY') : null;
     const light = { amb: 0, out: 0, dim: 0 };
     const marks: number[] = [];
     let active = -1;
@@ -150,7 +147,7 @@ function works() {
       moving();
       const tx = FX * sw - cam.gx * cam.s;
       const ty = FY * sh - cam.gy * cam.s;
-      setGrid({ x: tx, y: ty, scale: cam.s });
+      gsap.set(grid, { x: tx, y: ty, scale: cam.s });
       /* A torch of colour around the focal point; at a stop the rest of the wall recedes
          into paper so the caption reads; at the end the whole wall is lit. */
       const R = 0.62 * sh;
@@ -158,7 +155,7 @@ function works() {
       const fy = FY * sh;
       const focus = active >= 0 ? stops[active] : -1;
       for (let i = 0; i < tiles.length; i++) {
-        const c = centres[i];
+        const c = centre(i);
         const d = Math.hypot(tx + c.x * cam.s - fx, ty + c.y * cam.s - fy);
         let t = Math.max(0, 1 - d / R);
         t = t * t * (3 - 2 * t) * light.amb;
@@ -177,7 +174,7 @@ function works() {
       if (idx !== active) setActive(idx);
       if (fill && n > 1) {
         const p = (time - marks[0]) / (marks[n - 1] - marks[0]);
-        setFill?.(Math.max(0, Math.min(1, p)));
+        gsap.set(fill, { scaleY: Math.max(0, Math.min(1, p)) });
       }
     };
 
