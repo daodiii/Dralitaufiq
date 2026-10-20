@@ -1,125 +1,108 @@
 ---
 /**
- * The wall. All eighteen covers hang as one mosaic that fills the viewport,
- * veiled and monochrome like an archive. Scrolling flies the camera into the
- * wall, stop by stop: the featured cover blooms to colour at full height with
- * its caption beside it, the camera lifts and crosses the wall to the next,
- * and at the end pulls all the way out to the whole library, lit and labelled.
- * The flight itself lives in scripts/motion.ts (works()). Phones hold the books as a fanned hand
- * instead (WorksFan); without the script they, like reduced motion, get the wall as an index.
+ * The books on the home page: every book on a small shelf, spine out, and one book large beside it.
+ * The new release stands there first; a click on a spine puts that book there instead, without
+ * leaving the page, and its "About this book" opens it on the books page. Nothing is pinned and
+ * nothing moves by itself. Phones hold the books as a fanned hand instead (WorksFan). Without the
+ * script the spines are plain links to the books page.
  */
 import { Image } from 'astro:assets';
-import { allBooks, featuredBooks, caption, dominantColour } from '../lib/books';
+import { allBooks, languageLabel } from '../lib/books';
+import { LANGS, spineInfo } from '../lib/spines';
+import Spine from './books/Spine.astro';
 import WorksFan from './WorksFan.astro';
 
 const all = await allBooks();
-/* Three stops, one per row and one per language (see FEATURED in lib/books). */
-const featured = featuredBooks(all);
-
-/* The wall, row by row (book order numbers). The stops sit so the camera zig-zags. */
-const layout = [
-  [0, 4, 5, 6, 2, 7],
-  [8, 9, 1, 10, 12, 11],
-  [13, 3, 14, 16, 15, 17],
-];
-const cols = layout[0].length;
-
-const tiles = await Promise.all(
-  layout.flat().map(async (order) => {
-    const entry = all.find((b) => b.data.order === order)!;
-    return {
-      entry,
-      order,
-      stop: featured.indexOf(entry),
-      tint: await dominantColour(order),
-      ...caption(entry),
-    };
-  })
-);
-
-const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
+const infos = await Promise.all(all.map(spineInfo));
+const groups = LANGS.map((L) => ({ ...L, spines: infos.filter((s) => s.lang === L.k) }));
+const href = (id: string) => `/books?book=${id}`;
 ---
 
 <section class="works" id="books" aria-labelledby="works-title">
-  <div class="container works__head">
-    <h2 class="display display--lg" id="works-title" data-split>
-      Several works. <em>Three languages.</em>
-    </h2>
-    <p class="works__lede" data-reveal data-delay="0.15">
-      Jurisprudence for Muslims in the West, dialogue between the Abrahamic faiths, the family and the unseen, in
-      Arabic, English and Somali.
-    </p>
-  </div>
+  <div class="container works__grid">
+    <div class="works__left">
+      <h2 class="display works__h" id="works-title" data-split>
+        Several works. <i>Three languages.</i>
+      </h2>
+      <p class="works__lede" data-reveal data-delay="0.15">
+        Jurisprudence for Muslims in the West, dialogue between the Abrahamic faiths, the family and the unseen, in
+        Arabic, English and Somali.
+      </p>
 
-  <div class="works__pin" style={`--cols:${cols}`}>
-    <div class="works__stage">
-      <div class="works__camera">
-        <div class="works__grid">
+      <div class="works__shelf" data-reveal data-delay="0.2">
+        <div class="works__books">
           {
-            tiles.map((t) => (
-              <a
-                class="works__tile"
-                href={t.href}
-                data-stop={t.stop}
-                aria-label={`${t.entry.data.title}. Open the book`}
-                style={`--tint:${t.tint}`}
-              >
-                <span class="works__img">
-                  <Image
-                    src={t.entry.data.cover}
-                    alt=""
-                    widths={[420, 640]}
-                    sizes="(max-width: 760px) 44vw, 380px"
-                    loading={t.stop >= 0 ? 'eager' : 'lazy'}
-                    decoding="async"
-                  />
+            groups.map((g) => (
+              <div class="works__grp" role="group" aria-label={g.name}>
+                <span class:list={['works__gl', g.k === 'ar' && 'is-ar']} lang={g.k} aria-hidden="true">
+                  {g.name}
                 </span>
-                <span class="works__lbl" aria-hidden="true">
-                  <span>{t.label}</span>
-                </span>
-              </a>
+                {g.spines.map((s) => (
+                  <Spine s={s} tag="a" href={href(s.id)} max={9} />
+                ))}
+              </div>
             ))
           }
         </div>
+        <div class="works__board" aria-hidden="true"></div>
       </div>
+
+      <a class="link works__all works__all--shelf" href="/books">
+        The whole library
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+          <path d="M2 8h11M9 4l4 4-4 4" />
+        </svg>
+      </a>
     </div>
 
-    <div class="works__caps">
+    <div class="works__stage" data-reveal data-delay="0.1" aria-live="polite">
       {
-        caps.map((c) => (
-          <div class="works__cap" data-cap>
-            {c.entry.data.badge && <p class="works__badge">{c.entry.data.badge}</p>}
-            <h3 class="works__title display display--md" lang={c.entry.data.language}>
-              {c.entry.data.title}
-            </h3>
-            {c.secondary && <p class="works__sec">{c.secondary}</p>}
-            <p class="works__meta">{c.meta}</p>
-            <p class="works__links">
-              <a class="link" href={c.href}>
-                Open the book
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-                  <path d="M4 12L12 4M6 4h6v6" />
-                </svg>
+        all.map((b, i) => {
+          const d = b.data;
+          const ar = d.language === 'ar';
+          const sub = ar ? d.titleEn : d.subtitle;
+          return (
+            <div class:list={['works__show', i === 0 && 'is-on']} data-show={b.id}>
+              <div class="works__text">
+                <p class="works__meta">
+                  {d.badge ? (
+                    <>
+                      <em>{d.badge}</em> · {d.year}
+                    </>
+                  ) : (
+                    `${languageLabel[d.language]} · ${d.year}`
+                  )}
+                </p>
+                <h3 class:list={['works__title', ar && 'is-ar']} lang={d.language} dir={ar ? 'rtl' : 'ltr'}>
+                  {d.title}
+                </h3>
+                {sub && <p class="works__sub">{sub}</p>}
+                {d.role !== 'Author' && <p class="works__role">{d.role}</p>}
+                <div class="works__btns">
+                  <a class="btn" href={d.amazon[0].url} target="_blank" rel="noopener">
+                    Buy on Amazon
+                    <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                      <path d="M4 12L12 4M6 4h6v6" />
+                    </svg>
+                  </a>
+                  <a class="btn btn--ghost" href={href(b.id)}>
+                    About this book
+                  </a>
+                </div>
+              </div>
+              <a class="works__cover" href={href(b.id)} tabindex="-1" aria-hidden="true">
+                <Image src={d.cover} alt="" widths={[480, 720, 960]} sizes="(max-width: 1100px) 320px, 430px" loading={i === 0 ? 'eager' : 'lazy'} />
               </a>
-            </p>
-          </div>
-        ))
-      }
-    </div>
-
-    <div class="works__rail" aria-label="Jump to a book">
-      <span class="works__rail-line" aria-hidden="true"><i class="works__rail-fill"></i></span>
-      {
-        caps.map((c) => (
-          <button class="works__dot" type="button" data-go={c.i} aria-label={`Go to ${c.entry.data.title}`} />
-        ))
+            </div>
+          );
+        })
       }
     </div>
   </div>
 
   <WorksFan />
 
-  <div class="container works__all" data-reveal>
+  <div class="container works__all works__all--phone" data-reveal>
     <a class="btn btn--ghost" href="/books">
       All the works
       <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
@@ -132,345 +115,258 @@ const caps = featured.map((b, i) => ({ entry: b, i, ...caption(b) }));
 <style>
   .works {
     position: relative;
-    padding-top: clamp(6rem, 12vw, 11rem);
+    padding-block: clamp(6rem, 11vw, 10rem) clamp(4rem, 8vw, 7rem);
     background: var(--paper);
   }
 
-  .works__head {
+  .works__grid {
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
-    gap: 2rem 4rem;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: clamp(2rem, 4vw, 4.5rem);
     align-items: end;
-    padding-bottom: clamp(2.5rem, 6vw, 5rem);
+  }
+
+  .works__h {
+    font-size: clamp(2.4rem, 4.4vw, 4.4rem);
   }
 
   .works__lede {
-    max-width: 24rem;
+    margin-top: 1.6rem;
+    max-width: 26rem;
     font-size: 1rem;
     line-height: 1.55;
     color: var(--ink-3);
     text-wrap: pretty;
   }
 
-  /* ---------- a tile ---------- */
+  /* ---------- the small shelf ---------- */
 
-  .works__tile {
-    --lit: 1;
-    display: block;
-    color: inherit;
-  }
-
-  .works__img {
+  .works__shelf {
+    --s: 12.4;
     position: relative;
-    display: block;
-    aspect-ratio: 2 / 3;
-    overflow: hidden;
-    border-radius: 2px;
-    background: var(--tint);
-    box-shadow:
-      inset 0 0 0 1px oklch(0% 0 0 / 0.06),
-      0 24px 50px -28px oklch(19% 0.012 60 / 0.55);
+    width: max-content;
+    margin-top: 4.5rem;
   }
 
-  .works__img :global(img) {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: grayscale(calc(1 - var(--lit)));
-  }
-
-  /* Distance is a veil of paper, like a print not yet lit. */
-  .works__img::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--paper);
-    opacity: calc((1 - var(--lit)) * var(--veil, 0.5));
-    pointer-events: none;
-  }
-
-  /* Hover is set by the script (is-hover): see works() in motion.ts. */
-  .works__tile.is-hover .works__img :global(img),
-  .works__tile:focus-visible .works__img :global(img) {
-    filter: none;
-    transition: filter 0.45s var(--ease-out);
-  }
-
-  .works__tile.is-hover .works__img::after,
-  .works__tile:focus-visible .works__img::after {
-    opacity: 0;
-    transition: opacity 0.45s var(--ease-out);
-  }
-
-  .works__lbl {
+  .works__books {
     display: flex;
-    margin-top: 0.7rem;
-    font-size: 0.78rem;
-    line-height: 1.3;
-    color: var(--ink-2);
+    align-items: flex-end;
+    gap: 1.4rem;
+  }
+
+  .works__grp {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 1px;
+  }
+
+  .works__gl {
+    position: absolute;
+    left: 0;
+    bottom: calc(24.41 * var(--s) * 1px + 0.9rem);
+    font-size: 0.75rem;
+    color: var(--ink-3);
     white-space: nowrap;
-    overflow: hidden;
   }
 
-  .works__lbl > span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* ---------- captions ---------- */
-
-  .works__badge {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--accent);
-  }
-
-  .works__cap .works__title {
-    margin-top: 1rem;
-    max-width: 22ch;
-  }
-
-  .works__cap .works__title[lang='ar'] {
+  .works__gl.is-ar {
     font-family: var(--font-arabic);
-    font-weight: 400;
-    font-size: clamp(2rem, 3.4vw, 3.3rem);
-    line-height: 1.4;
-    letter-spacing: 0;
-    text-align: left;
+    font-size: 0.95rem;
   }
 
-  .works__sec {
-    margin-top: 0.7rem;
-    font-weight: 300;
-    font-size: 1.12rem;
-    line-height: 1.35;
-    color: var(--ink-2);
-    text-wrap: pretty;
+  .works__board {
+    position: absolute;
+    left: -1rem;
+    right: -1rem;
+    bottom: -12px;
+    height: 12px;
+    border-top: 1px solid var(--line-strong);
+    background: linear-gradient(var(--paper-3), var(--paper));
+  }
+
+  .works__shelf :global(.spine:hover),
+  .works__shelf :global(.spine:focus-visible),
+  .works__shelf :global(.spine.is-on) {
+    transform: translateY(-16px);
+  }
+
+  .works__all--shelf {
+    margin-top: 3rem;
+  }
+
+  /* ---------- the book beside it ---------- */
+
+  .works__show {
+    display: none;
+    align-items: flex-end;
+    justify-content: flex-end;
+    gap: clamp(2rem, 3.5vw, 4rem);
+  }
+
+  /* Only the shown book is laid out, so the others' covers load when they are asked for. */
+  .works__show.is-on {
+    display: flex;
+    animation: works-show 0.22s ease-out;
+  }
+
+  @keyframes works-show {
+    from {
+      opacity: 0;
+    }
+  }
+
+  .works__text {
+    max-width: 19rem;
+    padding-bottom: 1rem;
   }
 
   .works__meta {
-    margin-top: 0.9rem;
     font-size: 0.8rem;
+    color: var(--ink-3);
+  }
+
+  .works__meta em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .works__title {
+    margin: 1rem 0 0.9rem;
+    font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+
+  .works__title.is-ar {
+    font-family: var(--font-arabic);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.35;
+  }
+
+  .works__sub {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+
+  .works__role {
+    margin-top: 0.9rem;
+    font-size: 0.82rem;
     line-height: 1.5;
     color: var(--ink-3);
   }
 
-  .works__links {
+  .works__btns {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem 1.6rem;
-    margin-top: 1.5rem;
+    gap: 0.6rem;
+    margin-top: 1.9rem;
   }
 
-  /* ---------- rail ---------- */
+  .works__cover :global(img) {
+    display: block;
+    width: auto;
+    max-width: none;
+    height: min(640px, 72svh);
+    border-radius: 1px 3px 3px 1px;
+    box-shadow: var(--shadow-plate);
+    transition: transform 0.5s var(--ease-out-quint);
+  }
 
-  .works__rail {
+  .works__cover:hover :global(img) {
+    transform: translateY(-8px);
+  }
+
+  .works__all--phone {
     display: none;
   }
 
-  .works__rail-line {
-    position: absolute;
-    left: 0.35rem;
-    top: 0.6rem;
-    bottom: 0.6rem;
-    width: 1px;
-    background: var(--line);
+  @media (max-width: 1100px) {
+    .works__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .works__cover :global(img) {
+      height: min(480px, 60svh);
+    }
   }
 
-  .works__rail-fill {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: var(--ink);
-    transform: scaleY(0);
-    transform-origin: top;
-  }
-
-  .works__dot {
-    position: relative;
-    width: 1.2rem;
-    height: 1.2rem;
-  }
-
-  .works__dot::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: var(--paper);
-    box-shadow: inset 0 0 0 1px var(--line-strong);
-    transform: translate(0.1rem, -50%);
-    transition:
-      background 0.4s,
-      box-shadow 0.4s;
-  }
-
-  .works__dot:hover::after {
-    box-shadow: inset 0 0 0 1px var(--ink);
-  }
-
-  .works__dot.is-active::after {
-    background: var(--ink);
-    box-shadow: inset 0 0 0 1px var(--ink);
-  }
-
-  .works__all {
-    display: flex;
-    justify-content: center;
-    padding-block: clamp(3rem, 7vw, 6rem) 0;
+  @media (prefers-reduced-motion: reduce) {
+    .works__show.is-on {
+      animation: none;
+    }
   }
 
   /* ---------- phones: the fan (WorksFan) in its place ---------- */
 
+  /* The same query as the fan's, turned round, so exactly one of them shows; a phone held
+     sideways too (html.phone, Base.astro). */
   @media not all and (min-width: 760px) {
-    html.js .works__pin {
+    html.js .works__shelf,
+    html.js .works__stage,
+    html.js .works__all--shelf {
       display: none;
     }
+
+    html.js .works__all--phone {
+      display: flex;
+    }
   }
 
-  /* A phone held sideways too (html.phone, Base.astro). */
-  html.js.phone .works__pin {
+  html.js.phone .works__shelf,
+  html.js.phone .works__stage,
+  html.js.phone .works__all--shelf {
     display: none;
   }
 
-  /* ---------- flowing layout (reduced motion, no script): the index ---------- */
-
-  .works__pin:not(.is-3d) .works__grid {
-    width: min(100% - 2 * var(--gutter), var(--max));
-    margin-inline: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 2.2rem 1.2rem;
-    padding-block: 1rem 2rem;
+  html.js.phone .works__all--phone {
+    display: flex;
   }
 
-  .works__pin:not(.is-3d) .works__caps {
-    display: none;
-  }
-
-  /* ---------- the flight (JS adds .is-3d) ---------- */
-
-  /* Clipped, not hidden: hidden is still a scroll container, and tabbing to a cover that lies off
-     screen made the browser scroll the pin itself (by 138px), leaving the wall displaced. */
-  .works__pin.is-3d {
-    height: 100svh;
-    overflow: hidden;
-    overflow: clip;
-  }
-
-  .is-3d .works__stage {
-    position: absolute;
-    inset: 0;
-    perspective: 1800px;
-    perspective-origin: 50% 50%;
-  }
-
-  .is-3d .works__camera {
-    position: absolute;
-    inset: 0;
-    /* Flat, not preserve-3d: nothing inside has depth, and with preserve-3d Chrome's hit-testing
-       misses the covers whenever the camera is tilted, so hover and clicks flickered. */
-    transform-style: flat;
-  }
-
-  /* The wall is laid out big and scaled down, so zooming in never upscales a raster. */
-  .is-3d .works__grid {
-    --lbl: 0;
-    --veil: 0.38;
-    position: absolute;
-    left: 0;
-    top: 0;
-    display: grid;
-    grid-template-columns: repeat(var(--cols), 380px);
-    grid-auto-rows: 614px;
-    gap: 26px;
-    transform-origin: 0 0;
-    will-change: transform;
-  }
-
-  .is-3d .works__tile {
-    --lit: 0;
-    width: 380px;
-  }
-
-  .is-3d.is-moving .works__grid {
-    pointer-events: none;
-  }
-
-  .is-3d .works__img {
-    height: 570px;
-    box-shadow:
-      inset 0 0 0 1px oklch(0% 0 0 / 0.06),
-      0 40px 80px -40px oklch(19% 0.012 60 / 0.6);
-    transition: box-shadow 1.2s var(--ease-out-quint);
-  }
-
-  /* The cover the camera has come to: its shadow deepens as if it had come off the wall. */
-  .is-3d .works__tile.is-focus .works__img {
-    box-shadow:
-      inset 0 0 0 1px oklch(0% 0 0 / 0.06),
-      0 70px 120px -50px oklch(19% 0.012 60 / 0.75);
-  }
-
-  .is-3d .works__lbl {
-    margin-top: 14px;
-    font-size: 1.15rem;
-    opacity: var(--lbl);
-  }
-
-  .is-3d .works__caps {
-    position: absolute;
-    left: 60%;
-    right: var(--gutter);
-    top: 50%;
-    display: grid;
-    transform: translateY(-50%);
-    pointer-events: none;
-    isolation: isolate;
-  }
-
-  /* A pool of light on the wall behind the label, so it never fights a ghosted cover. */
-  .is-3d .works__caps::before {
-    content: '';
-    position: absolute;
-    inset: -34% -30% -34% -22%;
-    z-index: -1;
-    background: radial-gradient(ellipse at 42% 50%, var(--paper) 38%, transparent 72%);
-    opacity: var(--spot, 0);
-  }
-
-  .is-3d .works__cap {
-    grid-area: 1 / 1;
-    max-width: 26rem;
-    opacity: 0;
-    visibility: hidden;
-  }
-
-  .is-3d .works__cap.is-active {
-    pointer-events: auto;
-  }
-
-  .is-3d .works__rail {
-    position: absolute;
-    left: var(--gutter);
-    top: 50%;
-    transform: translateY(-50%);
-    display: grid;
-    gap: 0.9rem;
-    justify-items: start;
-  }
-
-  @media (max-width: 900px) {
-    .works__head {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-
-    .is-3d .works__caps {
-      left: 56%;
-    }
+  .works__all--phone {
+    justify-content: center;
+    padding-block: clamp(3rem, 7vw, 6rem) 0;
   }
 </style>
+
+<script>
+  import { scrollToY } from '../scripts/smooth';
+
+  /* A spine puts its book beside the shelf instead of leaving the page. */
+  const spines = Array.from(document.querySelectorAll<HTMLAnchorElement>('.works__shelf .spine'));
+  const shows = Array.from(document.querySelectorAll<HTMLElement>('.works__show'));
+
+  function pick(id: string) {
+    shows.forEach((s) => s.classList.toggle('is-on', s.dataset.show === id));
+    spines.forEach((s) => s.classList.toggle('is-on', s.dataset.open === id));
+  }
+
+  /* Fetch a cover as the pointer reaches its spine, so it is there by the click. */
+  const warm = (id: string) =>
+    shows.find((s) => s.dataset.show === id)?.querySelector('img')?.setAttribute('loading', 'eager');
+
+  spines.forEach((s) => {
+    s.addEventListener('pointerenter', () => warm(s.dataset.open!));
+    s.addEventListener('focus', () => warm(s.dataset.open!));
+    s.addEventListener('click', (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      pick(s.dataset.open!);
+      reveal();
+    });
+  });
+
+  /* Below 1100px the book sits under the shelf: bring it up if the click left it out of sight. */
+  function reveal() {
+    const shown = shows.find((s) => s.classList.contains('is-on'));
+    if (!shown) return;
+    const r = shown.getBoundingClientRect();
+    if (r.bottom > window.innerHeight + 40) scrollToY(window.scrollY + r.bottom - window.innerHeight + 32);
+  }
+
+  if (spines[0]) pick(spines[0].dataset.open!);
+</script>

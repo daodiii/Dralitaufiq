@@ -1,6 +1,6 @@
 /* A reload, or Back from another page, returns to the place the reader left. The browser cannot do it
    on the home page: it restores the scroll position before the pins have grown their spacers, into a
-   page a fraction of the height, and the reader comes back somewhere else (inside the wall, from the
+   page a fraction of the height, and the reader comes back somewhere else (among the books, from the
    About page). So the position is kept here, per tab, and motion.ts lands on it once the pins are
    built, the way it lands on a link's hash. The same size of window comes back to the same pixel; a
    different size, to the same share of the way down. Nothing here touches the page until it is

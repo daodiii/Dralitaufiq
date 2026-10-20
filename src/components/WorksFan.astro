@@ -1,12 +1,12 @@
 ---
 /**
  * The books on a phone: the books of one language held as a fanned hand of covers, in place of
- * the wall (too big a flight for a small screen). Dragging across the hand turns it under the
+ * the shelf and the book beside it (Works.astro), which need more room. Dragging across the hand turns it under the
  * finger, one cover to the front at a time; a tap brings a cover to the front, and a tap on the
  * front one opens it on the books page. The three languages, each in its own words, deal a new
  * hand: the one held folds away and the next fans out. The Arabic hand runs right to left.
  * Shown below 760px, and on a phone held sideways (html.phone, Base.astro), with the script
- * (scripts/fan.ts); without it, phones keep the wall's index.
+ * (scripts/fan.ts); without it, phones keep the shelf.
  */
 import { Image } from 'astro:assets';
 import { allBooks, caption, languageName } from '../lib/books';
@@ -87,8 +87,8 @@ const hands = (['en', 'ar', 'so'] as const).map((lang) => ({ lang, books: books.
     overflow-x: clip;
   }
 
-  /* The same query as the wall's (motion.ts), turned round, so exactly one of them shows; and a
-     phone held sideways, which the wall does not start on either. */
+  /* The same query as the shelf's (Works.astro), turned round, so exactly one of them shows; and a
+     phone held sideways, which does not get the shelf either. */
   html.js.phone .fan {
     display: block;
   }

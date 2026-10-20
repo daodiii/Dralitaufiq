@@ -14,7 +14,7 @@
   .libhead {
     width: min(100% - 2 * var(--gutter), var(--max));
     margin-inline: auto;
-    padding-top: calc(var(--nav-h) + clamp(3.5rem, 8vw, 7rem));
+    padding-top: calc(var(--nav-h) + clamp(2rem, 6vh, 4rem));
     display: grid;
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     gap: 1.5rem 4rem;
@@ -35,10 +35,9 @@
     }
   }
 
-  /* With the scene the page opens straight under the whole sky, the library's name written in it
-     (Aurora.astro); the headline stays here, unseen, for screen readers, and shows again when
-     there is no scene (no script, no WebGL). */
-  :global(html.js:not(:has(.aur.no-gl))) .libhead {
+  /* A phone opens on the pile, which names the library itself; the headline stays here, unseen,
+     for screen readers. */
+  :global(html.js.books-pile) .libhead {
     position: absolute;
     width: 1px;
     height: 1px;
