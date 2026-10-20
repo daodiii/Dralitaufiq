@@ -21,8 +21,6 @@ export interface SpineInfo {
 
 const cache = new Map<number, SpineInfo>();
 
-/* The thinnest books (0.8-0.9 cm) are drawn at least this thick, so their titles can be read. */
-const MIN_T = 1.3;
 
 export async function spineInfo(b: Book): Promise<SpineInfo> {
   const hit = cache.get(b.data.order);
@@ -43,7 +41,7 @@ export async function spineInfo(b: Book): Promise<SpineInfo> {
     short: d.language === 'ar' ? d.title.split(' ').slice(0, 3).join(' ') : d.title.replace(/\s*ﷺ/, ''),
     colour: `rgb(${r} ${g} ${bl})`,
     ink: lum < 0.55 ? 'rgb(250 246 236 / .92)' : 'rgb(30 24 18 / .86)',
-    t: Math.max(d.size.t, MIN_T),
+    t: d.size.t,
     h: d.size.h,
     w: d.size.w,
   };

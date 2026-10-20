@@ -1,7 +1,8 @@
 ---
 /* The books page on a tablet or a computer: every book standing on one shelf, spine out, as big as
-   the screen allows. Heights keep the books' true proportions; their thickness is widened by one
-   shared factor so the shelf fills the width and the titles read (scripts/books/shelf.ts). All
+   the screen allows. Heights keep the books' true proportions; every title is set in one size, each
+   spine is at least as thick as its title needs, and the true thicknesses are widened alike until
+   the shelf fills the width (scripts/books/shelf.ts, spine-fit.ts). All
    eighteen show at once and nothing scrolls sideways. Pointing at a spine lifts it and writes its
    title the right way up under the shelf; a click tips it out and opens its sheet. Phones get the pile instead (Pile.astro). */
 import type { Book } from '../../lib/books';
@@ -125,15 +126,6 @@ const groups = LANGS.map((L) => ({ ...L, spines: infos.filter((s) => s.lang === 
 
   .shelf__name.is-on {
     opacity: 1;
-  }
-
-  /* Thickness widened by --k; heights stay true. */
-  .shelf__case :global(.spine) {
-    width: calc(var(--t) * var(--s, 24) * var(--k, 1) * 1px);
-  }
-
-  .shelf__case :global(.spine .spine__title) {
-    font-size: min(clamp(9px, calc(var(--t) * var(--s, 24) * var(--k, 1) * 0.4px), var(--fmax)), calc(var(--h) * var(--s, 24) * 1.3px / var(--len)));
   }
 
   .shelf__case :global(.spine:hover),

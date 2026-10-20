@@ -374,28 +374,37 @@ const href = (id: string) => `/books?book=${id}`;
 <script>
   import { scrollToY } from '../scripts/smooth';
   import { spineName } from '../scripts/books/spine-name';
+  import { fitSpines } from '../scripts/books/spine-fit';
 
   /* A spine puts its book beside the shelf instead of leaving the page. */
   const shelf = document.querySelector<HTMLElement>('.works__shelf');
   const stage = document.querySelector<HTMLElement>('.works__stage');
   const spines = Array.from(document.querySelectorAll<HTMLAnchorElement>('.works__shelf .spine'));
 
-  /* --s px per cm so the shelf fills its half (true proportions, at most 22, and no taller than 45% of
-     the screen, so the heading, the shelf and the title line under it are on screen together), and
-     the cover as tall as the tallest book on it. */
-  const THICK = spines.reduce((a, s) => a + parseFloat(s.style.getPropertyValue('--t')), 0);
+  /* The shelf fills its half: px per cm at most 22 and no taller than 45% of the screen (so the
+     heading, the shelf and the title line under it are on screen together), the titles in one
+     size, each spine as thick as its title needs (spine-fit.ts); the cover as tall as the shelf. */
   const TALLEST = Math.max(...spines.map((s) => parseFloat(s.style.getPropertyValue('--h'))));
   function fit() {
     const half = shelf?.parentElement;
     if (!shelf || !half || !half.clientWidth) return;
     const books = shelf.querySelector<HTMLElement>('.works__books')!;
     const gaps = (parseFloat(getComputedStyle(books).columnGap) || 0) * 2 + spines.length;
-    const s = Math.max(10, Math.min(22, (half.clientWidth - gaps - 16) / THICK, (window.innerHeight * 0.45) / TALLEST));
-    shelf.style.setProperty('--s', s.toFixed(2));
+    const r = fitSpines({
+      holder: shelf,
+      spines,
+      width: half.clientWidth - gaps - 16,
+      maxS: Math.min(22, (window.innerHeight * 0.45) / TALLEST),
+      font: (s) => Math.min(14, Math.max(10, s * 0.62)),
+      fill: false,
+    });
+    if (!r) return;
+    const s = r.s;
     stage?.style.setProperty('--cover-h', `${Math.round(TALLEST * s)}px`);
   }
   fit();
   window.addEventListener('resize', fit);
+  document.fonts?.ready.then(fit);
 
   const shows = Array.from(document.querySelectorAll<HTMLElement>('.works__show'));
 
