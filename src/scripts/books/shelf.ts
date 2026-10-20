@@ -5,6 +5,7 @@
 import { nav, showNav } from '../nav';
 import { reveals } from '../reveals';
 import { openSheet } from './sheet';
+import { spineName } from './spine-name';
 
 nav();
 showNav();
@@ -28,7 +29,8 @@ function fit() {
   const free = room.clientWidth - 2 * ggap - spines.length - 64;
   const top = room.getBoundingClientRect().top + window.scrollY;
   const pad = parseFloat(getComputedStyle(room).paddingTop) || 0;
-  const tall = (window.innerHeight - top - pad - 80) / TALLEST;
+  /* Under the shelf: its board and the title line. */
+  const tall = (window.innerHeight - top - pad - 110) / TALLEST;
   const s = Math.max(10, Math.min(34, tall, free / THICK));
   const k = Math.max(1, Math.min(2, free / (THICK * s)));
   css.setProperty('--ggap', `${ggap}px`);
@@ -46,6 +48,7 @@ function open(id: string, from: HTMLElement) {
 }
 
 spines.forEach((el) => el.addEventListener('click', () => open(el.dataset.open!, el)));
+spineName(document.querySelector('.shelf__case'), document.querySelector('.shelf__name'));
 
 /* The sheet closes itself (its X, the scrim, Escape): the book goes back on the shelf. */
 if (sheet)
