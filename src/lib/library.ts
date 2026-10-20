@@ -155,9 +155,6 @@ export function blurb(b: Book, words = 48) {
 
 export const wordCount = (b: Book) => b.data.description.join(' ').split(/\s+/).length;
 
-/* What goes on the spine: the title as the book itself prints it. */
-export const spineTitle = (b: Book) => b.data.title;
-
 /* How a book is read: the title in its own script, and a line a reader of English can follow. */
 export function titles(b: Book) {
   const d = b.data;
@@ -183,33 +180,5 @@ export function byLanguage(all: Book[]) {
   return LANGUAGES.map((l) => ({ ...l, books: all.filter((b) => b.data.language === l.lang) }));
 }
 
-/* ---------- barcode ---------- */
-
-const L_CODE = ['0001101', '0011001', '0010011', '0111101', '0100011', '0110001', '0101111', '0111011', '0110111', '0001011'];
-const G_CODE = ['0100111', '0110011', '0011011', '0100001', '0011101', '0111001', '0000101', '0010001', '0001001', '0010111'];
-const R_CODE = ['1110010', '1100110', '1101100', '1000010', '1011100', '1001110', '1010000', '1000100', '1001000', '1110100'];
-const PARITY = ['LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG', 'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'];
-
-/* The EAN-13 bars for an ISBN-13, as [x, width] runs over 95 modules. */
-export function ean13(code: string) {
-  const d = code.replace(/\D/g, '');
-  if (d.length !== 13) return null;
-  const n = d.split('').map(Number);
-  const parity = PARITY[n[0]];
-  let bits = '101';
-  for (let i = 1; i <= 6; i++) bits += (parity[i - 1] === 'L' ? L_CODE : G_CODE)[n[i]];
-  bits += '01010';
-  for (let i = 7; i <= 12; i++) bits += R_CODE[n[i]];
-  bits += '101';
-  const runs: [number, number][] = [];
-  for (let i = 0; i < bits.length; i++) {
-    if (bits[i] !== '1') continue;
-    let j = i;
-    while (bits[j + 1] === '1') j++;
-    runs.push([i, j - i + 1]);
-    i = j;
-  }
-  /* Guard bars run long, as on a printed barcode. */
-  const guards = new Set([0, 2, 46, 48, 92, 94]);
-  return { runs, guards, digits: d };
-}
+/* The order on the page: English, Arabic, Somali. */
+export const ordered = (all: Book[]) => byLanguage(all).flatMap((g) => g.books);
