@@ -18,6 +18,7 @@ const Tag = tag;
   href={href}
   data-open={s.id}
   data-order={s.order}
+  data-lang={s.lang}
   aria-label={s.title}
   style={`--t:${s.t};--h:${s.h};--len:${[...s.short].length};--fmax:${max}px;background:${s.colour};color:${s.ink}`}
 >
@@ -31,7 +32,9 @@ const Tag = tag;
   .spine {
     position: relative;
     flex: none;
-    width: calc(var(--t) * var(--s, 24) * 1px);
+    /* The true thickness (widened by the holder's --k), and never thinner than the title needs at
+       the shelf's standard size (--wmin, scripts/books/spine-fit.ts). */
+    width: max(calc(var(--t) * var(--s, 24) * var(--k, 1) * 1px), var(--wmin, 0px));
     height: calc(var(--h) * var(--s, 24) * 1px);
     display: flex;
     flex-direction: column;
@@ -63,19 +66,20 @@ const Tag = tag;
     display: flex;
     align-items: center;
     justify-content: center;
-    /* As big as the thickness allows, and small enough that the whole title fits the height. */
-    font-size: min(clamp(8px, calc(var(--t) * var(--s, 24) * 0.42px), var(--fmax)), calc(var(--h) * var(--s, 24) * 1.3px / var(--len)));
+    /* One standard size on the whole shelf (--f); before the script, as the thickness allows. */
+    font-size: var(--f, min(clamp(8px, calc(var(--t) * var(--s, 24) * 0.42px), var(--fmax)), calc(var(--h) * var(--s, 24) * 1.3px / var(--len))));
     font-weight: 520;
     letter-spacing: 0.02em;
-    white-space: nowrap;
+    text-align: center;
     overflow: hidden;
     padding: 10px 0;
-    line-height: 1;
+    line-height: 1.18;
   }
   .spine__title.is-ar {
     font-family: var(--font-arabic);
     font-weight: 700;
     letter-spacing: 0;
+    line-height: 1.75;
   }
   .spine__author {
     writing-mode: vertical-rl;

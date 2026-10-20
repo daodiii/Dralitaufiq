@@ -21,6 +21,7 @@ export interface SpineInfo {
 
 const cache = new Map<number, SpineInfo>();
 
+
 export async function spineInfo(b: Book): Promise<SpineInfo> {
   const hit = cache.get(b.data.order);
   if (hit) return hit;

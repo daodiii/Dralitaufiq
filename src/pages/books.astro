@@ -17,7 +17,8 @@ const books = await allBooks();
 
 <Base title="Books · Prof. Dr. Ali Mohamed Salah" description="The books of Prof. Dr. Ali Mohamed Salah in Arabic, English and Somali.">
   <script is:inline>
-    if (!window.matchMedia('(min-width: 760px)').matches || document.documentElement.classList.contains('phone')) {
+    /* A window that reports no width yet (an embedded browser opening hidden) is not a phone. */
+    if ((window.innerWidth > 0 && !window.matchMedia('(min-width: 760px)').matches) || document.documentElement.classList.contains('phone')) {
       document.documentElement.classList.add('books-pile');
       /* A link to one book opens on it (Pile.astro shows it as the page is read). */
       var book = new URLSearchParams(location.search).get('book');

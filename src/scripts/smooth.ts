@@ -18,9 +18,11 @@ export function setGestureHandler(fn: GestureHandler | null) {
   gesture = fn;
 }
 
+/* lerp 0.16: one wheel notch settles in 0.56 s (0.35 s of it creeping) where 0.085, chosen while
+   the books sections were carried, took 1.05 s (0.77 s creeping); replayed at 1536x960 @1.25. */
 if (!reduceMotion) {
   lenis = new Lenis({
-    lerp: 0.085,
+    lerp: 0.16,
     smoothWheel: true,
     wheelMultiplier: 1,
     touchMultiplier: 1.4,
