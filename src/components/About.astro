@@ -9,7 +9,7 @@
  * motion get the same content stacked, without the pin.
  */
 import { Image } from 'astro:assets';
-import portrait from '../assets/about/portrait-studio.jpg';
+import portrait from '../assets/about/portrait-editorial.jpg';
 import calligraphy from '../assets/hero/calligraphy-name.png';
 import profile from '../data/profile.json';
 
@@ -30,8 +30,10 @@ const [lead, ...body] = profile.aboutLead;
           <Image
             src={portrait}
             alt="Prof. Dr. Ali Mohamed Salah"
-            widths={[520, 800]}
-            sizes="(max-width: 900px) 60vw, 26vw"
+            widths={[320, 520, 800, 1200]}
+            sizes="(max-width: 760px) min(18rem, 70vw), (max-width: 900px) min(40vw, 300px), min(26vw, 380px)"
+            format="webp"
+            quality={82}
             loading="lazy"
             decoding="async"
           />

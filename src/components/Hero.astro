@@ -9,14 +9,14 @@
  * as its heading.
  */
 import { Image, getImage } from 'astro:assets';
-import banner from '../assets/hero/portrait-open.jpg';
-import plate from '../assets/hero/portrait-plate.jpg';
+import banner from '../assets/hero/portrait-editorial-open.jpg';
+import plate from '../assets/hero/portrait-editorial-plate.jpg';
 import calligraphy from '../assets/hero/calligraphy-name.png';
 import subline from '../assets/hero/calligraphy-line.png';
 import profile from '../data/profile.json';
 
-const bannerSet = await getImage({ src: banner, widths: [900, 1300, 1800, 2400], format: 'webp' });
-const bannerFallback = await getImage({ src: banner, width: 1300, format: 'jpg' });
+const bannerSet = await getImage({ src: banner, widths: [480, 720, 960, 1300, 1800, 2400], format: 'webp', quality: 82 });
+const bannerFallback = await getImage({ src: banner, width: 1300, format: 'webp', quality: 82 });
 const facebook = profile.social[0];
 ---
 
@@ -33,7 +33,7 @@ const facebook = profile.social[0];
           data-open-img
           src={bannerFallback.src}
           srcset={bannerSet.srcSet.attribute}
-          sizes="(max-width: 760px) 120vw, 94vh"
+          sizes="(max-width: 760px) min(120vw, 60svh), (orientation: portrait) min(94svh, 75vw), min(94svh, 62vw)"
           width={banner.width}
           height={banner.height}
           alt=""
@@ -91,6 +91,8 @@ const facebook = profile.social[0];
             src={plate}
             alt="Prof. Dr. Ali Mohamed Salah in an embroidered kufi, against black"
             widths={[480, 720, 1180]}
+            format="webp"
+            quality={82}
             sizes="(max-width: 1000px) 88vw, 36vw"
             loading="eager"
             decoding="async"
