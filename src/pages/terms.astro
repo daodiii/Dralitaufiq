@@ -1,0 +1,51 @@
+---
+import LegalPage from '../components/LegalPage.astro';
+import profile from '../data/profile.json';
+
+const facebook = profile.social[0];
+---
+
+<LegalPage
+  title="Terms and Conditions · Prof. Dr. Ali Mohamed Salah"
+  description="The terms for using the official website of Prof. Dr. Ali Mohamed Salah."
+  heading="Terms and Conditions"
+  updated="22 October 2026"
+>
+  <p>By using this website you agree to these terms. If you do not agree, please do not use it.</p>
+
+  <h2>About the site</h2>
+  <p>
+    This site presents the books, lectures and biography of Prof. Dr. Ali Mohamed Salah. It is for information. Nothing here is a
+    personal religious ruling (fatwa) for your situation; for that, ask a qualified scholar.
+  </p>
+
+  <h2>Content and copyright</h2>
+  <p>
+    The text, photographs, book covers and design belong to their owners and are protected by copyright. You may share links
+    and quote short passages with credit. You may not copy, sell or republish the content in bulk without written
+    permission. Lecture recordings stay on YouTube under their own terms.
+  </p>
+
+  <h2>Books and links to other sites</h2>
+  <p>
+    Books are sold by third parties such as Amazon. Prices, availability and delivery are set by those sellers, and your purchase
+    is a contract with them, not with this site. We are not responsible for the content of linked sites.
+  </p>
+
+  <h2>Accuracy</h2>
+  <p>
+    We take care to keep the site correct, but give no guarantee that it is complete or error-free, and it may change or go
+    offline without notice. Use is at your own risk.
+  </p>
+
+  <h2>Privacy</h2>
+  <p>How visitor data is handled is described in the <a href="/privacy">Privacy Policy</a>.</p>
+
+  <h2>Governing law</h2>
+  <p>These terms are governed by Norwegian law.</p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions can be sent through the official <a href={facebook.url} target="_blank" rel="noopener">Facebook page</a>.
+  </p>
+</LegalPage>

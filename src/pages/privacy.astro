@@ -1,0 +1,59 @@
+---
+import LegalPage from '../components/LegalPage.astro';
+import profile from '../data/profile.json';
+
+const facebook = profile.social[0];
+---
+
+<LegalPage
+  title="Privacy Policy · Prof. Dr. Ali Mohamed Salah"
+  description="What this website does and does not collect about its visitors."
+  heading="Privacy Policy"
+  updated="22 October 2026"
+>
+  <p>
+    This is the official website of Prof. Dr. Ali Mohamed Salah (Oslo, Norway). It has no accounts, no forms and no
+    comments, and it does not ask you for any personal information.
+  </p>
+
+  <h2>What is collected</h2>
+  <ul>
+    <li>
+      <strong>Nothing by default.</strong> Fonts and images are served from this site itself, and no cookie is set until you
+      choose.
+    </li>
+    <li>
+      <strong>Visit statistics, only if you accept.</strong> The cookie notice asks whether we may count visits. If you accept,
+      the site loads Vercel Web Analytics, which counts page views, the page you came from, your country, browser and
+      device type. It does not use cookies and does not follow you from site to site. If you decline, it is not loaded.
+    </li>
+    <li>
+      <strong>Server logs.</strong> Our host, Vercel Inc., processes your IP address and request details to deliver the
+      pages and keep the site secure, as any web host does.
+    </li>
+  </ul>
+
+  <h2>Your choice</h2>
+  <p>
+    Your answer to the cookie notice is kept in your own browser (local storage, key <code>cookie-consent</code>). To change
+    it, clear this site's data in your browser and the notice will appear again.
+  </p>
+
+  <h2>Other websites</h2>
+  <p>
+    Lecture pictures are loaded from YouTube (Google), so Google receives your IP address when you view them. Links to
+    YouTube, Facebook and Amazon lead to sites with their own privacy policies; we do not control them.
+  </p>
+
+  <h2>Your rights</h2>
+  <p>
+    Under the GDPR you may ask what is held about you, and ask for it to be corrected or deleted. Since the site holds no
+    personal data beyond what its host logs, such requests usually concern Vercel. You may also complain to the Norwegian
+    Data Protection Authority (Datatilsynet).
+  </p>
+
+  <h2>Contact</h2>
+  <p>
+    Questions about this policy can be sent through the official <a href={facebook.url} target="_blank" rel="noopener">Facebook page</a>.
+  </p>
+</LegalPage>

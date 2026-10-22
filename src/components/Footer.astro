@@ -42,7 +42,9 @@ const year = new Date().getFullYear();
 
     <div class="footer__bottom">
       <span>© {year} Prof. Dr. Ali Mohamed Salah · Oslo</span>
-      <span>{profile.languages.join(' · ')}</span>
+      <span>
+        <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · {profile.languages.join(' · ')}
+      </span>
     </div>
   </div>
 </footer>

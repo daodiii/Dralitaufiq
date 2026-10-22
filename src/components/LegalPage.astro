@@ -1,0 +1,76 @@
+---
+/* Shared frame for the plain-text pages: privacy, terms and the 404. */
+import Base from '../layouts/Base.astro';
+import Nav from './Nav.astro';
+import Footer from './Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  updated?: string;
+  noindex?: boolean;
+}
+
+const { title, description, heading, updated, noindex } = Astro.props;
+---
+
+<Base title={title} description={description} noindex={noindex}>
+  <Nav page="inner" current="books" />
+  <main class="legal">
+    <div class="container legal__body">
+      <h1 class="legal__h">{heading}</h1>
+      {updated && <p class="legal__updated">Last updated {updated}</p>}
+      <slot />
+    </div>
+  </main>
+  <Footer page="inner" />
+  <script>
+    import { nav, showNav } from '../scripts/nav';
+    nav();
+    showNav();
+  </script>
+</Base>
+
+<style is:global>
+  .legal {
+    padding-top: calc(var(--nav-h) + clamp(3rem, 8vw, 6rem));
+    padding-bottom: clamp(3rem, 7vw, 5rem);
+    min-height: 70svh;
+  }
+  .legal__body {
+    max-width: 44rem;
+  }
+  .legal__h {
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+  .legal__updated {
+    margin-top: 0.8rem;
+    font-size: 0.85rem;
+    color: var(--ink-3);
+  }
+  .legal__body h2 {
+    margin-top: 2.4rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .legal__body p,
+  .legal__body li {
+    margin-top: 0.8rem;
+    color: var(--ink-2);
+  }
+  .legal__body ul {
+    padding-left: 1.2rem;
+    list-style: disc;
+  }
+  .legal__body a:not(.btn) {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>
