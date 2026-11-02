@@ -110,8 +110,62 @@ const youtube = profile.social[1];
             The message could not be sent. Please try again, or write through the official <a href={facebook.url} target="_blank" rel="noopener">Facebook page</a>.
           </p>
         </form>
+        <!-- The letter: written from the form, folded in three, put in the envelope and sealed -->
+        <div class="post" aria-hidden="true">
+          <div class="post__group">
+            <div class="env env--back"></div>
+            <!-- The top third comes last: it folds over the others, and the browser layers by this order -->
+            <div class="sheet">
+              <div class="sheet__panel sheet__panel--mid"><div class="sheet__face"></div></div>
+              <div class="sheet__panel sheet__panel--bottom"><div class="sheet__face"><i class="shade"></i></div><div class="sheet__back"><i class="shade"></i></div></div>
+              <div class="sheet__panel sheet__panel--top">
+                <div class="sheet__face"><i class="shade"></i></div>
+                <div class="sheet__back">
+                  <p class="sheet__to"><span>Prof. Dr. Ali Mohamed Salah</span><small>Oslo</small></p>
+                  <i class="shade"></i>
+                </div>
+              </div>
+            </div>
+            <div class="env env--front"><i></i></div>
+            <div class="env env--flap"><div class="env__hinge"><i></i></div></div>
+            <div class="seal"><i class="seal__ring"></i><span lang="ar">ع</span></div>
+          </div>
+          <!-- The envelope turned over: addressed, stamped, postmarked in Oslo -->
+          <div class="cover">
+            <p class="cover__from"><small>From</small><span class="cover__sender"></span></p>
+            <div class="stamp"><div class="stamp__art"><i></i></div></div>
+            <svg class="postmark" viewBox="0 0 220 120">
+              <g fill="none" stroke="currentColor">
+                <circle cx="160" cy="60" r="44" stroke-width="2.4"></circle>
+                <circle cx="160" cy="60" r="35" stroke-width="1.2"></circle>
+                <path d="M4 38c14-7 28 7 42 0s28 7 42 0 28 7 42 0M4 60c14-7 28 7 42 0s28 7 42 0 28 7 42 0M4 82c14-7 28 7 42 0s28 7 42 0 28 7 42 0" stroke-width="2.2"></path>
+              </g>
+              <text x="160" y="47" text-anchor="middle">OSLO</text>
+              <text class="postmark__date" x="160" y="66" text-anchor="middle"></text>
+              <text x="160" y="83" text-anchor="middle">NORWAY</text>
+            </svg>
+            <div class="cover__to">
+              <i class="cover__rule"></i>
+              <p class="cover__name">Prof. Dr. Ali Mohamed Salah</p>
+              <p>Tawfiiq Islamic Centre</p>
+              <p class="cover__city">Oslo · Norway</p>
+            </div>
+          </div>
+        </div>
+        <template id="letter">
+          <div class="letter">
+            <p class="letter__re"></p>
+            <p class="letter__to">Dear Dr. Ali,</p>
+            <p class="letter__body"></p>
+            <p class="letter__from"></p>
+          </div>
+        </template>
         <div class="done" tabindex="-1">
-          <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="30" pathLength="1"></circle><path d="M20 33l8 8 16-17" pathLength="1"></path></svg>
+          <svg viewBox="0 0 64 48" aria-hidden="true">
+            <rect class="done__env" x="4" y="6" width="56" height="36" rx="2" pathLength="1"></rect>
+            <path class="done__env" d="M4.5 7 32 28 59.5 7" pathLength="1"></path>
+            <circle class="done__seal" cx="32" cy="28" r="5"></circle>
+          </svg>
           <p class="done__h">Sent, thank you.</p>
           <p class="done__p">Your message is on its way. Any reply comes to the email you gave.</p>
           <button class="done__again" type="button">Send another</button>
@@ -190,8 +244,7 @@ const youtube = profile.social[1];
           body: JSON.stringify(Object.fromEntries(new FormData(form))),
         });
         if (!res.ok) throw new Error(String(res.status));
-        folio.classList.add('is-sent');
-        setTimeout(() => done.focus({ preventScroll: true }), 400);
+        post();
       } catch {
         fail.hidden = false;
       } finally {
@@ -200,7 +253,140 @@ const youtube = profile.social[1];
       }
     });
 
+    /* Once the message is sent: it becomes a letter, folds in three, goes into the envelope, is
+       sealed and flies off while the red line runs round the folio; then the thanks. About four
+       seconds, once a visit, so it can take its time. With reduced motion, straight to the thanks. */
+    const sheet = folio.querySelector<HTMLElement>('.post')!;
+    const q = <T extends Element = HTMLElement>(s: string) => sheet.querySelector<T>(s)!;
+    const trace = folio.querySelector<SVGRectElement>('.folio__trace')!;
+    const template = document.getElementById('letter') as HTMLTemplateElement;
+    const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+    const IN_OUT = 'cubic-bezier(0.65, 0, 0.35, 1)';
+    let running: Animation[] = [];
+    let timers: number[] = [];
+
+    const play = (el: Element, frames: Keyframe[], duration: number, delay: number, easing = EASE_OUT, fill: FillMode = 'both') => {
+      running.push(el.animate(frames, { duration, delay, easing, fill }));
+    };
+
+    const finish = () => {
+      folio.classList.add('is-sent');
+      timers.push(window.setTimeout(() => done.focus({ preventScroll: true }), 500));
+    };
+
+    function post() {
+      const data = new FormData(form);
+      const topic = topics.find((r) => r.checked)?.nextElementSibling?.textContent ?? '';
+      const write = (letter: HTMLElement) => {
+        letter.querySelector('.letter__re')!.textContent = `Re: ${topic}`;
+        letter.querySelector('.letter__body')!.textContent = String(data.get('message'));
+        letter.querySelector('.letter__from')!.textContent = String(data.get('name'));
+        return letter;
+      };
+      q('.cover__sender').textContent = String(data.get('name'));
+      q('.postmark__date').textContent = new Date()
+        .toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+        .toUpperCase();
+      sheet.querySelectorAll('.sheet__face').forEach((face) => {
+        face.querySelector('.letter')?.remove();
+        face.prepend(write(template.content.firstElementChild!.cloneNode(true) as HTMLElement));
+      });
+
+      // The letter takes the room the form had, at a letter's proportions.
+      const room = sheet.getBoundingClientRect();
+      sheet.style.setProperty('--w', `${Math.min(room.width * 0.8, room.height * 0.68, 480)}px`);
+      folio.classList.add('is-posting');
+
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) return finish();
+
+      const [top, bottom] = [q('.sheet__panel--top'), q('.sheet__panel--bottom')];
+      const env = [q('.env--back'), q('.env--front'), q('.env--flap')];
+
+      // 1. The form becomes the letter.
+      play(q('.sheet'), [{ opacity: 0, transform: 'translateY(10px) scale(0.97)' }, { opacity: 1, transform: 'none' }], 460, 120);
+
+      // 2. Folded in three: the bottom third up, then the top third down, each shading as it turns.
+      const fold = (panel: HTMLElement, angle: number, z: number, at: number) => {
+        play(panel, [{ transform: 'translateZ(0px) rotateX(0deg)' }, { transform: `translateZ(${z}px) rotateX(${angle}deg)` }], 600, at, IN_OUT);
+        play(panel.querySelector('.sheet__face .shade')!, [{ opacity: 0 }, { opacity: 0.32, offset: 0.5 }, { opacity: 0.32 }], 600, at, 'linear');
+        play(panel.querySelector('.sheet__back .shade')!, [{ opacity: 0.32 }, { opacity: 0.32, offset: 0.5 }, { opacity: 0 }], 600, at, 'linear');
+      };
+      fold(bottom, 180, 1, 650);
+      fold(top, -180, 2, 1000);
+
+      // 3. The letter lifts, the envelope rises beneath it, and the letter drops into the pocket.
+      env.forEach((el) => play(el, [{ opacity: 0, transform: 'translateY(40px)' }, { opacity: 1, transform: 'none' }], 560, 1750));
+      play(
+        q('.sheet'),
+        [
+          { opacity: 1, transform: 'none' },
+          { opacity: 1, transform: 'translateY(-30%) scale(0.94)', offset: 0.42 },
+          { opacity: 1, transform: 'translateY(2%) scale(0.9)' },
+        ],
+        900,
+        1600,
+        IN_OUT
+      );
+
+      // 4. The flap closes over it, passing in front as it turns down.
+      play(q('.env__hinge'), [{ transform: 'perspective(900px) rotateX(180deg)' }, { transform: 'perspective(900px) rotateX(0deg)' }], 560, 2550, IN_OUT);
+      play(env[2], [{ zIndex: 0 }, { zIndex: 0, offset: 0.48 }, { zIndex: 4, offset: 0.5 }, { zIndex: 4 }], 560, 2550, 'linear');
+
+      // 5. Sealed in red, the ring of gold going out from it.
+      play(q('.seal'), [{ opacity: 0, transform: 'scale(1.5)' }, { opacity: 1, transform: 'scale(0.94)', offset: 0.7 }, { opacity: 1, transform: 'scale(1)' }], 420, 3050);
+      play(q('.seal__ring'), [{ opacity: 0.8, transform: 'scale(0.95)' }, { opacity: 0, transform: 'scale(2)' }], 800, 3350);
+
+      // 6. Turned over: the sealed back goes edge-on, and the front comes round, addressed and stamped.
+      play(
+        q('.post__group'),
+        [
+          { transform: 'perspective(1400px) rotateY(0deg)', opacity: 1 },
+          { transform: 'perspective(1400px) rotateY(90deg)', opacity: 1, offset: 0.99 },
+          { transform: 'perspective(1400px) rotateY(90deg)', opacity: 0 },
+        ],
+        420,
+        3700,
+        'cubic-bezier(0.55, 0, 0.8, 0.4)'
+      );
+      play(
+        q('.cover'),
+        [
+          { opacity: 1, transform: 'perspective(1400px) rotateY(-90deg)' },
+          { opacity: 1, transform: 'perspective(1400px) rotateY(0deg)' },
+        ],
+        620,
+        4120,
+        'cubic-bezier(0.2, 0.6, 0.35, 1)'
+      );
+
+      // 7. Postmarked in Oslo, with the little jolt of the stamp coming down.
+      play(q('.postmark'), [{ opacity: 0, transform: 'rotate(-14deg) scale(1.35)' }, { opacity: 1, transform: 'rotate(-14deg) scale(1)' }], 200, 4850, 'cubic-bezier(0.5, 0, 0.75, 0)');
+      play(q('.cover'), [{ translate: '0 0' }, { translate: '0 3px', offset: 0.3 }, { translate: '0 0' }], 260, 5040, 'ease-out', 'none');
+
+      // 8. The red line runs round the folio as the letter flies off.
+      play(trace, [{ opacity: 1, strokeDashoffset: 1 }, { opacity: 1, strokeDashoffset: 0 }], 1600, 5100);
+      play(
+        q('.cover'),
+        [
+          { opacity: 1, transform: 'perspective(1400px) translate(0, 0) rotate(0deg) scale(1)' },
+          { opacity: 1, transform: 'perspective(1400px) translate(0, -12px) rotate(0deg) scale(1.01)', offset: 0.22 },
+          { opacity: 0, transform: 'perspective(1400px) translate(30%, -95%) rotate(-7deg) scale(0.55)' },
+        ],
+        950,
+        5650,
+        'cubic-bezier(0.6, 0, 0.3, 1)',
+        'forwards'
+      );
+
+      timers.push(window.setTimeout(finish, 6250));
+    }
+
     done.querySelector('.done__again')!.addEventListener('click', () => {
+      running.forEach((a) => a.cancel());
+      timers.forEach(clearTimeout);
+      running = [];
+      timers = [];
+      folio.classList.remove('is-posting');
       form.reset();
       movePill();
       count.textContent = '0 / 5000';
@@ -630,27 +816,26 @@ const youtube = profile.social[1];
   }
 
   .done svg {
-    width: 4.2rem;
-    height: 4.2rem;
+    width: 4.4rem;
+    height: 3.3rem;
+    overflow: visible;
   }
 
-  .done circle,
-  .done path {
+  .done__env {
     fill: none;
+    stroke: var(--gold);
+    stroke-width: 1.2;
+    stroke-linejoin: round;
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
   }
 
-  .done circle {
-    stroke: var(--gold);
-    stroke-width: 1.2;
-  }
-
-  .done path {
-    stroke: var(--accent);
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .done__seal {
+    fill: var(--accent);
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0.6);
+    opacity: 0;
   }
 
   .done__h {
@@ -675,33 +860,466 @@ const youtube = profile.social[1];
     box-shadow: 0 1px 0 currentColor;
   }
 
-  /* The form lifts away, the red line runs once round the folio, the tick draws itself. */
-  .is-sent .form {
+  /* Posting: the form gives way to the letter it wrote (choreographed in the script). */
+  .is-posting .form {
     opacity: 0;
-    transform: translateY(-12px);
+    filter: blur(4px);
+    transform: translateY(-6px) scale(0.985);
     visibility: hidden;
-    transition: opacity 0.5s, transform 0.6s var(--ease-out), visibility 0s 0.6s;
+    transition:
+      opacity 0.28s,
+      filter 0.28s,
+      transform 0.4s var(--ease-out),
+      visibility 0s 0.4s;
   }
 
   .is-sent .folio__rule .folio__trace {
     opacity: 1;
-    animation: draw 1.6s var(--ease-out) forwards;
+    stroke-dashoffset: 0;
   }
 
   .is-sent .done {
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.4s 0.4s;
+    transition: opacity 0.3s;
   }
 
-  .is-sent .done circle { animation: draw 1s var(--ease-out) 0.5s forwards; }
-  .is-sent .done path { animation: draw 0.6s var(--ease-out) 1.2s forwards; }
+  .is-sent .done__env { animation: draw 0.9s var(--ease-out) forwards; }
+  .is-sent .done path.done__env { animation-delay: 0.35s; }
+  .is-sent .done__seal { animation: seal-dot 0.45s var(--ease-out) 0.85s forwards; }
   .is-sent .done__h,
   .is-sent .done__p,
   .is-sent .done__again { animation: rise 0.7s var(--ease-out) both; }
-  .is-sent .done__h { animation-delay: 1.3s; }
-  .is-sent .done__p { animation-delay: 1.4s; }
-  .is-sent .done__again { animation-delay: 1.5s; }
+  .is-sent .done__h { animation-delay: 0.5s; }
+  .is-sent .done__p { animation-delay: 0.6s; }
+  .is-sent .done__again { animation-delay: 0.7s; }
+
+  @keyframes seal-dot {
+    to { opacity: 1; transform: none; }
+  }
+
+  /* ---------- the letter and its envelope ---------- */
+
+  /* --w is the letter's width, set from the room the form had; the rest follows from it. */
+  .post {
+    --h: calc(var(--w) * 1.25);
+    --ew: calc(var(--w) * 1.08);
+    --eh: calc(var(--w) * 0.66);
+    --env: oklch(94.6% 0.016 82);
+    --env-light: oklch(96.8% 0.012 84);
+    --edge: color-mix(in oklab, var(--gold) 55%, transparent);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
+  .is-posting .post {
+    visibility: visible;
+  }
+
+  .post__group {
+    position: absolute;
+    inset: 0;
+  }
+
+  .post__group > * {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    opacity: 0;
+  }
+
+  .sheet {
+    z-index: 2;
+    width: var(--w);
+    height: var(--h);
+    margin: calc(var(--h) / -2) 0 0 calc(var(--w) / -2);
+    perspective: 1600px;
+    transform-style: preserve-3d;
+  }
+
+  .sheet__panel {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: calc(var(--h) / 3);
+    transform-style: preserve-3d;
+  }
+
+  .sheet__panel--top { top: 0; transform-origin: 50% 100%; }
+  .sheet__panel--mid { top: calc(var(--h) / 3); }
+  .sheet__panel--bottom { top: calc(var(--h) * 2 / 3); transform-origin: 50% 0; }
+
+  .sheet__face,
+  .sheet__back {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: #fffdf8;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .sheet__face {
+    box-shadow: 0 1px 2px oklch(19% 0.012 60 / 0.07);
+  }
+
+  /* The outside of the paper, which is what shows once it is folded. */
+  .sheet__back {
+    transform: rotateX(180deg);
+    background: oklch(98.2% 0.008 84);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--gold) 28%, transparent);
+  }
+
+  /* Addressed on the outside, as a folded letter would be. */
+  .sheet__to {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: calc(var(--w) * 0.012);
+    text-align: center;
+  }
+
+  .sheet__to span {
+    font-family: var(--font-arabic);
+    font-size: calc(var(--w) * 0.05);
+    line-height: 1.1;
+    color: var(--ink);
+  }
+
+  .sheet__to small {
+    font-size: calc(var(--w) * 0.024);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .sheet__to::after {
+    content: '';
+    order: -1;
+    width: calc(var(--w) * 0.08);
+    height: 1px;
+    margin-bottom: calc(var(--w) * 0.02);
+    background: var(--accent);
+  }
+
+  .shade {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(oklch(19% 0.012 60 / 0.5), oklch(19% 0.012 60 / 0.15));
+    opacity: 0;
+  }
+
+  /* Each third shows its own part of the one letter. */
+  .letter {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: var(--h);
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--w) * 0.09) calc(var(--w) * 0.1);
+    color: var(--ink);
+  }
+
+  .letter::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--w) * 0.03);
+    border: 1px solid color-mix(in oklab, var(--gold) 38%, transparent);
+    pointer-events: none;
+  }
+
+  .sheet__panel--mid .letter { top: calc(var(--h) / -3); }
+  .sheet__panel--bottom .letter { top: calc(var(--h) * -2 / 3); }
+
+  .letter__re {
+    align-self: flex-end;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .letter__to {
+    margin-top: calc(var(--w) * 0.05);
+    font-family: var(--font-arabic);
+    font-size: calc(var(--w) * 0.058);
+    line-height: 1.2;
+  }
+
+  /* The message on writing lines, fading out where the page runs short. */
+  .letter__body {
+    flex: 1;
+    min-height: 0;
+    margin-top: calc(var(--w) * 0.035);
+    overflow: hidden;
+    font-size: calc(var(--w) * 0.032);
+    line-height: calc(var(--w) * 0.072);
+    color: var(--ink-2);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    background: linear-gradient(transparent calc(var(--w) * 0.072 - 1px), var(--line) 0) 0 0 / 100% calc(var(--w) * 0.072);
+    -webkit-mask: linear-gradient(#000 78%, transparent);
+    mask: linear-gradient(#000 78%, transparent);
+  }
+
+  .letter__from {
+    align-self: flex-end;
+    margin-top: calc(var(--w) * 0.03);
+    font-family: var(--font-arabic);
+    font-size: calc(var(--w) * 0.05);
+  }
+
+  .letter__from::before {
+    content: '— ';
+    color: var(--ink-3);
+  }
+
+  .env {
+    width: var(--ew);
+    height: var(--eh);
+    margin: calc(var(--eh) / -2) 0 0 calc(var(--ew) / -2);
+  }
+
+  .env--back {
+    z-index: 1;
+    border-radius: 3px;
+    background: linear-gradient(oklch(92.8% 0.018 80), var(--env));
+    box-shadow:
+      0 1px 2px oklch(19% 0.012 60 / 0.08),
+      0 24px 40px -18px oklch(19% 0.012 60 / 0.3);
+  }
+
+  /* The pocket: everything but the notch the letter goes in by. A gold hairline runs along its folds. */
+  .env--front {
+    z-index: 3;
+    filter: drop-shadow(0 -1px 0 var(--edge)) drop-shadow(0 -6px 10px oklch(19% 0.012 60 / 0.06));
+  }
+
+  .env--front i {
+    position: absolute;
+    inset: 0;
+    border-radius: 3px;
+    background: linear-gradient(to top, var(--env), var(--env-light));
+    clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+  }
+
+  .env--flap {
+    z-index: 0;
+    height: calc(var(--eh) * 0.58);
+    margin-top: calc(var(--eh) / -2);
+    filter: drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 8px 10px oklch(19% 0.012 60 / 0.1));
+  }
+
+  .env__hinge {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 0;
+    transform: perspective(900px) rotateX(180deg);
+  }
+
+  .env__hinge i {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(var(--env-light), oklch(95.6% 0.014 83));
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+
+  /* The seal sits where the flap's point closes. */
+  .seal {
+    --s: calc(var(--w) * 0.17);
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: var(--s);
+    height: var(--s);
+    margin: calc(var(--eh) * 0.08 - var(--s) / 2) 0 0 calc(var(--s) / -2);
+    border-radius: 48% 52% 50% 50% / 52% 47% 53% 48%;
+    background:
+      radial-gradient(circle at 50% 50%, transparent 54%, oklch(33% 0.12 28 / 0.55) 56%, transparent 62%),
+      radial-gradient(circle at 34% 28%, oklch(60% 0.17 30), var(--accent) 55%, oklch(34% 0.12 26));
+    box-shadow:
+      0 1px 1px oklch(25% 0.1 28 / 0.5),
+      0 4px 10px -2px oklch(25% 0.1 28 / 0.45),
+      inset 0 1px 1px oklch(75% 0.12 35 / 0.6);
+  }
+
+  .seal span {
+    margin-top: -0.18em;
+    font-family: var(--font-arabic);
+    font-size: calc(var(--s) * 0.7);
+    font-weight: 700;
+    line-height: 1;
+    background: var(--gilt);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 1px 0 oklch(28% 0.1 28 / 0.6));
+  }
+
+  .seal__ring {
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 1px solid var(--gold-2);
+    opacity: 0;
+  }
+
+  /* ---------- the envelope turned over ---------- */
+
+  .cover {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 6;
+    width: var(--ew);
+    height: var(--eh);
+    margin: calc(var(--eh) / -2) 0 0 calc(var(--ew) / -2);
+    border-radius: 3px;
+    background:
+      radial-gradient(120% 90% at 30% 20%, oklch(97.4% 0.011 85), transparent 70%),
+      linear-gradient(oklch(96% 0.014 84), var(--env));
+    box-shadow:
+      inset 0 0 0 1px color-mix(in oklab, var(--gold) 22%, transparent),
+      0 1px 2px oklch(19% 0.012 60 / 0.08),
+      0 24px 40px -18px oklch(19% 0.012 60 / 0.3);
+    opacity: 0;
+  }
+
+  /* A fine gold rule inside the edge, as round the folio. */
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: calc(var(--w) * 0.02);
+    border: 1px solid color-mix(in oklab, var(--gold) 40%, transparent);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  .cover__from {
+    position: absolute;
+    left: 7%;
+    top: 10%;
+    display: grid;
+    gap: calc(var(--w) * 0.006);
+  }
+
+  .cover__from small {
+    font-size: calc(var(--w) * 0.021);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .cover__sender {
+    font-family: var(--font-arabic);
+    font-size: calc(var(--w) * 0.038);
+    color: var(--ink-2);
+  }
+
+  /* A postage stamp: perforated paper round his gilded name on madder. */
+  .stamp {
+    --perf: calc(var(--w) * 0.007);
+    position: absolute;
+    right: 6%;
+    top: 9%;
+    width: 25%;
+    aspect-ratio: 1.22;
+    padding: calc(var(--perf) * 2.4);
+    background: #fffdf8;
+    filter: drop-shadow(0 1px 1.5px oklch(19% 0.012 60 / 0.25));
+    -webkit-mask:
+      radial-gradient(var(--perf) at var(--perf) var(--perf), #0000 97%, #000) calc(var(--perf) * -1) calc(var(--perf) * -1) / calc(var(--perf) * 2) calc(var(--perf) * 2),
+      linear-gradient(#000 0 0) content-box;
+    mask:
+      radial-gradient(var(--perf) at var(--perf) var(--perf), #0000 97%, #000) calc(var(--perf) * -1) calc(var(--perf) * -1) / calc(var(--perf) * 2) calc(var(--perf) * 2),
+      linear-gradient(#000 0 0) content-box;
+    transform: rotate(2deg);
+  }
+
+  .stamp__art {
+    position: relative;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background:
+      radial-gradient(90% 70% at 50% 35%, oklch(44% 0.13 28), oklch(30% 0.1 26));
+    box-shadow:
+      inset 0 0 0 calc(var(--w) * 0.006) oklch(30% 0.1 26),
+      inset 0 0 0 calc(var(--w) * 0.008) var(--gold);
+  }
+
+  .stamp__art i {
+    width: 84%;
+    aspect-ratio: 885 / 310;
+    background: var(--gilt);
+    background-size: 200% 100%;
+    -webkit-mask: var(--calli) center / contain no-repeat;
+    mask: var(--calli) center / contain no-repeat;
+  }
+
+  /* Postmark ink: a little uneven, laid over the stamp's corner. */
+  .postmark {
+    position: absolute;
+    right: 16%;
+    top: 12%;
+    width: 44%;
+    color: oklch(30% 0.03 260 / 0.62);
+    mix-blend-mode: multiply;
+    transform: rotate(-14deg);
+    opacity: 0;
+    -webkit-mask: radial-gradient(circle at 30% 40%, #000 55%, rgb(0 0 0 / 0.7) 80%);
+    mask: radial-gradient(circle at 30% 40%, #000 55%, rgb(0 0 0 / 0.7) 80%);
+  }
+
+  .postmark text {
+    fill: currentColor;
+    font-family: var(--font-body);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+  }
+
+  .postmark .postmark__date {
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+  }
+
+  .cover__to {
+    position: absolute;
+    left: 38%;
+    top: 52%;
+    display: grid;
+    gap: calc(var(--w) * 0.008);
+    font-size: calc(var(--w) * 0.028);
+    color: var(--ink-2);
+  }
+
+  .cover__rule {
+    width: calc(var(--w) * 0.07);
+    height: 1px;
+    margin-bottom: calc(var(--w) * 0.012);
+    background: var(--accent);
+  }
+
+  .cover__name {
+    font-family: var(--font-arabic);
+    font-size: calc(var(--w) * 0.05);
+    line-height: 1.15;
+    color: var(--ink);
+  }
+
+  .cover__city {
+    font-size: calc(var(--w) * 0.022);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
 
   .in {
     animation: rise 0.9s var(--ease-out) both;
