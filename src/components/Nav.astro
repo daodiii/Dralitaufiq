@@ -5,13 +5,13 @@ interface Props {
   /* The home page links to its own sections; an inner page links to the pages, marks its own, and
      links home for About. */
   page?: 'home' | 'inner';
-  current?: 'books' | 'lectures';
+  current?: 'books' | 'lectures' | 'contact';
   booksHref?: string;
 }
 
 const { page = 'home', current = 'books', booksHref = '/books' } = Astro.props;
 const home = page === 'home';
-const here = (k: 'books' | 'lectures') => !home && current === k;
+const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
 ---
 
 <header class="nav">
@@ -40,7 +40,9 @@ const here = (k: 'books' | 'lectures') => !home && current === k;
         Lectures
       </a>
       <a href={home ? '#about' : '/#about'}>About</a>
-      <a href="#contact">Contact</a>
+      <a href="/contact" class:list={[here('contact') && 'is-active']} aria-current={here('contact') ? 'page' : undefined}>
+        Contact
+      </a>
     </nav>
   </div>
 </header>

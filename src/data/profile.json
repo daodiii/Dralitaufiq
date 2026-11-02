@@ -50,5 +50,8 @@
   ],
   "languages": ["Arabic", "English", "Somali", "Norwegian", "Malay"],
   "bookstore": "https://www.amazon.co.uk/stores/Ali-Mohamed-Salah/author/B0DMP5PJMV",
-  "social": [{ "label": "Facebook", "url": "https://www.facebook.com/shdralisalah" }]
+  "social": [
+    { "label": "Facebook", "url": "https://www.facebook.com/shdralisalah" },
+    { "label": "YouTube", "url": "https://www.youtube.com/channel/UCtcb_hyBovXlGrxKFMlziJw" }
+  ]
 }

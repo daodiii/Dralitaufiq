@@ -27,8 +27,11 @@ const { title, description, heading, updated, noindex } = Astro.props;
   <Footer page="inner" />
   <script>
     import { nav, showNav } from '../scripts/nav';
+    import { reveals } from '../scripts/reveals';
     nav();
     showNav();
+    /* The footer's columns are [data-reveal], hidden until this brings them in. */
+    reveals();
   </script>
 </Base>
 
