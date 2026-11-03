@@ -20,21 +20,30 @@ const year = new Date().getFullYear();
 
       <div class="footer__col" data-reveal data-delay="0.08">
         <p class="footer__h">Contact</p>
-        <p class="footer__text">For lectures, talks and events, write through the official Facebook page.</p>
-        <a class="link" href={profile.social[0].url} target="_blank" rel="noopener">
-          {profile.social[0].label}
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-            <path d="M4 12L12 4M6 4h6v6" />
-          </svg>
-        </a>
+        <p class="footer__text">For lectures, talks and events, send a message or write through the official Facebook page.</p>
+        <div class="footer__reach">
+          <a class="link" href="/contact">
+            Send a message
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M2 8h11M9 4l4 4-4 4" />
+            </svg>
+          </a>
+          <a class="link" href={profile.social[0].url} target="_blank" rel="noopener">
+            {profile.social[0].label}
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+              <path d="M4 12L12 4M6 4h6v6" />
+            </svg>
+          </a>
+        </div>
       </div>
 
       <div class="footer__col" data-reveal data-delay="0.16">
         <p class="footer__h">Navigate</p>
         <ul class="footer__links">
-          <li><a href={home ? '#books' : '/books'}>Books</a></li>
-          <li><a href={home ? '#lectures' : '/lectures'}>Lectures</a></li>
+          <li><a href="/books">Books</a></li>
+          <li><a href="/lectures">Lectures</a></li>
           <li><a href={home ? '#about' : '/#about'}>About</a></li>
+          <li><a href="/contact">Contact</a></li>
           <li><a href={home ? '#top' : '/'}>{home ? 'Top' : 'Home'}</a></li>
         </ul>
       </div>
@@ -88,6 +97,12 @@ const year = new Date().getFullYear();
     margin-bottom: 1.1rem;
     font-size: 0.95rem;
     color: var(--ink-2);
+  }
+
+  .footer__reach {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.6rem;
   }
 
   .footer__links {

@@ -9,11 +9,11 @@ const facebook = profile.social[0];
   title="Privacy Policy · Prof. Dr. Ali Mohamed Salah"
   description="What this website does and does not collect about its visitors."
   heading="Privacy Policy"
-  updated="22 October 2026"
+  updated="2 November 2026"
 >
   <p>
-    This is the official website of Prof. Dr. Ali Mohamed Salah (Oslo, Norway). It has no accounts, no forms and no
-    comments, and it does not ask you for any personal information.
+    This is the official website of Prof. Dr. Ali Mohamed Salah (Oslo, Norway). It has no accounts and no comments. The
+    only place it asks for personal information is the contact form, and only if you choose to write.
   </p>
 
   <h2>What is collected</h2>
@@ -26,6 +26,12 @@ const facebook = profile.social[0];
       <strong>Visit statistics, only if you accept.</strong> The cookie notice asks whether we may count visits. If you accept,
       the site loads Vercel Web Analytics, which counts page views, the page you came from, your country, browser and
       device type. It does not use cookies and does not follow you from site to site. If you decline, it is not loaded.
+    </li>
+    <li>
+      <strong>The contact form, only if you send it.</strong> Your name, email address, topic and message are emailed to
+      the inbox that answers this website's messages, so they can be read and answered. The message passes through Resend, the service that
+      delivers the email, and is kept in that mailbox for as long as the correspondence needs. The website itself
+      stores nothing.
     </li>
     <li>
       <strong>Server logs.</strong> Our host, Vercel Inc., processes your IP address and request details to deliver the
@@ -47,13 +53,14 @@ const facebook = profile.social[0];
 
   <h2>Your rights</h2>
   <p>
-    Under the GDPR you may ask what is held about you, and ask for it to be corrected or deleted. Since the site holds no
-    personal data beyond what its host logs, such requests usually concern Vercel. You may also complain to the Norwegian
+    Under the GDPR you may ask what is held about you, and ask for it to be corrected or deleted. A message you sent
+    through the contact form is held in the inbox that received it; write through the contact page to have it deleted.
+    Beyond that the site holds no personal data except what its host logs, so other requests usually concern Vercel. You may also complain to the Norwegian
     Data Protection Authority (Datatilsynet).
   </p>
 
   <h2>Contact</h2>
   <p>
-    Questions about this policy can be sent through the official <a href={facebook.url} target="_blank" rel="noopener">Facebook page</a>.
+    Questions about this policy can be sent through the <a href="/contact">contact page</a> or the official <a href={facebook.url} target="_blank" rel="noopener">Facebook page</a>.
   </p>
 </LegalPage>
