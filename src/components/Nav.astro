@@ -2,8 +2,8 @@
 import profile from '../data/profile.json';
 
 interface Props {
-  /* The home page links to its own sections; an inner page links to the pages, marks its own, and
-     links home for About. */
+  /* Books, Lectures and Contact open their pages from anywhere, and an inner page marks its own.
+     About is a part of the home page: the home page scrolls to it, an inner page links home for it. */
   page?: 'home' | 'inner';
   current?: 'books' | 'lectures' | 'contact';
   booksHref?: string;
@@ -29,11 +29,11 @@ const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
       <i></i><i></i>
     </button>
     <nav class="nav__menu" id="site-menu" aria-label="Primary">
-      <a href={home ? '#books' : booksHref} class:list={[here('books') && 'is-active']} aria-current={here('books') ? 'page' : undefined}>
+      <a href={booksHref} class:list={[here('books') && 'is-active']} aria-current={here('books') ? 'page' : undefined}>
         Books
       </a>
       <a
-        href={home ? '#lectures' : '/lectures'}
+        href="/lectures"
         class:list={[here('lectures') && 'is-active']}
         aria-current={here('lectures') ? 'page' : undefined}
       >

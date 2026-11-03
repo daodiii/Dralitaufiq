@@ -40,9 +40,10 @@ const year = new Date().getFullYear();
       <div class="footer__col" data-reveal data-delay="0.16">
         <p class="footer__h">Navigate</p>
         <ul class="footer__links">
-          <li><a href={home ? '#books' : '/books'}>Books</a></li>
-          <li><a href={home ? '#lectures' : '/lectures'}>Lectures</a></li>
+          <li><a href="/books">Books</a></li>
+          <li><a href="/lectures">Lectures</a></li>
           <li><a href={home ? '#about' : '/#about'}>About</a></li>
+          <li><a href="/contact">Contact</a></li>
           <li><a href={home ? '#top' : '/'}>{home ? 'Top' : 'Home'}</a></li>
         </ul>
       </div>
