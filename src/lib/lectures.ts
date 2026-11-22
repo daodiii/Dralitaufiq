@@ -43,9 +43,6 @@ export const SERIES: Record<string, Series> = {
   hisn: { key: 'hisn', title: 'Ḥiṣn al-Muslim', ar: 'حصن المسلم', count: 4, pl: 'PLvFvvYJalpBohx6Q4bhnDBHsWkhm4E7d6' },
 };
 
-/* The series on the home page's table, left to right: they rise to the Qur'an and fall away. */
-export const TABLE = ['sira', 'brief', 'riyad', 'quran', 'companions', 'bulugh'] as const;
-
 /* The series on the lectures page, in the order it lists them; the talks follow. */
 export const ROOM = ['quran', 'brief', 'riyad', 'companions', 'sira', 'bulugh', 'hisn'] as const;
 
@@ -102,17 +99,3 @@ export function describe(key: string, l: Lesson, pl: string): Told {
     href: watch(l.id, pl),
   };
 }
-
-/* ---------- the table of stacks (design units; the page scales them to fit) ---------- */
-
-/* A lesson card is a 16:9 frame; the stack is as thick as the series has public lessons. */
-export const W = 162;
-export const D = 91;
-export const CARD = 0.85; /* a card's thickness */
-export const stackHeight = (lessons: number) => Math.max(3, Math.round(lessons * CARD));
-
-/* One row, rising and falling a little across the table. */
-const GAP = 36;
-const DY = [40, 16, 0, -14, 4, 24];
-const X0 = -(TABLE.length * (W + GAP) - GAP) / 2;
-export const rowAt = (i: number) => ({ x: X0 + i * (W + GAP), y: -290 + DY[i] });
