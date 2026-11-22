@@ -1,9 +1,9 @@
 ---
 /**
- * The lectures page, "the reading room" (picked as R8-B, 2026-11-22). A dim walnut band with one lit
- * screen, the whole Qur'an explained, beside the programme of all seven series; then on white paper
- * that series opened (its first lessons and every sūrah), the Companions by name, the other series,
- * and the talks in English and Somali, each language under a short lit band of its own.
+ * The lectures page, "the reading room" (picked as R8-B, 2026-11-22), in daylight like the books room
+ * since the same day. A warm band with one lit screen, the whole Qur'an explained, beside the
+ * programme of all seven series; then on white paper that series opened (its first lessons and every sūrah), the Companions by name, the other series,
+ * and the talks in English and Somali, each language under a short band of its own.
  *
  * Every picture of him is one checked by eye: a lesson's own chosen frame (lib/stills.ts, data
  * `f`/`fv`) where it was checked again for this page (mouth closed or smiling, docs/research/
@@ -256,39 +256,39 @@ const prophet = (s: string) => s.split('ﷺ');
 </script>
 
 <style>
+  /* The room in daylight, the same light as the books room (BooksRoom.astro). */
   .lr-room {
-    --cream: oklch(93% 0.01 85);
-    --cream-2: oklch(74% 0.015 80);
+    --cream: var(--ink);
+    --cream-2: oklch(42% 0.03 65);
+    --rule: rgb(70 45 20 / 0.16);
     position: relative;
     color: var(--cream);
-    background:
-      radial-gradient(60% 70% at 50% 46%, oklch(33% 0.035 60 / 0.95), transparent 72%),
-      oklch(16% 0.02 55);
-    border-top: 1px solid oklch(61% 0.125 82 / 0.5);
-    border-bottom: 1px solid oklch(61% 0.125 82 / 0.5);
+    background: radial-gradient(65% 75% at 50% 45%, #fffaf0, transparent 75%), #ece2cf;
+    border-top: 1px solid oklch(61% 0.125 82 / 0.35);
+    border-bottom: 1px solid oklch(61% 0.125 82 / 0.35);
   }
   .lr-dim { color: var(--cream-2); }
   .lr-top { margin-top: var(--nav-h); padding: 2.6rem 0 3.2rem; }
   .lr-top__in { display: grid; grid-template-columns: minmax(0, 820fr) minmax(0, 404fr); gap: 3rem; align-items: start; }
 
-  .lr-fr { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 2px; background: oklch(28% 0.02 55); }
+  .lr-fr { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 2px; background: #dccbab; }
   .lr-fr img { width: 100%; height: 100%; object-fit: cover; }
   .lr-fr.crop img { position: absolute; width: 132%; max-width: none; height: auto; left: -16%; top: 0; object-fit: fill; }
   .lr-fr.crop.bars img { top: -22%; }
-  .lr-fr--lit { box-shadow: 0 0 0 1px oklch(61% 0.125 82 / 0.55), 0 0 120px 10px oklch(60% 0.08 70 / 0.16), 0 30px 50px -20px rgb(0 0 0 / 0.7); }
+  .lr-fr--lit { box-shadow: 0 0 0 1px oklch(61% 0.125 82 / 0.5), 0 0 120px 10px rgb(255 214 140 / 0.35), 0 30px 50px -22px rgb(60 35 10 / 0.5); }
 
   .lr-screen__t { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-top: 1.25rem; font-size: 1.625rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
-  .lr-screen__t span { font-family: var(--font-arabic); font-size: 1.5rem; font-weight: 400; color: oklch(78% 0.09 82); }
+  .lr-screen__t span { font-family: var(--font-arabic); font-size: 1.5rem; font-weight: 400; color: var(--gold-3); }
   .lr-screen p { margin-top: 0.25rem; font-size: 0.875rem; }
   .lr-begin { display: inline-block; margin-top: 1rem; font-size: 0.9375rem; font-weight: 500; color: var(--cream); border-bottom: 1.5px solid var(--gold); }
 
-  .lr-prog__hd { font-size: 0.8125rem; padding: 0 0 0.625rem 0.875rem; border-bottom: 1px solid oklch(93% 0.01 85 / 0.18); }
-  .lr-prog__row { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 1rem; align-items: center; padding: 0.5rem 0 0.5rem 0.875rem; border-bottom: 1px solid oklch(93% 0.01 85 / 0.1); color: var(--cream); }
-  .lr-prog__row .lr-fr { filter: brightness(0.72); box-shadow: 0 6px 12px -6px rgb(0 0 0 / 0.6); transition: filter 0.3s var(--ease-out); }
+  .lr-prog__hd { font-size: 0.8125rem; padding: 0 0 0.625rem 0.875rem; border-bottom: 1px solid var(--rule); }
+  .lr-prog__row { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 1rem; align-items: center; padding: 0.5rem 0 0.5rem 0.875rem; border-bottom: 1px solid var(--rule); color: var(--cream); }
+  .lr-prog__row .lr-fr { filter: saturate(0.7) opacity(0.82); box-shadow: 0 6px 12px -6px rgb(60 35 10 / 0.45); transition: filter 0.3s var(--ease-out); }
   .lr-prog__row.is-on .lr-fr, .lr-prog__row:hover .lr-fr, .lr-prog__row:focus-visible .lr-fr { filter: none; }
   .lr-prog__row.is-on::before { content: ''; position: absolute; left: 0; top: 0.625rem; bottom: 0.625rem; width: 2px; background: var(--gold); }
   .lr-prog__txt b { display: block; font-size: 0.97rem; font-weight: 500; line-height: 1.25; }
-  .lr-prog__ar { display: block; font-family: var(--font-arabic); font-size: 0.95rem; line-height: 1.35; color: oklch(78% 0.09 82); }
+  .lr-prog__ar { display: block; font-family: var(--font-arabic); font-size: 0.95rem; line-height: 1.35; color: var(--gold-3); }
   .lr-prog__txt .lr-dim { display: block; font-size: 0.78rem; }
 
   .lr-paper { padding-top: 3rem; }
