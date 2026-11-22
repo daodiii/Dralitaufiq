@@ -1,8 +1,42 @@
 [
   {
+    "id": "under-the-shade-of-islam",
+    "ean": "9788269427592",
+    "order": 0,
+    "title": "Under the Shade of Islam",
+    "subtitle": "Tolerance and Coexistence in Theory, Historical Application, and Contemporary Practice",
+    "titleLatin": null,
+    "titleEn": null,
+    "language": "en",
+    "role": "Author",
+    "series": null,
+    "publisher": "Looh Press",
+    "year": 2026,
+    "badge": "New release",
+    "cover": "../assets/covers/under-the-shade-of-islam.jpg",
+    "coverWidth": 907,
+    "coverHeight": 1360,
+    "description": [
+      "How does Islam understand and practise tolerance and peaceful coexistence with people of other faiths? Drawing on the Qurʾan, the Sunnah, the life of the Prophet Muhammad ﷺ and the experience of the early Muslim community, this study sets out the Islamic foundations of tolerance and distinguishes them from modern relativism.",
+      "Its four chapters cover coexistence in the Prophetic era and under the Rightly Guided Caliphs, including the Covenant of Najrān; the Dhimmah covenant and the rights it gave non-Muslim communities; and the place of keeping covenants in religious conflict. It closes with a balanced approach for Muslims in pluralistic Western societies: keeping their identity without isolation, and engaging without dilution."
+    ],
+    "amazon": [
+      {
+        "label": "Paperback",
+        "url": "https://www.amazon.co.uk/dp/8269427594"
+      }
+    ],
+    "pages": 260,
+    "size": {
+      "w": 15.24,
+      "h": 22.86,
+      "t": 1.5
+    }
+  },
+  {
     "id": "arab-culture-and-its-pioneers-in-somalia",
     "ean": "9788269427554",
-    "order": 0,
+    "order": 1,
     "title": "Arab Culture and Its Pioneers in Somalia",
     "subtitle": "A Historical and Civilizational Study",
     "titleLatin": null,
@@ -62,7 +96,7 @@
   {
     "id": "islamic-jurisprudence-in-the-western-diaspora",
     "ean": "9788269427516",
-    "order": 1,
+    "order": 2,
     "title": "Islamic Jurisprudence in the Western Diaspora",
     "subtitle": "Theory and Practice in Norway",
     "titleLatin": null,
@@ -103,7 +137,7 @@
   {
     "id": "deal-breakers-in-marriage",
     "ean": "9788269427547",
-    "order": 2,
+    "order": 3,
     "title": "Deal Breakers in Marriage",
     "subtitle": "When Love Meets Non-Negotiables: A Jurisprudential Analysis in Islam",
     "titleLatin": null,
@@ -146,7 +180,7 @@
   {
     "id": "the-abrahamic-paradigm",
     "ean": "9788269367768",
-    "order": 3,
+    "order": 4,
     "title": "The Abrahamic Paradigm",
     "subtitle": "Pluralism, Salvation, and the Challenges of the Contemporary Abrahamic Trialogue",
     "titleLatin": null,
@@ -180,7 +214,7 @@
   {
     "id": "domestic-peace",
     "ean": "9788269367706",
-    "order": 4,
+    "order": 5,
     "title": "Domestic Peace",
     "subtitle": "Quranic Guidance for Building Healthy Family Bonds",
     "titleLatin": null,
@@ -215,7 +249,7 @@
   {
     "id": "ten-stories-from-the-prophet",
     "ean": "9788269367751",
-    "order": 5,
+    "order": 6,
     "title": "Ten Stories from the Prophet ﷺ",
     "subtitle": "Reflections and Insights",
     "titleLatin": null,
@@ -250,7 +284,7 @@
   {
     "id": "the-pearls",
     "ean": "9788269367737",
-    "order": 6,
+    "order": 7,
     "title": "The Pearls",
     "subtitle": "An Anthology of Lectures on Morality, Spirituality, and Intellectualism",
     "titleLatin": null,
@@ -284,7 +318,7 @@
   {
     "id": "jinn-and-black-magic",
     "ean": "9788269367744",
-    "order": 7,
+    "order": 8,
     "title": "Jinn and Black Magic",
     "subtitle": "Understanding the Reality and Seeking Remedies in Islamic Theology",
     "titleLatin": null,
@@ -318,7 +352,7 @@
   {
     "id": "the-shield-of-islam",
     "ean": "9781912411801",
-    "order": 8,
+    "order": 9,
     "title": "The Shield of Islam",
     "subtitle": "Addressing Confusion and Persuading Sceptics Against Atheistic Ideologies",
     "titleLatin": null,
@@ -353,7 +387,7 @@
   {
     "id": "exploring-the-evil-eye",
     "ean": "9781912411702",
-    "order": 9,
+    "order": 10,
     "title": "Exploring the Evil Eye",
     "subtitle": "Reality and Remedy: An Islamic Perspective",
     "titleLatin": null,
@@ -387,7 +421,7 @@
   {
     "id": "quran-moral-compass-of-the-believer",
     "ean": "9789781912412",
-    "order": 10,
+    "order": 11,
     "title": "Qur’an: Moral Compass of the Believer",
     "subtitle": null,
     "titleLatin": null,
@@ -423,7 +457,7 @@
   {
     "id": "fiqh-al-mahjar-fi-al-gharb",
     "ean": "9788269427509",
-    "order": 11,
+    "order": 12,
     "title": "فقه المهجر في الغرب",
     "subtitle": "تأصيل وتنزيل في ضوء الواقع النرويجي",
     "titleLatin": "Fiqh al-Mahjar fī al-Gharb",
@@ -463,7 +497,7 @@
   {
     "id": "al-hiwar-al-dini-al-ibrahimi",
     "ean": "9781912411740",
-    "order": 12,
+    "order": 13,
     "title": "الحوار الديني الإبراهيمي في ميزان القرآن",
     "subtitle": null,
     "titleLatin": "al-Ḥiwār al-Dīnī al-Ibrāhīmī fī Mīzān al-Qurʾān",
@@ -503,7 +537,7 @@
   {
     "id": "al-islam-wal-diyanatan",
     "ean": "9788269367713",
-    "order": 13,
+    "order": 14,
     "title": "الإسلام والديانتان اليهودية والمسيحية",
     "subtitle": "مقارنات في الأصول العقدية",
     "titleLatin": "al-Islām wal-Diyānatān al-Yahūdiyyah wal-Masīḥiyyah",
@@ -540,7 +574,7 @@
   {
     "id": "al-takmilah",
     "ean": "9781912411764",
-    "order": 14,
+    "order": 15,
     "title": "التكملة في تحقيق أحاديث من جمع الفوائد للهيثمي",
     "subtitle": "قسم التفسير",
     "titleLatin": "al-Takmilah fī Taḥqīq Aḥādīth min Jamʿ al-Fawāʾid lil-Haythamī",
@@ -579,9 +613,43 @@
     }
   },
   {
+    "id": "ibraahimiyadda",
+    "ean": "9788269427585",
+    "order": 16,
+    "title": "Ibraahimiyadda",
+    "subtitle": "Siyaasada & Diinta Cusub ee Qarnigan",
+    "titleLatin": null,
+    "titleEn": "Abrahamism: The Politics and the New Religion of This Century",
+    "language": "so",
+    "role": "Author",
+    "series": null,
+    "publisher": "Looh Press",
+    "year": 2026,
+    "badge": "New release",
+    "cover": "../assets/covers/ibraahimiyadda.jpg",
+    "coverWidth": 907,
+    "coverHeight": 1360,
+    "description": [
+      "Buuggan Ibraahiimiyadda: Siyaasadda iyo Diinta Cusub ee Qarnigan wuxuu si qoto dheer u falanqeynayaa waxa maanta loo yaqaan \"Ibraahiimiyadda\" iyo sida loogu adeegsanayo mashruuc diimeed oo cusub iyo mid siyaasadeedba. Wuxuu iftiiminayaa xiriirka ka dhexeeya wada-hadallada diimaha iyo heshiisyada siyaasadeed.",
+      "Buuggu wuxuu sidoo kale daaha ka rogayaa ujeeddooyinka ka dambeeya heshiisyada loo yaqaan Abrahamic Accords, kuwaas oo asal ahaan loogu talagalay in si gardarro ah gacanta loogu galiyo Yuhuudda dhulka Falastiin iyo muqaddasaadka Muslimiinta."
+    ],
+    "amazon": [
+      {
+        "label": "Paperback",
+        "url": "https://www.amazon.co.uk/dp/8269427586"
+      }
+    ],
+    "pages": 156,
+    "size": {
+      "w": 15.24,
+      "h": 22.86,
+      "t": 0.91
+    }
+  },
+  {
     "id": "dawada-nafta",
     "ean": "9788269367775",
-    "order": 15,
+    "order": 17,
     "title": "Dawada Nafta",
     "subtitle": null,
     "titleLatin": null,
@@ -616,7 +684,7 @@
   {
     "id": "bogsiin",
     "ean": "9788269427530",
-    "order": 16,
+    "order": 18,
     "title": "Bogsiin",
     "subtitle": "Sidee Looga Hortagaa Ka Shakinta Diinta",
     "titleLatin": null,
@@ -652,7 +720,7 @@
   {
     "id": "wacyi",
     "ean": "9788269367782",
-    "order": 17,
+    "order": 19,
     "title": "Wacyi",
     "subtitle": "Nolosha Qofka Muslimka ah ee Maanta iyo Berri",
     "titleLatin": null,
