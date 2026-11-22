@@ -27,7 +27,7 @@ const info = (id: string) => infos.find((s) => s.id === id)!;
 const groups = (['en', 'ar', 'so'] as const).map((k) => ({ k, name: languageName[k], books: books.filter((b) => b.data.language === k) }));
 const order = groups.flatMap((g) => g.books);
 
-const titleOf = (b: Book) => (b.data.language === 'ar' ? b.data.title.split(' ').slice(0, 4).join(' ') : b.data.title);
+const titleOf = (b: Book) => b.data.title;
 const view = order.map((b, i) => {
   const d = b.data;
   const rtl = d.language === 'ar';
