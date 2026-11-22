@@ -6,6 +6,12 @@
   "city": "Oslo, Norway",
   "journey": ["Madinah", "Makkah", "Kuala Lumpur", "Oslo"],
   "heroLede": "Professor of Comparative Religion, imam of the Tawfiiq Islamic Centre in Oslo, and author of several works in Arabic, English and Somali on faith and doubt, jurisprudence in the West, and dialogue between the Abrahamic faiths.",
+  "heroName": "Dr. Ali Mohamed Salah",
+  "heroTitles": [
+    "Professor of Comparative Religion",
+    "Imam and khaṭīb of the Tawfiiq Islamic Centre, Oslo",
+    "Author in Arabic, English and Somali"
+  ],
   "aboutHeadline": "Scholar, imam and author.",
   "aboutLead": [
     "Prof. Dr. Ali Mohamed Salah is a scholar of Islamic Studies and Comparative Religion with more than three decades in academia, religious leadership and community work. His writing presents Islam in a clear, authentic and intellectually grounded way, attending both to its classical foundations and to the questions Muslims meet in Western societies.",
