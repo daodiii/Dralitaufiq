@@ -1,12 +1,12 @@
 {
   "name": "Prof. Dr. Ali Mohamed Salah",
-  "nameArabic": "الدكتور علي محمد صالح",
+  "nameArabic": "الأستاذ الدكتور علي محمد صالح",
   "nameSomali": "Dr. Cali Maxamed Saalax",
   "tagline": "Scholar · Author · Translator",
   "city": "Oslo, Norway",
   "journey": ["Madinah", "Makkah", "Kuala Lumpur", "Oslo"],
   "heroLede": "Professor of Comparative Religion, imam of the Tawfiiq Islamic Centre in Oslo, and author of several works in Arabic, English and Somali on faith and doubt, jurisprudence in the West, and dialogue between the Abrahamic faiths.",
-  "heroName": "Dr. Ali Mohamed Salah",
+  "heroName": "Prof. Dr. Ali Mohamed Salah",
   "heroTitles": [
     "Professor of Comparative Religion",
     "Imam and khaṭīb of the Tawfiiq Islamic Centre, Oslo",
@@ -34,8 +34,7 @@
   ],
   "roles": [
     { "title": "Imam and Khaṭīb", "org": "Tawfiiq Islamic Centre, Oslo" },
-    { "title": "Director", "org": "Iqra Foundation · co-founder of Iqra Academy" },
-    { "title": "General Manager and Board Chair", "org": "Tasanud Hjelp Organisasjon" },
+    { "title": "Founder and Board Member", "org": "Iqra Foundation" },
     { "title": "Member", "org": "Norwegian Non-Fiction Writers and Translators Association (NFFO)" }
   ],
   "past": [
