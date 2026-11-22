@@ -1,0 +1,292 @@
+---
+/**
+ * The books page on a tablet or a computer, "the reading room" in daylight (picked as R8-B, V2,
+ * 2026-11-22). A warm cream room: the twenty books stand on an oak shelf at the top, the one being
+ * read leaves its gap, and lies open on the desk below it, with the book before and after it beside
+ * it. The open book shows its cover on one page and its title, verbatim description, colophon and
+ * Amazon listings on the other; an Arabic book opens right to left. Under the room, the whole
+ * description and the twenty covers.
+ *
+ * Which book is open is the page's data-book (set before the first paint from ?book=, books.astro),
+ * so a link to one book never flashes another; scripts/books/room.ts turns from book to book.
+ * Phones get the pile instead (Pile.astro).
+ */
+import { Image } from 'astro:assets';
+import type { Book } from '../../lib/books';
+import { languageName } from '../../lib/books';
+import { paragraphs } from '../../lib/library';
+import { spineInfo } from '../../lib/spines';
+
+interface Props {
+  books: Book[];
+}
+
+const { books } = Astro.props;
+const infos = await Promise.all(books.map(spineInfo));
+const info = (id: string) => infos.find((s) => s.id === id)!;
+const groups = (['en', 'ar', 'so'] as const).map((k) => ({ k, name: languageName[k], books: books.filter((b) => b.data.language === k) }));
+const order = groups.flatMap((g) => g.books);
+
+const titleOf = (b: Book) => (b.data.language === 'ar' ? b.data.title.split(' ').slice(0, 4).join(' ') : b.data.title);
+const view = order.map((b, i) => {
+  const d = b.data;
+  const rtl = d.language === 'ar';
+  const all = paragraphs(b);
+  const own = rtl ? all.filter((p) => p.dir === 'rtl') : all.filter((p) => p.dir === 'ltr');
+  return {
+    b,
+    rtl,
+    prev: order[i - 1],
+    next: order[i + 1],
+    open: own.length ? own : all,
+    all,
+    colo: [d.publisher, d.year, `${d.pages} pages`].filter(Boolean).join(' · ') + (d.badge ? '. New in 2026' : ''),
+    sub: d.subtitle,
+    en: d.language !== 'en' && d.titleEn && d.titleEn !== d.subtitle ? d.titleEn : null,
+    role: d.role !== 'Author' ? d.role : null,
+    thick: Math.round(Math.max(7, Math.min(21, d.pages / 26))),
+    boards: info(b.id).colour,
+  };
+});
+
+/* The open book, the gap on the shelf, the description and the cover marked, all from data-book. */
+const first = order[0].id;
+const css =
+  order
+    .map(
+      (b) =>
+        `html[data-book='${b.id}'] .broom [data-id='${b.id}'].broom__stage{display:flex}` +
+        `html[data-book='${b.id}'] .broom [data-id='${b.id}'].broom__sp{background:transparent!important;box-shadow:none}` +
+        `html[data-book='${b.id}'] .broom [data-id='${b.id}'].broom__sp::after{opacity:1}` +
+        `html[data-book='${b.id}'] .broom-paper [data-id='${b.id}'].broom__full{display:block}` +
+        `html[data-book='${b.id}'] .broom-paper [data-id='${b.id}'].broom__cv{outline:2px solid var(--gold);outline-offset:4px}`
+    )
+    .join('') +
+  `html:not([data-book]) .broom [data-id='${first}'].broom__stage{display:flex}` +
+  `html:not([data-book]) .broom-paper [data-id='${first}'].broom__full{display:block}`;
+const prophet = (s: string) => s.split('ﷺ');
+---
+
+<style is:inline set:html={css}></style>
+
+<section class="broom" aria-label="The books">
+  <div class="broom__shelf">
+    {
+      groups.map((g) => (
+        <div class="broom__grp" role="group" aria-label={g.name}>
+          <div class="broom__row">
+            {g.books.map((b) => {
+              const s = info(b.id);
+              return (
+                <button
+                  class="broom__sp"
+                  type="button"
+                  data-id={b.id}
+                  data-book={b.id}
+                  aria-label={b.data.title}
+                  style={`height:${Math.round(s.h * 4.6)}px;width:${Math.round(9 + s.t * 6.5)}px;background:${s.colour}`}
+                />
+              );
+            })}
+          </div>
+          <div class="broom__board" />
+        </div>
+      ))
+    }
+  </div>
+
+  {
+    view.map((v) => (
+      <div class="broom__stage" data-id={v.b.id}>
+        {v.prev ? (
+          <button class="broom__nb is-prev" type="button" data-book={v.prev.id} aria-label={`Previous book: ${v.prev.data.title}`}>
+            <span class="broom__ar" aria-hidden="true">←</span>
+            <Image src={v.prev.data.cover} alt="" widths={[160, 280]} sizes="132px" loading="lazy" />
+            <b lang={v.prev.data.language} dir={v.prev.data.language === 'ar' ? 'rtl' : undefined}>{titleOf(v.prev)}</b>
+          </button>
+        ) : (
+          <span class="broom__nb is-prev" />
+        )}
+
+        <article class="bk" dir={v.rtl ? 'rtl' : undefined} lang={v.b.data.language} style={`--boards:${v.boards};--se:${v.thick}px`}>
+          <span class="bk__floor" aria-hidden="true" />
+          <span class="bk__boards" aria-hidden="true" />
+          <span class="bk__stk is-s" aria-hidden="true" />
+          <span class="bk__stk is-e" aria-hidden="true" />
+          <div class:list={['bk__pg', 'bk__cv', v.rtl ? 'is-rt' : 'is-lft']}>
+            <Image class="bk__plate" src={v.b.data.cover} alt={`The cover of ${v.b.data.title}`} widths={[300, 520]} sizes="260px" loading="lazy" />
+          </div>
+          <div class:list={['bk__pg', 'bk__tx', v.rtl ? 'is-lft' : 'is-rt']}>
+            <div class="bk__txt">
+              <h2>{prophet(v.b.data.title).map((p, i) => (i ? [<bdi>ﷺ</bdi>, p] : p))}</h2>
+              {v.sub && <p class="bk__sub" dir={/[؀-ۿ]/.test(v.sub) ? 'rtl' : 'ltr'}>{v.sub}</p>}
+              {v.en && <p class="bk__en" lang="en" dir="ltr">{v.en}</p>}
+              {v.role && <p class="bk__role" lang="en" dir="ltr">{v.role}</p>}
+              <p class="bk__desc">
+                {v.open.map((p, i) => <>{i > 0 && <span class="bk__gap" />}{p.lead && <b>{p.lead}: </b>}{p.text}</>)}
+              </p>
+              <a class="bk__whole" href={`#about-${v.b.id}`}>{v.rtl ? 'الوصف كاملًا' : 'Read the whole description'}</a>
+              <div class="bk__foot">
+                <p class="bk__colo" lang="en" dir="ltr">{v.colo}</p>
+                <div class="bk__pills" dir="ltr">
+                  {v.b.data.amazon.map((a, i) => (
+                    <a class:list={['bk__pill', i > 0 && 'is-ghost']} href={a.url} target="_blank" rel="noopener">
+                      {i === 0 ? `Buy on Amazon · ${a.label}` : a.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          <span class="bk__gut" aria-hidden="true" />
+          <span class="bk__ribbon" aria-hidden="true" />
+        </article>
+
+        {v.next ? (
+          <button class="broom__nb is-next" type="button" data-book={v.next.id} aria-label={`Next book: ${v.next.data.title}`}>
+            <Image src={v.next.data.cover} alt="" widths={[160, 280]} sizes="132px" loading="lazy" />
+            <b lang={v.next.data.language} dir={v.next.data.language === 'ar' ? 'rtl' : undefined}>{titleOf(v.next)}</b>
+            <span class="broom__ar" aria-hidden="true">→</span>
+          </button>
+        ) : (
+          <span class="broom__nb is-next" />
+        )}
+      </div>
+    ))
+  }
+</section>
+
+<div class="broom-paper container">
+  {
+    view.map((v) => (
+      <div class="broom__full" data-id={v.b.id} id={`about-${v.b.id}`}>
+        {v.all.map((p) => (
+          <p lang={p.lang} dir={p.dir}>{p.lead && <b>{p.lead}: </b>}{p.text}</p>
+        ))}
+      </div>
+    ))
+  }
+  <div class="broom__covers" aria-label="All the books">
+    {
+      groups.map((g) => (
+        <div class="broom__cg" role="group" aria-label={g.name}>
+          {g.books.map((b) => (
+            <button class="broom__cv" type="button" data-id={b.id} data-book={b.id} aria-label={b.data.title}>
+              <Image src={b.data.cover} alt="" widths={[96, 160]} sizes="72px" loading="lazy" />
+            </button>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style is:global>
+  .broom, .broom-paper { display: none; }
+  html:not(.books-pile) .broom { display: flex; }
+  html:not(.books-pile) .broom-paper { display: block; }
+
+  .broom {
+    --h: clamp(400px, calc(100vh - var(--nav-h) - 232px), 560px);
+    position: relative;
+    flex-direction: column;
+    min-height: max(600px, calc(100vh - var(--nav-h)));
+    margin-top: var(--nav-h);
+    overflow: hidden;
+    color: var(--ink);
+    background: radial-gradient(65% 75% at 50% 45%, #fffaf0, transparent 75%), #ece2cf;
+    border-top: 1px solid oklch(61% 0.125 82 / 0.35);
+    border-bottom: 1px solid oklch(61% 0.125 82 / 0.35);
+  }
+  .broom__shelf { position: relative; z-index: 1; display: flex; justify-content: center; align-items: flex-end; gap: 1.6rem; padding-top: 1.4rem; }
+  .broom__grp { display: flex; flex-direction: column; }
+  .broom__row { display: flex; align-items: flex-end; gap: 2px; }
+  .broom__board { height: 6px; background: linear-gradient(#cfae80, #a98556); box-shadow: 0 1px 0 #8d6c44, 0 10px 12px -6px rgb(40 25 10 / 0.35); }
+  .broom__sp {
+    position: relative; display: block; padding: 0; border: 0; cursor: pointer; border-radius: 2px 2px 0 0;
+    box-shadow: inset -2px 0 4px rgb(0 0 0 / 0.22), inset 2px 0 2px rgb(255 255 255 / 0.16);
+    transition: transform 0.35s var(--ease-out);
+  }
+  .broom__sp:hover, .broom__sp:focus-visible { transform: translateY(-5px); }
+  .broom__sp::after {
+    content: ''; position: absolute; left: 50%; top: -1rem; width: 7.5rem; height: calc(100% + 1rem); transform: translateX(-50%);
+    background: radial-gradient(40% 100% at 50% 0, rgb(255 214 140 / 0.35), transparent 80%); opacity: 0; pointer-events: none;
+  }
+
+  .broom__stage { position: relative; z-index: 1; flex: 1; display: none; justify-content: center; align-items: center; gap: 3.5rem; padding: 2.2rem var(--gutter) 4.4rem; }
+  .broom__stage::before {
+    content: ''; position: absolute; left: 0; right: 0; top: 58%; bottom: 0; z-index: -1;
+    background-image: repeating-linear-gradient(92deg, rgb(90 60 30 / 0.05) 0 2px, transparent 2px 9px), linear-gradient(#d9bf98, #c4a274);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.5);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+  }
+  .broom__nb { flex: 0 0 9rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; padding: 0; border: 0; background: none; cursor: pointer; color: var(--ink); text-align: center; font: inherit; }
+  .broom__nb img { width: 132px; height: auto; border-radius: 1px 3px 3px 1px; box-shadow: 0 2px 3px rgb(40 25 10 / 0.3), 0 26px 30px -16px rgb(40 25 10 / 0.45); transition: transform 0.4s var(--ease-out); }
+  .broom__nb.is-prev img { transform: perspective(900px) rotateY(16deg); }
+  .broom__nb.is-next img { transform: perspective(900px) rotateY(-16deg); }
+  .broom__nb:hover img, .broom__nb:focus-visible img { transform: perspective(900px) rotateY(0) translateY(-4px); }
+  .broom__nb b { font-size: 0.8125rem; font-weight: 500; line-height: 1.3; max-width: 10rem; }
+  .broom__nb b[dir='rtl'] { font-family: var(--font-arabic); font-size: 0.95rem; }
+  .broom__ar { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgb(40 25 10 / 0.3); background: #fbf6ea; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+
+  /* ---------- the open book ---------- */
+  .bk { position: relative; flex: none; display: grid; grid-template-columns: 1fr 1fr; height: var(--h); width: calc(var(--h) * 1.5); isolation: isolate; text-align: start; }
+  .bk__boards { position: absolute; inset-block: -7px; inset-inline-start: -10px; inset-inline-end: calc(-1 * (var(--se) + 6px)); background: var(--boards); border-radius: 3px; z-index: -2; box-shadow: 0 2px 3px rgb(40 25 10 / 0.35), 0 44px 50px -26px rgb(40 25 10 / 0.45); }
+  .bk__boards::after { content: ''; position: absolute; inset: 0; border-radius: 3px; background: linear-gradient(180deg, rgb(255 255 255 / 0.12), transparent 40%, rgb(0 0 0 / 0.18)); }
+  .bk__floor { position: absolute; left: 15%; right: 15%; bottom: -34px; height: 40px; background: radial-gradient(50% 50% at 50% 50%, rgb(40 25 10 / 0.28), transparent 70%); filter: blur(6px); z-index: -3; }
+  .bk__stk { position: absolute; top: 2px; bottom: 2px; z-index: -1; background: repeating-linear-gradient(90deg, #e2dacb 0 1px, #fbf8f1 1px 2.5px); box-shadow: inset 0 -2px 2px rgb(60 40 20 / 0.12); }
+  .bk__stk.is-s { inset-inline-start: -4px; width: 4px; }
+  .bk__stk.is-e { inset-inline-end: calc(-1 * var(--se)); width: var(--se); clip-path: polygon(0 0, 100% 3px, 100% calc(100% - 3px), 0 100%); }
+  .bk[dir='rtl'] .bk__stk.is-e { clip-path: polygon(0 3px, 100% 0, 100% 100%, 0 calc(100% - 3px)); }
+  .bk__pg { position: relative; min-width: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: #fdf9ef; }
+  .bk__pg.is-lft { background-image: linear-gradient(90deg, rgb(60 40 20 / 0.05) 0, transparent 6%, transparent 80%, rgb(255 255 255 / 0.55) 89%, rgb(60 40 20 / 0.1) 95%, rgb(60 40 20 / 0.26) 100%); border-radius: 2px 0 0 2px; }
+  .bk__pg.is-rt { background-image: linear-gradient(270deg, rgb(60 40 20 / 0.05) 0, transparent 6%, transparent 80%, rgb(255 255 255 / 0.55) 89%, rgb(60 40 20 / 0.1) 95%, rgb(60 40 20 / 0.22) 100%); border-radius: 0 2px 2px 0; }
+  .bk__gut { position: absolute; top: 0; bottom: 0; left: calc(50% - 1px); width: 2px; background: rgb(40 25 10 / 0.3); }
+  .bk__ribbon { position: absolute; top: -7px; left: calc(50% + 16px); width: 9px; height: calc(100% + 51px); background: linear-gradient(90deg, oklch(40% 0.15 28), var(--accent) 40%, oklch(40% 0.15 28)); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%); filter: drop-shadow(1px 2px 2px rgb(0 0 0 / 0.25)); z-index: 3; }
+  .bk[dir='rtl'] .bk__ribbon { left: auto; right: calc(50% + 16px); }
+  .bk__plate { height: 66%; width: auto; max-width: 86%; object-fit: contain; box-shadow: 0 1px 1px rgb(40 25 10 / 0.2), 0 16px 26px -10px rgb(40 25 10 / 0.4); border-radius: 1px 3px 3px 1px; }
+  .bk__tx { align-items: stretch; justify-content: stretch; padding: calc(var(--h) * 0.075) calc(var(--h) * 0.085) calc(var(--h) * 0.07); }
+  .bk__txt { display: flex; flex-direction: column; width: 100%; height: 100%; overflow: hidden; color: #2a2118; }
+  .bk__txt h2 { font-size: clamp(1.4rem, calc(var(--h) * 0.05), 1.875rem); font-weight: 600; letter-spacing: -0.02em; line-height: 1.12; }
+  .bk[dir='rtl'] .bk__txt h2 { font-family: var(--font-arabic); font-weight: 700; line-height: 1.4; letter-spacing: 0; font-size: clamp(1.5rem, calc(var(--h) * 0.055), 2rem); }
+  .bk__sub { font-size: 0.94rem; color: #5a4c3d; margin-top: 0.45rem; line-height: 1.38; }
+  .bk__sub[dir='rtl'] { font-family: var(--font-arabic); font-size: 1.19rem; line-height: 1.5; }
+  .bk__en, .bk__role { font-size: 0.8rem; color: #7d6d5b; margin-top: 0.35rem; line-height: 1.4; }
+  .bk[dir='rtl'] .bk__en, .bk[dir='rtl'] .bk__role { text-align: right; }
+  .bk__desc { margin-top: 1rem; font-size: 0.906rem; line-height: 1.6; color: #43372b; }
+  .bk[dir='rtl'] .bk__desc { font-family: var(--font-arabic); font-size: 1.125rem; line-height: 1.85; }
+  .bk__gap { display: block; height: 0.5rem; }
+  .bk__whole { align-self: flex-start; margin-top: 0.5rem; font-size: 0.84rem; color: #2a2118; border-bottom: 1px solid currentColor; }
+  .bk[dir='rtl'] .bk__whole { font-family: var(--font-arabic); font-size: 1rem; }
+  .bk__foot { margin-top: auto; padding-top: 0.875rem; }
+  .bk__colo { font-size: 0.78rem; color: #8a7a66; }
+  .bk[dir='rtl'] .bk__colo { text-align: right; }
+  .bk__pills { display: flex; gap: 0.5rem; margin-top: 0.625rem; flex-wrap: wrap; }
+  .bk[dir='rtl'] .bk__pills { justify-content: flex-end; }
+  .bk__pill { display: inline-flex; align-items: center; height: 42px; padding: 0 1.1rem; border-radius: 999px; background: oklch(72% 0.12 82); color: #1f1812; font-size: 0.84rem; font-weight: 500; white-space: nowrap; transition: background 0.3s var(--ease-out); }
+  .bk__pill:hover, .bk__pill:focus-visible { background: oklch(66% 0.13 80); }
+  .bk__pill.is-ghost { background: transparent; box-shadow: inset 0 0 0 1px rgb(40 25 10 / 0.35); }
+  .bk__pill.is-ghost:hover { background: rgb(40 25 10 / 0.06); }
+  .bk bdi { font-family: var(--font-arabic); }
+
+  /* ---------- under the room ---------- */
+  .broom-paper { padding-top: 3.5rem; padding-bottom: 7rem; }
+  .broom__full { display: none; max-width: 42.5rem; margin: 0 auto; font-size: 1.0625rem; line-height: 1.65; color: var(--ink-2); scroll-margin-top: calc(var(--nav-h) + 2rem); }
+  .broom__full p + p { margin-top: 0.875rem; }
+  .broom__full p[dir='rtl'] { font-family: var(--font-arabic); font-size: 1.25rem; line-height: 1.9; }
+  .broom__full b { font-weight: 600; color: var(--ink); }
+  .broom__covers { display: flex; flex-wrap: wrap; justify-content: center; gap: 2.1rem; margin-top: 4rem; padding-top: 1.75rem; border-top: 1px solid var(--line-strong); }
+  .broom__cg { display: flex; gap: 0.875rem; align-items: flex-end; }
+  .broom__cv { padding: 0; border: 0; background: none; cursor: pointer; border-radius: 1px 2px 2px 1px; transition: transform 0.3s var(--ease-out); }
+  .broom__cv img { width: 72px; height: auto; display: block; box-shadow: 0 1px 1px rgb(40 25 10 / 0.2), 0 12px 18px -10px rgb(40 25 10 / 0.4); border-radius: 1px 2px 2px 1px; }
+  .broom__cv:hover, .broom__cv:focus-visible { transform: translateY(-4px); }
+
+  @media (max-width: 1180px) {
+    .broom__stage { gap: 1.5rem; padding-inline: 1.25rem; }
+    .broom__nb { flex-basis: 6.5rem; }
+    .broom__nb img { width: 96px; }
+    .broom { --h: clamp(380px, calc(100vh - var(--nav-h) - 232px), min(520px, (100vw - 300px) / 1.56)); }
+  }
+</style>
+
