@@ -76,6 +76,7 @@ const facebook = profile.social[0];
       </svg>
     </a>
   </div>
+  <div class="hero__dusk" data-hero-dusk aria-hidden="true"></div>
 </section>
 
 <style>
@@ -304,6 +305,17 @@ const facebook = profile.social[0];
 
   /* ---------- the page: his name and titles on the same black ---------- */
 
+  /* Darkens the black page as Books comes up over it (the cover, in the script). */
+  .hero__dusk {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    background: #000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
   .hero__page {
     position: absolute;
     z-index: 3;
@@ -474,6 +486,7 @@ const facebook = profile.social[0];
   const handle = q('[data-open-handle]');
   const inner = root ? Array.from(root.querySelectorAll<HTMLElement>('.hero__title .in')) : [];
   const page = q('[data-hero-page]');
+  const dusk = q('[data-hero-dusk]');
   const calli = q('[data-hero="calli"]');
   const name = q('[data-hero="name"]');
   const titles = q('[data-hero="titles"]');
@@ -481,8 +494,11 @@ const facebook = profile.social[0];
   const cta = q('[data-hero="cta"]');
   const bar = document.querySelector<HTMLElement>('.nav');
 
-  /* How much scrolling the handover takes, in viewport heights. */
+  /* How much scrolling the handover takes, in viewport heights; then the black holds for one
+     more screen while Books comes up over it, like the next page laid on top. */
   const PIN = 1.3;
+  const HOLD = 1;
+  const books = document.querySelector<HTMLElement>('#books');
 
   /* Where his face sits in the banner photograph (source pixels). */
   const SHOT = { w: 2400, h: 2400, fx: 1178, fy: 792 };
@@ -563,31 +579,64 @@ const facebook = profile.social[0];
     return tl;
   }
 
+  /* The cover: the same timeline runs on for HOLD screens, the black page sinking back a little
+     as Books rises over it and its rounded top edge squares off. Padded by the handover's own
+     rate, so the name still lands where it did. */
+  function cover(tl: gsap.core.Timeline) {
+    const d = tl.duration();
+    const hold = (d * HOLD) / PIN;
+    const back = [open, page].filter(Boolean) as HTMLElement[];
+    tl.to(back, { scale: 0.94, yPercent: -3, transformOrigin: '50% 100%', duration: hold, ease: 'power1.in' }, d);
+    if (dusk) tl.fromTo(dusk, { autoAlpha: 0 }, { autoAlpha: 0.55, duration: hold, ease: 'power1.in' }, d);
+    if (books) tl.fromTo(books, { '--lift': 1 }, { '--lift': 0, duration: hold, ease: 'power2.in' }, d);
+  }
+
   function build() {
     if (!root) return;
     scrub = timeline();
     if (!scrub) return;
+    cover(scrub);
+    document.documentElement.classList.add('hero-cover');
+    root.dataset.land = String(PIN / (PIN + HOLD));
+    lift();
 
     /* Phones get no stepping (steps.ts starts at 760px), so a swipe that stops inside the
        handover glides on the way it was going: one swipe brings the page in, or the banner
        back. There the photo trails the finger a little; on wider screens the carry already
        eases every move, so the handover follows the scroll exactly. */
     const phone = !window.matchMedia('(min-width: 760px)').matches;
+    /* Snap only inside the handover: past the landed name the page scrolls free. */
+    const land = PIN / (PIN + HOLD);
 
     st = ScrollTrigger.create({
       trigger: root,
       start: 'top top',
-      end: () => `+=${Math.round(window.innerHeight * PIN)}`,
+      end: () => `+=${Math.round(window.innerHeight * (PIN + HOLD))}`,
       pin: true,
       scrub: phone ? 0.3 : true,
       snap: phone
-        ? { snapTo: 1, directional: true, inertia: false, delay: 0.08, duration: { min: 0.3, max: 0.8 }, ease: 'power2.inOut' }
+        ? {
+            snapTo: (v: number, self?: ScrollTrigger) => (v >= land - 0.002 ? v : (self?.direction ?? 1) > 0 ? land : 0),
+            inertia: false,
+            delay: 0.08,
+            duration: { min: 0.3, max: 0.8 },
+            ease: 'power2.inOut',
+          }
         : undefined,
       animation: scrub,
       refreshPriority: 1,
     });
     nightBar();
   }
+
+  /* Books starts one screen up, inside the hold, so it comes up over the pinned black. Read
+     again on every refresh, as the pin's length is. */
+  function lift() {
+    books?.style.setProperty('--cover-pull', `${window.innerHeight}px`);
+  }
+  ScrollTrigger.addEventListener('refreshInit', () => {
+    if (st) lift();
+  });
 
   /* The bar stays light over the black until the paper of Books reaches it. */
   function nightBar() {
@@ -609,7 +658,10 @@ const facebook = profile.social[0];
     st = null;
     light = null;
     scrub = null;
-    const targets = [open, openMedia, openCalli, sub, latin, handle, calli, name, titles, lede, cta].filter(Boolean) as HTMLElement[];
+    document.documentElement.classList.remove('hero-cover');
+    books?.style.removeProperty('--cover-pull');
+    books?.style.removeProperty('--lift');
+    const targets = [open, page, dusk, openMedia, openCalli, sub, latin, handle, calli, name, titles, lede, cta].filter(Boolean) as HTMLElement[];
     gsap.set(targets, { clearProps: 'all' });
   }
 
