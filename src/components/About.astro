@@ -3,8 +3,8 @@
  * The profile, "the parting". Two pages fill the viewport and meet at a
  * hairline: his formation on the left and his posts today on the right, as
  * hairline records set against the seam. Scrolling parts the pages, and
- * standing between them is his portrait, still; his mission then writes
- * itself across the foot of both. Below the pin, the biography on a card of
+ * standing between them is his portrait, still; his mission arrives whole
+ * across the foot of both as they part. Below the pin, the biography on a card of
  * the hero's warmer paper, his gilded name above it. Phones and reduced
  * motion get the same content stacked, without the pin.
  */
@@ -14,7 +14,6 @@ import calligraphy from '../assets/hero/calligraphy-name.png';
 import profile from '../data/profile.json';
 
 const formation = profile.timeline.filter((t) => t.year !== 'Today');
-const words = profile.mission.split(' ');
 const [lead, ...body] = profile.aboutLead;
 ---
 
@@ -47,6 +46,7 @@ const [lead, ...body] = profile.aboutLead;
       <div class="about__page about__page--l">
         <div class="about__slot">
           <div class="about__records about__records--l">
+            <p class="about__title" aria-hidden="true">{profile.aboutHeadline}</p>
             <dl class="about__rows">
               {
                 formation.map((t) => (
@@ -78,23 +78,15 @@ const [lead, ...body] = profile.aboutLead;
               }
             </dl>
             <p class="about__past">
-              Before Norway he directed the Arabic Language Institute for Non-Native Speakers at IKIP in Malaysia and
-              the twinning programme between IKIP and Jordanian universities, and lectured at the International
-              Islamic University of Malaysia in Kuantan. He writes in Arabic, English and Somali, and teaches also in
-              Norwegian and Malay.
+              Before Norway he led the Arabic Language Institute at IKIP in Malaysia and lectured at the International
+              Islamic University of Malaysia. He writes in Arabic, English and Somali.
             </p>
           </div>
         </div>
       </div>
 
       <blockquote class="about__mission">
-        <p>
-          {words.map((w) => (
-            <>
-              <span class="about__w">{w}</span>{' '}
-            </>
-          ))}
-        </p>
+        <p>{profile.mission}</p>
       </blockquote>
     </div>
   </div>
@@ -157,7 +149,7 @@ const [lead, ...body] = profile.aboutLead;
     align-content: center;
     gap: 1.5rem;
     height: 100%;
-    max-width: 30rem;
+    max-width: 38rem;
   }
 
   .about__records--l {
@@ -170,9 +162,9 @@ const [lead, ...body] = profile.aboutLead;
 
   .about__row {
     display: grid;
-    grid-template-columns: 4.5rem minmax(0, 1fr);
-    gap: 0.5rem 1.4rem;
-    padding-block: 1rem;
+    grid-template-columns: 5.2rem minmax(0, 1fr);
+    gap: 0.5rem 1.2rem;
+    padding-block: clamp(0.8rem, 1.9vh, 1.3rem);
     border-top: 1px solid var(--line);
   }
 
@@ -181,19 +173,19 @@ const [lead, ...body] = profile.aboutLead;
   }
 
   .about__row--role {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
   }
 
   .about__row dt {
-    font-size: 0.86rem;
+    font-size: 1.05rem;
     color: var(--ink-3);
-    padding-top: 0.15rem;
+    padding-top: 0.25rem;
     font-variant-numeric: tabular-nums;
   }
 
   .about__row--role dt {
     font-family: var(--font-body);
-    font-size: 1rem;
+    font-size: clamp(1.15rem, 1.4vw, 1.4rem);
     font-weight: 500;
     color: var(--ink);
     padding-top: 0;
@@ -201,25 +193,28 @@ const [lead, ...body] = profile.aboutLead;
 
   .about__row dd {
     display: grid;
-    gap: 0.2rem;
-    font-size: 1rem;
-    line-height: 1.4;
+    gap: 0.3rem;
+    font-size: clamp(1.25rem, 1.6vw, 1.6rem);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
     color: var(--ink);
   }
 
   .about__row--role dd {
-    color: var(--ink-3);
+    font-size: clamp(1.1rem, 1.3vw, 1.3rem);
+    color: var(--ink-2);
   }
 
   .about__where {
-    font-size: 0.86rem;
+    font-size: 1.02rem;
+    letter-spacing: 0;
     color: var(--ink-3);
   }
 
   .about__past {
-    font-size: 0.82rem;
-    line-height: 1.5;
-    color: var(--ink-3);
+    font-size: 1.06rem;
+    line-height: 1.55;
+    color: var(--ink-2);
     text-wrap: pretty;
   }
 
@@ -287,6 +282,30 @@ const [lead, ...body] = profile.aboutLead;
     line-height: 1.66;
     color: var(--ink-2);
     text-wrap: pretty;
+  }
+
+  .about__title {
+    display: none;
+    margin: 0 0 clamp(0.5rem, 2vh, 1.5rem);
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 2.9vw, 2.9rem);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+  }
+
+  .is-live .about__title {
+    display: block;
+  }
+
+  .about:has(.about__pin.is-live) .about__head {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   /* ---------- flowing layout (small screens, reduced motion) ---------- */
@@ -370,6 +389,10 @@ const [lead, ...body] = profile.aboutLead;
     transform: translateX(calc(var(--gap) * 14vw));
   }
 
+  .is-live .about__records--r {
+    padding-top: clamp(3.2rem, 6vh, 4.6rem);
+  }
+
   .is-live .about__slot {
     min-height: 0;
     opacity: calc(1 - var(--fade) * 0.72);
@@ -395,10 +418,9 @@ const [lead, ...body] = profile.aboutLead;
     opacity: var(--fade);
   }
 
-  .is-live .about__w {
-    opacity: 0;
-    display: inline-block;
-    transform: translateY(0.35em);
+  /* The mission arrives whole as the pages part. */
+  .is-live .about__mission p {
+    opacity: var(--fade);
   }
 
   @media (max-width: 760px) {
