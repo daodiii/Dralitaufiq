@@ -25,7 +25,7 @@ interface Props {
 const author = {
   en: 'Ali Mohamed Salah',
   so: profile.nameSomali.replace(/^Dr\.\s*/, ''),
-  ar: profile.nameArabic.replace(/^الدكتور\s*/, ''),
+  ar: profile.nameArabic.replace(/^(الأستاذ\s*)?الدكتور\s*/, ''),
 };
 
 const books = await Promise.all(

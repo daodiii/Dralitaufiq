@@ -19,9 +19,9 @@ const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
     <a
       class="nav__brand"
       href={home ? '#top' : '/'}
-      aria-label={home ? 'Ali Mohamed Salah, back to top' : 'Ali Mohamed Salah, home'}
+      aria-label={home ? 'Prof. Dr. Ali Mohamed Salah, back to top' : 'Prof. Dr. Ali Mohamed Salah, home'}
     >
-      <span class="nav__en">Ali Mohamed Salah</span>
+      <span class="nav__en">Prof. Dr. Ali Mohamed Salah</span>
       <span class="nav__ar" lang="ar">{profile.nameArabic}</span>
     </a>
     <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="site-menu">
