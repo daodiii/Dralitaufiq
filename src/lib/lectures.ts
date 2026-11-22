@@ -49,26 +49,6 @@ export const TABLE = ['sira', 'brief', 'riyad', 'quran', 'companions', 'bulugh']
 /* The series on the lectures page, in the order it lists them; the talks follow. */
 export const ROOM = ['quran', 'brief', 'riyad', 'companions', 'sira', 'bulugh', 'hisn'] as const;
 
-/* Single talks on other channels: conferences, and his talks in English. `f` as for a lesson. */
-export interface Talk {
-  id: string;
-  title: string;
-  where: string;
-  lang: string;
-  f?: number;
-}
-
-export const TALKS: Talk[] = [
-  { id: 'yf-7UXuWCy8', title: 'How Muslims Can Become Happy', where: 'Peace Conference Scandinavia, Oslo', lang: 'English' },
-  { id: 'lmJSQv9SmdM', title: 'Jesus Christ: A Messenger of Allah?', where: 'Islam Net, Oslo', lang: 'English' },
-  { id: '7ukpP2IafAI', title: 'The Global Ummah', where: 'Helsinki Islamic Center, 2025', lang: '', f: 3 },
-  { id: '-yzDhHv1unQ', title: 'Women and the rights the faith gave them', where: 'Kampala conference, 2019', lang: 'Somali', f: 3 },
-  { id: 'HgsF6dof7uk', title: 'The Second Islamic Conference', where: 'ILM TV, Kenya, 2019', lang: 'English', f: 3 },
-];
-
-/** The line under a talk: where it was given, and its language. */
-export const talkMeta = (t: Talk) => [t.where, t.lang && `In ${t.lang}`].filter(Boolean).join(' · ');
-
 export const playlist = (pl: string) => `https://www.youtube.com/playlist?list=${pl}`;
 export const video = (id: string) => `https://www.youtube.com/watch?v=${id}`;
 /* A lesson opened inside its series, so the next one follows. */
