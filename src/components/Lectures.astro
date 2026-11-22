@@ -2,17 +2,18 @@
 /**
  * The lectures on the home page: one whole screen, a single line of words at the top and under it
  * the six series he teaches on YouTube, one picture each, three by two. Each is a link to its
- * playlist. The pictures are the colour frames the phone's screen uses, chosen so he looks normal.
+ * playlist. The pictures (assets/lectures/home) were picked by eye from every frame of each series
+ * for a good angle, eyes on the camera, then upscaled with Upscayl and sharpened in PhotoCraft.
  * Phones get "the screen" instead (LecturesScreen); without the script they keep the six.
  */
 import { Image } from 'astro:assets';
 import { SERIES, playlist, seriesMeta } from '../lib/lectures';
-import quran from '../assets/lectures/screen/quran.jpg';
-import sira from '../assets/lectures/screen/sira.jpg';
-import brief from '../assets/lectures/screen/brief.jpg';
-import riyad from '../assets/lectures/screen/riyad.jpg';
-import companions from '../assets/lectures/screen/companions.jpg';
-import bulugh from '../assets/lectures/screen/bulugh.jpg';
+import quran from '../assets/lectures/home/quran.jpg';
+import sira from '../assets/lectures/home/sira.jpg';
+import brief from '../assets/lectures/home/brief.jpg';
+import riyad from '../assets/lectures/home/riyad.jpg';
+import companions from '../assets/lectures/home/companions.jpg';
+import bulugh from '../assets/lectures/home/bulugh.jpg';
 import LecturesScreen from './LecturesScreen.astro';
 
 /* The whole Qur'an first, then the rest. */
