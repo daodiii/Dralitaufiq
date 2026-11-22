@@ -81,9 +81,9 @@ function about() {
 /* Beats: the choreographed parts and their resting places              */
 /* ------------------------------------------------------------------ */
 
-/* Read live, so they follow resizes and refreshes. Two zones the page scrolls through
-   automatically: the pull-back (banner at rest, banner pulled back) and the parting (pages
-   meeting, mission written). Between them the scroll is free; the marks are where the keys rest
+/* Read live, so they follow resizes and refreshes. One zone the page scrolls through
+   automatically: the pull-back (banner at rest, banner pulled back). After it the scroll is
+   free; the marks are where the keys rest
    on the way: the works headline, the lectures headline (set so the "all works" link still shows
    above it), the table of lectures down to its button, and the About headline (the "all
    lectures" link above it). */
@@ -102,13 +102,13 @@ function beats(): Beats {
   const bottom = (sel: string) => top(sel) + ($$(sel).find((e) => e.offsetParent !== null)?.offsetHeight ?? NaN);
   const navH = $('.nav')?.getBoundingClientRect().height ?? 0;
   const hero = pin('.hero');
-  const parting = pin('.about__pin');
+  /* The hero's pin runs on past the handover while Books comes up over it; only the handover is
+     carried, so the zone ends where the name lands (data-land, the fraction of the pin). */
+  const land = Number((hero?.trigger as HTMLElement | undefined)?.dataset.land ?? 1);
   const lectures = Math.min(top('#lectures'), top('.works__all') - navH - 24);
   return {
-    zones: [
-      hero ? [0, hero.end] : [],
-      parting ? [parting.start, parting.end] : [],
-    ],
+    /* After the hero the page scrolls free: the parting plays under the scroll, uncarried. */
+    zones: [hero ? [0, hero.start + (hero.end - hero.start) * land] : []],
     marks: [
       top('#books'),
       lectures,

@@ -21,17 +21,14 @@ const href = (id: string) => `/books?book=${id}`;
 ---
 
 <section class="works" id="books" aria-labelledby="works-title">
+  <div class="container works__head" data-reveal>
+    <h2 class="display works__h" id="works-title">{all.length} books by Dr. Ali</h2>
+    <p class="works__lede">In English, Arabic and Somali, on faith, the family and Islamic law in the West.</p>
+  </div>
+
   <div class="container works__grid">
     <div class="works__left">
-      <h2 class="display works__h" id="works-title" data-split>
-        Several works. <i>Three languages.</i>
-      </h2>
-      <p class="works__lede" data-reveal data-delay="0.15">
-        Jurisprudence for Muslims in the West, dialogue between the Abrahamic faiths, the family and the unseen, in
-        Arabic, English and Somali.
-      </p>
-
-      <div class="works__shelf" data-reveal data-delay="0.2">
+      <div class="works__shelf" data-reveal data-delay="0.1">
         <div class="works__books">
           {
             groups.map((g) => (
@@ -116,30 +113,57 @@ const href = (id: string) => `/books?book=${id}`;
 </section>
 
 <style>
+  /* One whole screen: a single small line of words at the top, the books in the rest. */
   .works {
     position: relative;
-    padding-block: clamp(6rem, 11vw, 10rem) clamp(4rem, 8vw, 7rem);
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+    padding-block: calc(var(--nav-h) + clamp(0.75rem, 2.5vh, 2rem)) clamp(1.5rem, 4.5vh, 3.5rem);
     background: var(--paper);
+    /* Rounded at the top while it comes up over the hero, square once it covers it (--lift, Hero.astro). */
+    border-radius: calc(var(--lift, 0) * 28px) calc(var(--lift, 0) * 28px) 0 0;
   }
 
-  .works__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: clamp(2rem, 4vw, 4.5rem);
-    align-items: end;
+  /* The next page laid over the hero: pulled up one screen into the hero's hold (Hero.astro sets
+     the class and the length only while the cover runs, so without it the page is in plain flow). */
+  :global(html.hero-cover) .works {
+    z-index: 2;
+    margin-top: calc(-1 * var(--cover-pull, 100svh));
+  }
+
+  .works__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem 2.5rem;
   }
 
   .works__h {
-    font-size: clamp(2.4rem, 4.4vw, 4.4rem);
+    font-size: clamp(1.45rem, 2.1vw, 2.1rem);
+    line-height: 1.1;
+    white-space: nowrap;
   }
 
   .works__lede {
-    margin-top: 1.6rem;
-    max-width: 26rem;
-    font-size: 1rem;
-    line-height: 1.55;
-    color: var(--ink-3);
+    max-width: 34rem;
+    font-size: clamp(0.98rem, 1.1vw, 1.1rem);
+    line-height: 1.5;
+    color: var(--ink-2);
     text-wrap: pretty;
+  }
+
+  /* The spines keep their true thickness, so the shelf's width decides its size: it gets the
+     larger share, and the two sit in the middle of the room under the line of words. */
+  .works__grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: clamp(2rem, 3.5vw, 4rem);
+    align-items: end;
+    align-content: center;
+    padding-top: clamp(1.5rem, 4vh, 3rem);
   }
 
   /* ---------- the small shelf ---------- */
@@ -148,7 +172,7 @@ const href = (id: string) => `/books?book=${id}`;
     --s: 12.4;
     position: relative;
     width: max-content;
-    margin-top: 4.5rem;
+    margin-top: 2.4rem;
   }
 
   .works__books {
@@ -223,7 +247,7 @@ const href = (id: string) => `/books?book=${id}`;
   }
 
   .works__all--shelf {
-    margin-top: 4.75rem;
+    margin-top: 3.4rem;
   }
 
   /* ---------- the book beside it ---------- */
@@ -253,7 +277,7 @@ const href = (id: string) => `/books?book=${id}`;
 
   .works__text {
     grid-area: text;
-    max-width: 19rem;
+    max-width: 16rem;
     padding-bottom: 4.4rem;
   }
 
@@ -273,7 +297,7 @@ const href = (id: string) => `/books?book=${id}`;
 
   .works__title {
     margin: 1rem 0 0.9rem;
-    font-size: clamp(1.8rem, 2.6vw, 2.5rem);
+    font-size: clamp(1.6rem, 2.1vw, 2.2rem);
     font-weight: 500;
     line-height: 1.05;
     letter-spacing: -0.035em;
@@ -381,10 +405,23 @@ const href = (id: string) => `/books?book=${id}`;
   const stage = document.querySelector<HTMLElement>('.works__stage');
   const spines = Array.from(document.querySelectorAll<HTMLAnchorElement>('.works__shelf .spine'));
 
-  /* The shelf fills its half: px per cm at most 22 and no taller than 45% of the screen (so the
-     heading, the shelf and the title line under it are on screen together), the titles in one
-     size, each spine as thick as its title needs (spine-fit.ts); the cover as tall as the shelf. */
+  /* The shelf fills its half: px per cm at most 22 and as tall as the screen leaves it (so the
+     line of words, the shelf and the title line under it are on screen together), the titles in
+     one size, each spine as thick as its title needs (spine-fit.ts); the cover as tall as the shelf. */
   const TALLEST = Math.max(...spines.map((s) => parseFloat(s.style.getPropertyValue('--h'))));
+  const section = document.querySelector<HTMLElement>('.works');
+  const head = document.querySelector<HTMLElement>('.works__head');
+  /* Side by side, the shelf takes the screen's height under the line of words, less its label
+     above, the board and the title line and the link under it; stacked (under 1100px) it keeps
+     to 45% of the screen so the book under it is not far away. */
+  function tallest() {
+    const side = window.matchMedia('(min-width: 1101px)').matches;
+    if (!side || !section || !head) return window.innerHeight * 0.45;
+    const pad = parseFloat(getComputedStyle(section).paddingBottom) || 0;
+    const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const used = head.offsetTop + head.offsetHeight + rem * (2.4 + 3 + 3.4 + 1.6) + 12 + pad;
+    return Math.max(window.innerHeight * 0.3, window.innerHeight - used);
+  }
   function fit() {
     const half = shelf?.parentElement;
     if (!shelf || !half || !half.clientWidth) return;
@@ -394,7 +431,7 @@ const href = (id: string) => `/books?book=${id}`;
       holder: shelf,
       spines,
       width: half.clientWidth - gaps - 16,
-      maxS: Math.min(22, (window.innerHeight * 0.45) / TALLEST),
+      maxS: Math.min(22, tallest() / TALLEST),
       font: (s) => Math.min(14, Math.max(10, s * 0.62)),
       fill: false,
     });
