@@ -23,38 +23,29 @@ const $$ = <T extends HTMLElement = HTMLElement>(sel: string, root: ParentNode =
 function about() {
   const pin = $('.about__pin');
   if (!pin) return;
-  const words = $$('.about__w', pin);
-  const n = words.length;
 
   const mm = gsap.matchMedia();
 
   mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
     pin.classList.add('is-live');
-    const state = { gap: 0, fade: 0, mission: 0 };
+    const state = { gap: 0, fade: 0 };
 
-    /* The pages part and fade by custom properties; the mission writes itself word by word. */
+    /* The pages part and fade, and the mission arrives whole, by custom properties. */
     const render = () => {
       pin.style.setProperty('--gap', state.gap.toFixed(4));
       pin.style.setProperty('--fade', state.fade.toFixed(4));
-      const head = state.mission * (n + 5);
-      words.forEach((w, i) => {
-        const k = Math.max(0, Math.min(1, (head - i) / 5));
-        w.style.opacity = k.toFixed(3);
-        w.style.transform = `translateY(${(0.35 * (1 - k)).toFixed(3)}em)`;
-      });
     };
 
     const tl = gsap.timeline({ paused: true, onUpdate: render });
     tl.to({}, { duration: 0.4 });
     tl.to(state, { gap: 1, duration: 1.1, ease: 'power2.inOut' });
     tl.to(state, { fade: 1, duration: 0.9, ease: 'power2.inOut' }, '<0.25');
-    tl.to(state, { mission: 1, duration: 0.9, ease: 'none' }, '-=0.35');
-    tl.to({}, { duration: 0.55 });
+    tl.to({}, { duration: 0.5 });
 
     const st = ScrollTrigger.create({
       trigger: pin,
       start: 'top top',
-      end: () => `+=${Math.round(window.innerHeight * 2.4)}`,
+      end: () => `+=${Math.round(window.innerHeight * 1.9)}`,
       pin: true,
       scrub: true,
       animation: tl,
@@ -68,10 +59,6 @@ function about() {
       tl.kill();
       pin.style.removeProperty('--gap');
       pin.style.removeProperty('--fade');
-      words.forEach((w) => {
-        w.style.removeProperty('opacity');
-        w.style.removeProperty('transform');
-      });
       pin.classList.remove('is-live');
     };
   });
