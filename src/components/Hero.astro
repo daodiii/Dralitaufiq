@@ -3,11 +3,11 @@
  * The hero is the banner, rebuilt for the web: his portrait on black, full-bleed;
  * the official-page line, his name in gilded calligraphy, the Latin name and the
  * handle, all live layers over the photograph (made by tools/hero-portrait).
- * Scrolling turns the banner into the page's first screen, still on black and still
- * filling it: on wide screens his portrait eases right and the left side, where the
- * banner's title stood, brings in his name and titles; on phones and upright tablets
- * the portrait settles at the top with the name below it. The gold flies from the
- * banner's title to its place above the name.
+ * The first screen is the page that banner turns into, on black and filling it: on wide screens
+ * his portrait right and, on the left, the gold calligraphy, his name, his titles and two buttons
+ * (the books, the lectures); on phones and upright tablets the portrait at the top with the name
+ * below it. The banner itself is only used to place the portrait (its layout and face position).
+ * The page holds for one screen while Books comes up over it.
  */
 import { getImage } from 'astro:assets';
 import banner from '../assets/hero/portrait-editorial-open.jpg';
@@ -69,12 +69,20 @@ const facebook = profile.social[0];
       {profile.heroTitles.map((t) => <li>{t}</li>)}
     </ul>
     <p class="hero__lede" data-hero="lede">{profile.heroLede}</p>
-    <a class="hero__go" href="#books" data-hero="cta">
-      Explore the books
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-        <path d="M2 8h11M9 4l4 4-4 4" />
-      </svg>
-    </a>
+    <div class="hero__btns" data-hero="cta">
+      <a class="hero__btn hero__btn--solid" href="#books">
+        <span class="hero__btn-long">Explore the books</span><span class="hero__btn-short">Books</span>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M2 8h11M9 4l4 4-4 4" />
+        </svg>
+      </a>
+      <a class="hero__btn" href="#lectures">
+        <span class="hero__btn-long">Explore the lectures</span><span class="hero__btn-short">Lectures</span>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M2 8h11M9 4l4 4-4 4" />
+        </svg>
+      </a>
+    </div>
   </div>
   <div class="hero__dusk" data-hero-dusk aria-hidden="true"></div>
 </section>
@@ -366,24 +374,106 @@ const facebook = profile.social[0];
     text-wrap: pretty;
   }
 
-  .hero__go {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-top: 0.5rem;
-    font-size: 1.05rem;
-    font-weight: 500;
-    color: var(--gold-2);
+  /* Two ways on: the books, solid ivory; the lectures, an ivory outline. */
+  .hero__btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.6rem;
   }
 
-  .hero__go svg {
+  .hero__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    height: 3.1rem;
+    padding: 0 1.5rem;
+    border: 1px solid oklch(96% 0.006 80 / 0.55);
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--ivory);
+    text-decoration: none;
+    transition:
+      background-color 0.3s var(--ease-out),
+      border-color 0.3s var(--ease-out),
+      color 0.3s var(--ease-out);
+  }
+
+  .hero__btn:hover {
+    border-color: var(--ivory);
+    background: oklch(96% 0.006 80 / 0.08);
+  }
+
+  .hero__btn--solid {
+    border-color: var(--ivory);
+    background: var(--ivory);
+    color: #0b0b0b;
+  }
+
+  .hero__btn--solid:hover {
+    background: var(--gold-2);
+    border-color: var(--gold-2);
+    color: #0b0b0b;
+  }
+
+  .hero__btn:focus-visible {
+    outline: 2px solid var(--gold-2);
+    outline-offset: 3px;
+  }
+
+  .hero__btn svg {
     width: 1rem;
     height: 1rem;
     transition: transform 0.5s var(--ease-out);
   }
 
-  .hero__go:hover svg {
+  .hero__btn:hover svg {
     transform: translateX(4px);
+  }
+
+  .hero__btn-short {
+    display: none;
+  }
+
+  /* Phones: the two side by side, named short, so the portrait keeps its room. */
+  @media (max-width: 760px) {
+    .hero__btns {
+      align-self: stretch;
+      flex-wrap: nowrap;
+      gap: 0.6rem;
+      margin-top: 0.3rem;
+    }
+
+    .hero__btn {
+      flex: 1;
+      justify-content: center;
+      height: 2.9rem;
+      padding: 0 1rem;
+    }
+
+    .hero__btn-long {
+      display: none;
+    }
+
+    .hero__btn-short {
+      display: inline;
+    }
+
+    .hero__lede {
+      font-size: 0.95rem;
+    }
+  }
+
+  /* The portrait and the page wait for the script to place them, then come in together: the
+     banner they were once turned from is never shown. */
+  html.js .hero__open-media,
+  html.js .hero__page {
+    opacity: 0;
+  }
+
+  html.js .hero__title {
+    visibility: hidden;
   }
 
   /* Short laptop screens: a little less air. */
@@ -484,7 +574,6 @@ const facebook = profile.social[0];
   const sub = q('[data-open-sub]');
   const latin = q('[data-open-latin]');
   const handle = q('[data-open-handle]');
-  const inner = root ? Array.from(root.querySelectorAll<HTMLElement>('.hero__title .in')) : [];
   const page = q('[data-hero-page]');
   const dusk = q('[data-hero-dusk]');
   const calli = q('[data-hero="calli"]');
@@ -494,9 +583,8 @@ const facebook = profile.social[0];
   const cta = q('[data-hero="cta"]');
   const bar = document.querySelector<HTMLElement>('.nav');
 
-  /* How much scrolling the handover takes, in viewport heights; then the black holds for one
-     more screen while Books comes up over it, like the next page laid on top. */
-  const PIN = 1.3;
+  /* The first screen is the page itself (his portrait right, his name and titles left); it holds
+     for one screen while Books comes up over it, like the next page laid on top. */
   const HOLD = 1;
   const books = document.querySelector<HTMLElement>('#books');
 
@@ -579,50 +667,42 @@ const facebook = profile.social[0];
     return tl;
   }
 
-  /* The cover: the same timeline runs on for HOLD screens, the black page sinking back a little
-     as Books rises over it and its rounded top edge squares off. Padded by the handover's own
-     rate, so the name still lands where it did. */
-  function cover(tl: gsap.core.Timeline) {
-    const d = tl.duration();
-    const hold = (d * HOLD) / PIN;
+  /* The page as it stands: the turn from the banner, run to its end once (it places the
+     portrait and the gold for this width). */
+  let pose: gsap.core.Timeline | null = null;
+  function still() {
+    pose?.kill();
+    pose = timeline();
+    pose?.progress(1);
+    return !!pose;
+  }
+
+  /* The cover: for HOLD screens the black page sinks back a little as Books rises over it and
+     its rounded top edge squares off. */
+  function cover() {
+    const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
     const back = [open, page].filter(Boolean) as HTMLElement[];
-    tl.to(back, { scale: 0.94, yPercent: -3, transformOrigin: '50% 100%', duration: hold, ease: 'power1.in' }, d);
-    if (dusk) tl.fromTo(dusk, { autoAlpha: 0 }, { autoAlpha: 0.55, duration: hold, ease: 'power1.in' }, d);
-    if (books) tl.fromTo(books, { '--lift': 1 }, { '--lift': 0, duration: hold, ease: 'power2.in' }, d);
+    tl.to(back, { scale: 0.94, yPercent: -3, transformOrigin: '50% 100%', duration: 1, ease: 'power1.in' }, 0);
+    if (dusk) tl.fromTo(dusk, { autoAlpha: 0 }, { autoAlpha: 0.55, duration: 1, ease: 'power1.in' }, 0);
+    if (books) tl.fromTo(books, { '--lift': 1 }, { '--lift': 0, duration: 1, ease: 'power2.in' }, 0);
+    return tl;
   }
 
   function build() {
-    if (!root) return;
-    scrub = timeline();
-    if (!scrub) return;
-    cover(scrub);
+    if (!root || !still()) return;
+    scrub = cover();
     document.documentElement.classList.add('hero-cover');
-    root.dataset.land = String(PIN / (PIN + HOLD));
+    /* Nothing is carried: the whole pin is the cover, which scrolls free (motion.ts). */
+    root.dataset.land = '0';
     lift();
 
-    /* Phones get no stepping (steps.ts starts at 760px), so a swipe that stops inside the
-       handover glides on the way it was going: one swipe brings the page in, or the banner
-       back. There the photo trails the finger a little; on wider screens the carry already
-       eases every move, so the handover follows the scroll exactly. */
     const phone = !window.matchMedia('(min-width: 760px)').matches;
-    /* Snap only inside the handover: past the landed name the page scrolls free. */
-    const land = PIN / (PIN + HOLD);
-
     st = ScrollTrigger.create({
       trigger: root,
       start: 'top top',
-      end: () => `+=${Math.round(window.innerHeight * (PIN + HOLD))}`,
+      end: () => `+=${Math.round(window.innerHeight * HOLD)}`,
       pin: true,
       scrub: phone ? 0.3 : true,
-      snap: phone
-        ? {
-            snapTo: (v: number, self?: ScrollTrigger) => (v >= land - 0.002 ? v : (self?.direction ?? 1) > 0 ? land : 0),
-            inertia: false,
-            delay: 0.08,
-            duration: { min: 0.3, max: 0.8 },
-            ease: 'power2.inOut',
-          }
-        : undefined,
       animation: scrub,
       refreshPriority: 1,
     });
@@ -655,9 +735,11 @@ const facebook = profile.social[0];
     st?.kill();
     light?.kill();
     scrub?.kill();
+    pose?.kill();
     st = null;
     light = null;
     scrub = null;
+    pose = null;
     document.documentElement.classList.remove('hero-cover');
     books?.style.removeProperty('--cover-pull');
     books?.style.removeProperty('--lift');
@@ -665,53 +747,42 @@ const facebook = profile.social[0];
     gsap.set(targets, { clearProps: 'all' });
   }
 
-  /* The banner's own entrance: the room breathes, the lines arrive one by one. */
+  const shown = () => [openMedia, page].filter(Boolean) as HTMLElement[];
+
+  /* The entrance: the portrait comes up out of the black and settles, then the gold, the name,
+     the titles and the buttons arrive one after another. */
   function intro() {
-    if (!openCalli) return;
+    const words = [calli, name, stacked.matches ? lede : titles, cta].filter(Boolean) as HTMLElement[];
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' }, delay: 0.1 });
-    if (openZoom) tl.fromTo(openZoom, { scale: 1.06 }, { scale: 1, duration: 3.4, ease: 'power2.out' }, 0);
-    const subIn = sub?.querySelector<HTMLElement>('.in');
-    const latinIn = latin?.querySelector<HTMLElement>('.in');
-    const handleIn = handle?.querySelector<HTMLElement>('.in');
-    if (subIn) tl.fromTo(subIn, { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: 1 }, 0.5);
-    tl.fromTo(
-      openCalli,
-      { autoAlpha: 1, clipPath: 'inset(0 0 0 100%)' },
-      { clipPath: 'inset(0 0 0 0%)', duration: 1.4, ease: 'power3.inOut', clearProps: 'clipPath' },
-      0.6
-    );
-    if (latinIn) tl.fromTo(latinIn, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 1 }, 1.4);
-    if (handleIn) tl.fromTo(handleIn, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.9 }, 1.7);
-    if (bar) tl.fromTo(bar, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1 }, 0.8);
+    if (openMedia) tl.to(openMedia, { opacity: 1, duration: 1.6, ease: 'power2.out' }, 0);
+    if (openZoom) tl.fromTo(openZoom, { scale: 1.05 }, { scale: 1, duration: 3, ease: 'power2.out' }, 0);
+    if (page) tl.set(page, { opacity: 1 }, 0.35);
+    tl.fromTo(words, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 1, stagger: 0.12 }, 0.35);
+    if (bar) tl.fromTo(bar, { autoAlpha: 0 }, { autoAlpha: 1, duration: 1 }, 0.6);
   }
 
   function start() {
     if (!root) return;
     if (reduceMotion) {
-      /* No handover: the first screen is the page itself, the portrait already in place. */
-      inner.forEach((el) => gsap.set(el, { autoAlpha: 1 }));
-      const still = timeline();
-      still?.progress(1);
-      gsap.set([calli, name, titles, lede, cta, bar].filter(Boolean) as HTMLElement[], { autoAlpha: 1, y: 0 });
+      /* No entrance and no cover: the page as it stands, in plain flow. */
+      still();
+      gsap.set(shown(), { opacity: 1 });
       nightBar();
       return;
     }
-    inner.forEach((el) => gsap.set(el, { autoAlpha: 0 }));
     build();
     intro();
     ScrollTrigger.refresh();
 
-    /* A new width moves the face and the calligraphy's flight, so the handover is rebuilt,
-       inside ScrollTrigger's own resize refresh, once it has noted the scroll position. Taking
-       the pin out shortens the page above the reader by the whole handover, and the browser
-       scrolls up to match; a refresh begun after that would keep the reader there. */
+    /* A new width moves the portrait, so the page is set again inside ScrollTrigger's own resize
+       refresh, once it has noted the scroll position. */
     let width = window.innerWidth;
     ScrollTrigger.addEventListener('refreshInit', () => {
       if (window.innerWidth === width) return;
       width = window.innerWidth;
       teardown();
-      inner.forEach((el) => gsap.set(el, { autoAlpha: 1 }));
       build();
+      gsap.set(shown(), { opacity: 1 });
     });
   }
 
