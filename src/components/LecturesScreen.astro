@@ -13,12 +13,12 @@ import { getImage } from 'astro:assets';
 import LESSONS from '../data/lessons.json';
 import { SERIES, playlist, seriesMeta, describe, type Lesson, type Lessons } from '../lib/lectures';
 import { still, pictureOf } from '../lib/stills';
-import quran from '../assets/lectures/screen/quran.jpg';
-import riyad from '../assets/lectures/screen/riyad.jpg';
-import brief from '../assets/lectures/screen/brief.jpg';
-import companions from '../assets/lectures/screen/companions.jpg';
-import sira from '../assets/lectures/screen/sira.jpg';
-import bulugh from '../assets/lectures/screen/bulugh.jpg';
+import quran from '../assets/lectures/edited/quran.jpg';
+import riyad from '../assets/lectures/edited/riyad.jpg';
+import brief from '../assets/lectures/edited/brief.jpg';
+import companions from '../assets/lectures/edited/companions.jpg';
+import sira from '../assets/lectures/edited/sira.jpg';
+import bulugh from '../assets/lectures/edited/bulugh.jpg';
 
 /* A picture of him from each series, chosen by eye (tools/lecture-pictures). */
 const PICS = { quran, riyad, brief, companions, sira, bulugh };
@@ -34,7 +34,7 @@ const all = await Promise.all(
       const p = pictureOf(l);
       return { ...describe(key, l, pl), pic: still(p.id, p.f, 'mq') };
     };
-    const img = await getImage({ src: PICS[key], widths: [480, 720, 960, 1280] });
+    const img = await getImage({ src: PICS[key], widths: [480, 720, 960, 1280, 1600], format: 'webp', quality: 85 });
     return {
       key,
       title: s.title,
