@@ -13,12 +13,12 @@
 import { Image } from 'astro:assets';
 import LESSONS from '../data/lessons.json';
 import { SERIES, TABLE, playlist, seriesMeta, rowAt, stackHeight, type Lessons } from '../lib/lectures';
-import sira from '../assets/lectures/sira.jpg';
-import brief from '../assets/lectures/brief.jpg';
-import riyad from '../assets/lectures/riyad.jpg';
-import quran from '../assets/lectures/quran.jpg';
-import companions from '../assets/lectures/companions.jpg';
-import bulugh from '../assets/lectures/bulugh.jpg';
+import sira from '../assets/lectures/edited/sira.jpg';
+import brief from '../assets/lectures/edited/brief.jpg';
+import riyad from '../assets/lectures/edited/riyad.jpg';
+import quran from '../assets/lectures/edited/quran.jpg';
+import companions from '../assets/lectures/edited/companions.jpg';
+import bulugh from '../assets/lectures/edited/bulugh.jpg';
 import LecturesScreen from './LecturesScreen.astro';
 
 /* A frame of each series for the top of its stack. */
@@ -241,7 +241,7 @@ const client = stacks.map(({ key, s, n, h, meta, href }) => ({ key, title: s.tit
     box-shadow: inset 0 0 0 1px oklch(0% 0 0 / 0.08);
   }
 
-  /* The frames are grey in the files: a CSS filter would be a render pass per stack per frame. */
+  /* The same retouched portraits on desktop and mobile, with their natural colour intact. */
   .lectures__top :global(img) {
     display: block;
     width: 100%;
@@ -254,7 +254,7 @@ const client = stacks.map(({ key, s, n, h, meta, href }) => ({ key, title: s.tit
     position: absolute;
     inset: 0;
     background: var(--paper);
-    opacity: 0.38;
+    opacity: 0.08;
   }
 
   /* The edges of many lesson cards, stacked: the script paints each sheet on a canvas, and

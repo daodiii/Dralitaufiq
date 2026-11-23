@@ -141,7 +141,7 @@ const deepCss =
     <div class="room__open" id="room-open">
       <div class="room__sticky">
         <a class="room__frame" href={first.href} target="_blank" rel="noopener" tabindex="-1" aria-hidden="true">
-          <img class="room__lo" src={still(firstPic.id, firstPic.f, 'mq')} alt="" decoding="async" />
+          <img class="room__lo" src={still(firstPic.id, firstPic.f, 'maxres')} width="1600" height="900" alt="" fetchpriority="high" decoding="async" />
           <img class="room__hi" alt="" decoding="async" />
         </a>
         <p class="room__ar" lang="ar">{first.ar}</p>
@@ -260,7 +260,7 @@ const deepCss =
     gap: 0.6rem;
     align-items: baseline;
     padding: 0.45rem 0.65rem;
-    border-radius: 3px;
+    border-radius: 0;
     font-size: 0.88rem;
     color: var(--ink-2);
     transition: background-color 0.25s;
@@ -323,7 +323,6 @@ const deepCss =
     overflow: hidden;
     border-radius: 3px;
     background: var(--paper-3);
-    box-shadow: 0 50px 80px -44px oklch(19% 0.012 60 / 0.6);
   }
 
   .room__frame img {
@@ -507,7 +506,6 @@ const deepCss =
 
     .room__open .room__frame {
       margin-top: 0.15rem;
-      box-shadow: 0 30px 50px -34px oklch(19% 0.012 60 / 0.6);
     }
 
     .room__open .room__ar {

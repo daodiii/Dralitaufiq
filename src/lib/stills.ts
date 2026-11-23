@@ -11,8 +11,26 @@
    1280 wide, hq and sd 4:3 with the picture between black bars. */
 export type StillSize = '' | 'mq' | 'hq' | 'sd' | 'maxres';
 
-export const still = (id: string, f: number | undefined, size: StillSize) =>
-  `https://i.ytimg.com/vi/${id}/${size}${f === 0 ? 'default' : (f ?? 2)}.jpg`;
+/* Retouched versions of these exact video frames. Other lessons keep their own pictures.
+   Frame identity matters: a different frame from the same video must not borrow the portrait. */
+const EDITED: Record<string, string> = {
+  '2BvSE_jiq9s:3': 'opening',
+  'g52cuiHSq38:1': 'quran',
+  'KcAzkOnBti4:2': 'brief',
+  'eE8yC43Z160:2': 'riyad',
+  'vS-8Djv1CTU:1': 'companions',
+  'A4h5rqVyH4I:3': 'sira',
+  'Ni5qVkEbga8:2': 'bulugh',
+};
+
+export const still = (id: string, f: number | undefined, size: StillSize) => {
+  const edited = EDITED[`${id}:${f ?? 2}`];
+  if (edited) {
+    const width = size === 'maxres' ? 1600 : size === 'sd' || size === 'hq' ? 960 : 480;
+    return `/lecture-portraits/${edited}-${width}.webp`;
+  }
+  return `https://i.ytimg.com/vi/${id}/${size}${f === 0 ? 'default' : (f ?? 2)}.jpg`;
+};
 
 /** Which video's picture a lesson shows, which of its pictures, and its largest size (`x`). */
 export const pictureOf = (l: { id: string; f?: number; fv?: string; x?: 'sd' | 'hq' }) => ({ id: l.fv ?? l.id, f: l.f, x: l.x });
