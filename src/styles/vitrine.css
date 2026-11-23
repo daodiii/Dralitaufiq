@@ -102,6 +102,38 @@ html.vt-wait .vt { visibility: hidden; }
   .vt__bk::before { display: none; }
 }
 
+/* ---------- the arc of covers (BooksVitrine.astro, scripts/books/vitrine.ts) ----------
+   Wide screens only: the books move right to give it a column of its own. Each cover is placed by a
+   transform when the book in view changes; nothing is written while the page scrolls. */
+.vt__arc { display: none; }
+@media (min-width: 1100px) {
+  html:not(.books-pile) .vt { --arc-w: 150px; }
+  html:not(.books-pile) .vt__bk { padding-left: calc(max(var(--gutter), calc((100vw - 1320px) / 2)) + var(--arc-w)); }
+  html:not(.books-pile) .vt__arc {
+    display: block; position: fixed; inset: 0 auto 0 0; z-index: 20; width: calc(var(--arc-w) + 60px); pointer-events: none;
+    opacity: 0; visibility: hidden; transition: opacity 0.5s var(--ease-out), visibility 0s 0.5s;
+  }
+  html:not(.books-pile) .vt__arc.is-on { opacity: 1; visibility: visible; transition: opacity 0.5s var(--ease-out); }
+}
+.vt__ac {
+  position: absolute; left: 0; top: 0; width: 72px; pointer-events: auto; transform-origin: 0 0;
+  transition: transform 0.6s var(--ease-out), opacity 0.6s var(--ease-out), visibility 0s;
+}
+.vt__ac img { display: block; width: 72px; height: auto; border-radius: 1px 3px 3px 1px; box-shadow: 0 8px 18px -8px rgb(0 0 0 / 0.9); }
+.vt__ac.is-now img { outline: 1.5px solid var(--gold-hi); outline-offset: 3px; box-shadow: 0 0 30px -4px rgb(247 224 140 / 0.35), 0 14px 26px -10px rgb(0 0 0 / 0.9); }
+.vt__ac:focus-visible { outline: none; }
+.vt__ac:focus-visible img { outline: 2px solid var(--gold-line); outline-offset: 4px; }
+.vt__ac.is-off { opacity: 0; visibility: hidden; transition: transform 0.6s var(--ease-out), opacity 0.6s var(--ease-out), visibility 0s 0.6s; }
+.vt__al, .vt__an { position: absolute; left: 0; top: 0; white-space: nowrap; transition: transform 0.6s var(--ease-out), opacity 0.4s var(--ease-out); }
+.vt__al { font-size: 11px; color: var(--night-ink-3); }
+.vt__al[lang='ar'] { font-size: 13.5px; }
+.vt__an { width: 132px; white-space: normal; text-align: left; font-size: 12.5px; line-height: 1.3; color: var(--gold-hi); text-wrap: balance; }
+.vt__an:lang(ar), .vt__an[lang='ar'] { font-family: var(--font-arabic); font-size: 14px; line-height: 1.45; }
+.vt__al.is-off, .vt__an.is-off { opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .vt__ac, .vt__al, .vt__an, .vt__arc { transition: none !important; }
+}
+
 /* ---------- a book's own page (pages/books/[id].astro) ---------- */
 .vt--page { display: block; }
 .vt--page .vt__bk { padding-top: calc(var(--nav-h) + 3rem); min-height: 100svh; align-items: start; }

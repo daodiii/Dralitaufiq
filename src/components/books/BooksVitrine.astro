@@ -11,6 +11,7 @@ import '../../styles/vitrine.css';
 import type { Book } from '../../lib/books';
 import { vitrine } from '../../lib/vitrine';
 import BookStand from './BookStand.astro';
+import { Image } from 'astro:assets';
 
 interface Props {
   books: Book[];
@@ -47,5 +48,21 @@ const prophet = (s: string) => s.split('ﷺ');
   </div>
 
   {view.map((x) => <BookStand x={x} />)}
+
+  <!-- The arc of covers (2026-11-23, picked from six): once the reader is past the shelf, every
+       book's cover stands in a curve at the left edge, the book in view nearest the edge with its
+       name under it, the others curving out and fading; a cover leads down to its book. Placed by
+       scripts/books/vitrine.ts only when the book in view changes (a CSS transition moves them). -->
+  <nav class="vt__arc" aria-label="All the books" data-arc>
+    {
+      view.map((x) => (
+        <a class="vt__ac" href={`#bk-${x.b.id}`} data-id={x.b.id} data-g={x.b.data.language} aria-label={x.b.data.title}>
+          <Image src={x.b.data.cover} alt="" widths={[96, 160]} sizes="72px" loading="lazy" decoding="async" />
+        </a>
+      ))
+    }
+    {groups.map((g) => <span class="vt__al" data-g={g.k} lang={g.k} aria-hidden="true">{g.name}</span>)}
+    <span class="vt__an" aria-hidden="true"></span>
+  </nav>
 </section>
 
