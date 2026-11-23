@@ -22,6 +22,7 @@ const href = (id: string) => `/books/${id}`;
 ---
 
 <section class="works" id="books" aria-labelledby="works-title">
+  <div class="works__paper" aria-hidden="true"></div>
   <div class="container works__head" data-reveal>
     <h2 class="display works__h" id="works-title">A lifetime of knowledge</h2>
     <p class="works__lede">Written into twenty books in English, Arabic and Somali, on faith, the family and Islamic law in the West.</p>
@@ -121,9 +122,19 @@ const href = (id: string) => `/books/${id}`;
     flex-direction: column;
     min-height: 100svh;
     padding-block: calc(var(--nav-h) + clamp(0.75rem, 2.5vh, 2rem)) clamp(1.5rem, 4.5vh, 3.5rem);
+    isolation: isolate;
+  }
+
+  /* The paper, on a layer of its own with nothing in it: rounded at the top while the page comes
+     up over the hero, square once it covers it (the cover in Hero.astro sets its radius). Rounding
+     the section itself, through an inherited --lift, restyled every book and repainted the whole
+     section on each frame of the cover: 409 ms of style recalc in one swipe, frames of 22-59 ms. */
+  .works__paper {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
     background: var(--paper);
-    /* Rounded at the top while it comes up over the hero, square once it covers it (--lift, Hero.astro). */
-    border-radius: calc(var(--lift, 0) * 28px) calc(var(--lift, 0) * 28px) 0 0;
+    pointer-events: none;
   }
 
   /* The next page laid over the hero: pulled up one screen into the hero's hold (Hero.astro sets

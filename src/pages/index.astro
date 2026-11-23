@@ -6,12 +6,20 @@ import Works from '../components/Works.astro';
 import Lectures from '../components/Lectures.astro';
 import About from '../components/About.astro';
 import Footer from '../components/Footer.astro';
+import { getImage } from 'astro:assets';
+import portrait from '../assets/hero/portrait-editorial-open.jpg';
+import { person, website } from '../lib/schema';
+
+/* Who the site is about, for search engines: the Person (with a portrait) and the WebSite. */
+const face = await getImage({ src: portrait, width: 800, format: 'jpg', quality: 82 });
+const ld = [person(Astro.site, new URL(face.src, Astro.site).href), website(Astro.site)];
 ---
 
 <Base theme="#0c0b09"
   title="Prof. Dr. Ali Mohamed Salah · Scholar, Author, Translator"
   description="Official site of Prof. Dr. Ali Mohamed Salah: professor of comparative religion, imam in Oslo, and author of several works in Arabic, English and Somali."
 >
+  {ld.map((x) => <script type="application/ld+json" slot="head" set:html={JSON.stringify(x)} />)}
   <Nav />
   <main>
     <Hero />

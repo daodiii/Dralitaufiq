@@ -18,6 +18,7 @@ import { allBooks, type Book } from '../../lib/books';
 import { blurb } from '../../lib/library';
 import { vitrine, bookHref } from '../../lib/vitrine';
 import profile from '../../data/profile.json';
+import { personRef } from '../../lib/schema';
 
 export async function getStaticPaths() {
   const books = await allBooks();
@@ -33,7 +34,12 @@ const d = x.b.data;
 /* What search shows: the title (with its English or Latin name for an Arabic book) and the
    opening of the description, cut at a sentence. */
 const other = d.language === 'ar' ? d.titleEn || d.titleLatin : null;
-const title = `${d.title}${other ? ` (${other})` : ''} · ${profile.name}`;
+const named = `${d.title}${other ? ` (${other})` : ''}`;
+/* Search shows about 60 characters of a title: the longest of these that fits in 70, so a long
+   Arabic title drops its English name (still in the description and the data) before his name. */
+const title =
+  [`${named} · ${profile.name}`, `${named} · Ali Mohamed Salah`, `${d.title} · ${profile.name}`, `${d.title} · Ali Mohamed Salah`, named].find((t) => t.length <= 70) ??
+  d.title;
 /* The opening of the description in the book's own language, carried on through its next
    paragraphs (and its English title) until it says enough, cut at a word near 155 characters. */
 const b = blurb(x.b, 30);
@@ -47,7 +53,7 @@ const url = new URL(bookHref(id), Astro.site).href;
 const site = new URL('/', Astro.site).href;
 
 /* How he stands to the book: author, translator or editor. */
-const person = { '@type': 'Person', name: 'Ali Mohamed Salah', alternateName: profile.name, url: site, sameAs: profile.social.map((s) => s.url) };
+const person = personRef(Astro.site);
 const role = d.role.startsWith('Translated') ? 'translator' : d.role.startsWith('Critical') ? 'editor' : 'author';
 const book = {
   '@context': 'https://schema.org',
