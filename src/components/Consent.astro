@@ -9,8 +9,8 @@
     sites. <a href="/privacy">Privacy Policy</a>
   </p>
   <div class="consent__btns">
-    <button type="button" data-consent="no">Decline</button>
-    <button type="button" data-consent="yes" class="is-primary">Accept</button>
+    <button type="button" data-consent="no" class="btn btn--ghost btn--sm">Decline</button>
+    <button type="button" data-consent="yes" class="btn btn--sm">Accept</button>
   </div>
 </div>
 
@@ -90,21 +90,6 @@
   .consent__btns {
     display: flex;
     gap: 0.5rem;
-  }
-  .consent button {
-    font: inherit;
-    font-weight: 500;
-    padding: 0.55rem 1rem;
-    color: var(--ink);
-    background: transparent;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    cursor: pointer;
-  }
-  .consent button.is-primary {
-    color: var(--paper);
-    background: var(--ink);
-    border-color: var(--ink);
   }
   .consent button:focus-visible,
   .consent a:focus-visible {

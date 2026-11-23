@@ -41,6 +41,12 @@ if (target) {
   addEventListener('load', align);
 }
 
+/* A spine glides down to its book (smooth.ts); the address names the book, so it can be shared. */
+document.addEventListener('click', (e) => {
+  const sp = (e.target as HTMLElement).closest<HTMLAnchorElement>('a.vt__sp');
+  if (sp) history.replaceState(history.state, '', `?book=${sp.hash.slice(4)}`);
+});
+
 document.addEventListener('click', (e) => {
   const b = (e.target as HTMLElement).closest<HTMLElement>('.vt__whole[data-open]');
   if (b) openSheet(b.dataset.open!, b);

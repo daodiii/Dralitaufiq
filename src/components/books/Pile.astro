@@ -1,6 +1,6 @@
 ---
 /**
- * The books on a phone: every book lying in one pile on white, spines to the reader, each as long
+ * The books on a phone: every book lying in one pile on black (the books page is at night), spines to the reader, each as long
  * as the book is tall and as thick as its pages make it, so every title can be read at once;
  * English on top, then Arabic, then Somali. The pile builds itself book by book as the page opens.
  * A tap (or a pull sideways) draws a book out: the books above drop into its place and it comes
@@ -176,12 +176,28 @@ const books = await Promise.all(
     display: block;
   }
 
+  /* At night, as the books page is on every screen: light words on black, the pile in a low warm
+     light, gold for the accent. The drawn-out book's veil goes dark with it. */
+  .pile,
+  .pview {
+    --ink: var(--night-ink);
+    --ink-2: var(--night-ink-2);
+    --ink-3: var(--night-ink-3);
+    --paper: var(--night);
+    --accent: var(--gold-line);
+    --line: rgb(246 239 226 / 0.12);
+    --line-strong: rgb(246 239 226 / 0.28);
+    --btn-ghost: var(--night-ink-2);
+    --link-ink: var(--night-ink-2);
+  }
+
   .pile {
     /* A centimetre of book: the longest spine (24.41 cm, the Arabic books) fills the width. */
     --cm: min(13.8px, (100vw - 3.4rem) / 24.41);
     padding: calc(var(--nav-h) + 0.6rem) 0 5rem;
+    color: var(--ink);
     background:
-      radial-gradient(80% 50% at 50% 70%, oklch(99.5% 0.003 85), transparent 80%),
+      radial-gradient(80% 50% at 50% 70%, rgb(255 226 170 / 0.12), transparent 80%),
       var(--paper);
   }
 
@@ -192,8 +208,12 @@ const books = await Promise.all(
     gap: 0.9rem;
   }
 
+  /* The heading line's size, as on /lectures and the home page. */
   .pile__h {
-    font-size: clamp(2.6rem, 12vw, 4rem);
+    font-size: clamp(1.6rem, 7vw, 2.3rem);
+    line-height: 1.1;
+    letter-spacing: -0.035em;
+    color: var(--ink);
   }
 
   .pile__langs {
@@ -256,7 +276,7 @@ const books = await Promise.all(
     width: min(92vw, 25rem);
     height: 1.6rem;
     transform: translateX(-50%);
-    background: radial-gradient(50% 50% at 50% 30%, oklch(19% 0.012 60 / 0.28), transparent 72%);
+    background: radial-gradient(50% 50% at 50% 30%, rgb(0 0 0 / 0.6), transparent 72%);
     pointer-events: none;
   }
 

@@ -17,7 +17,7 @@ export type Look = {
   dark: boolean; /* the cover as a whole is dark: a blurred copy of it would only grey the room */
 };
 
-const INK_DARK = 'oklch(22% 0.012 60)';
+const INK_DARK = 'oklch(14% 0.01 60)';
 const INK_LIGHT = 'oklch(96% 0.006 85)';
 
 const coverFile = (id: string) => {
@@ -94,7 +94,9 @@ export async function look(b: Book): Promise<Look> {
   const { channels } = await sharp(file).resize(64, 96).stats();
   const value: Look = {
     ground: rgb(edge),
-    ink: light ? INK_DARK : INK_LIGHT,
+    /* Whichever ink reads better on the spine: dark ink wins above relative luminance 0.188, where
+       the two contrasts cross (the inks are about 0.011 and 0.885). */
+    ink: luminance(edge) > 0.188 ? INK_DARK : INK_LIGHT,
     accent: rgb(await accentOf(file)),
     light,
     dark: luminance(channels.slice(0, 3).map((c) => c.mean)) < 0.1,

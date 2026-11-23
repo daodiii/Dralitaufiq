@@ -70,15 +70,15 @@ const facebook = profile.social[0];
     </ul>
     <p class="hero__lede" data-hero="lede">{profile.heroLede}</p>
     <div class="hero__btns" data-hero="cta">
-      <a class="hero__btn hero__btn--solid" href="#books">
+      <a class="btn hero__btn" href="#books">
         <span class="hero__btn-long">Explore the books</span><span class="hero__btn-short">Books</span>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
           <path d="M2 8h11M9 4l4 4-4 4" />
         </svg>
       </a>
-      <a class="hero__btn" href="#lectures">
+      <a class="btn btn--ghost hero__btn" href="#lectures">
         <span class="hero__btn-long">Explore the lectures</span><span class="hero__btn-short">Lectures</span>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
           <path d="M2 8h11M9 4l4 4-4 4" />
         </svg>
       </a>
@@ -374,62 +374,13 @@ const facebook = profile.social[0];
     text-wrap: pretty;
   }
 
-  /* Two ways on: the books, solid ivory; the lectures, an ivory outline. */
+  /* Two ways on: the books in gold, the lectures as an ivory outline (the site's buttons, global.css). */
   .hero__btns {
+    --btn-ghost: var(--ivory);
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-top: 0.6rem;
-  }
-
-  .hero__btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.65rem;
-    height: 3.1rem;
-    padding: 0 1.5rem;
-    border: 1px solid oklch(96% 0.006 80 / 0.55);
-    border-radius: 999px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--ivory);
-    text-decoration: none;
-    transition:
-      background-color 0.3s var(--ease-out),
-      border-color 0.3s var(--ease-out),
-      color 0.3s var(--ease-out);
-  }
-
-  .hero__btn:hover {
-    border-color: var(--ivory);
-    background: oklch(96% 0.006 80 / 0.08);
-  }
-
-  .hero__btn--solid {
-    border-color: var(--ivory);
-    background: var(--ivory);
-    color: #0b0b0b;
-  }
-
-  .hero__btn--solid:hover {
-    background: var(--gold-2);
-    border-color: var(--gold-2);
-    color: #0b0b0b;
-  }
-
-  .hero__btn:focus-visible {
-    outline: 2px solid var(--gold-2);
-    outline-offset: 3px;
-  }
-
-  .hero__btn svg {
-    width: 1rem;
-    height: 1rem;
-    transition: transform 0.5s var(--ease-out);
-  }
-
-  .hero__btn:hover svg {
-    transform: translateX(4px);
   }
 
   .hero__btn-short {
@@ -447,7 +398,6 @@ const facebook = profile.social[0];
 
     .hero__btn {
       flex: 1;
-      justify-content: center;
       height: 2.9rem;
       padding: 0 1rem;
     }

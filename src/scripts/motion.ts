@@ -146,6 +146,8 @@ function landAt(where: (() => number) | null) {
 function land() {
   const id = location.hash.slice(1);
   const target = id ? document.getElementById(id) : null;
+  /* An old link with a #part still lands there; the address then loses it. */
+  if (id) history.replaceState(history.state, '', location.pathname + location.search);
   landAt(left.where ?? (target ? () => target.getBoundingClientRect().top + window.scrollY - 24 : null));
 }
 

@@ -34,8 +34,8 @@ const youtube = profile.social[1];
           English, Somali or Norwegian.
         </p>
         <nav class="follow in" aria-label="Follow" style="--i:3">
-          <a href={facebook.url} target="_blank" rel="noopener">{facebook.label} <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
-          <a href={youtube.url} target="_blank" rel="noopener">{youtube.label} <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
+          <a class="btn btn--ghost" href={facebook.url} target="_blank" rel="noopener">{facebook.label} <svg class="btn__arrow btn__arrow--out" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
+          <a class="btn btn--ghost" href={youtube.url} target="_blank" rel="noopener">{youtube.label} <svg class="btn__arrow btn__arrow--out" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
         </nav>
       </section>
 
@@ -142,7 +142,7 @@ const youtube = profile.social[1];
           </svg>
           <p class="done__h">Sent, thank you.</p>
           <p class="done__p">Your message is on its way. Any reply comes to the email you gave.</p>
-          <button class="done__again" type="button">Send another</button>
+          <button class="link done__again" type="button">Send another</button>
         </div>
       </section>
     </article>
@@ -380,7 +380,7 @@ const youtube = profile.social[1];
     display: grid;
     place-items: center;
     padding: calc(var(--nav-h) + 0.25rem) var(--gutter) clamp(1.25rem, 4vh, 3rem);
-    background: var(--paper-2);
+    background: var(--paper);
   }
 
   .folio {
@@ -392,7 +392,8 @@ const youtube = profile.social[1];
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     gap: clamp(2.5rem, 5vw, 6rem);
     padding: clamp(2rem, 6vh, 4.5rem) clamp(2rem, 5vw, 5.5rem);
-    background: var(--paper);
+    /* White inside its gold frame (white, black and gold). */
+    background: #fff;
     box-shadow: var(--shadow-plate);
   }
 
@@ -484,35 +485,6 @@ const youtube = profile.social[1];
     gap: 0.75rem;
   }
 
-  .follow a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    height: 3rem;
-    padding: 0 1.35rem;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    font-size: 1rem;
-    color: var(--ink);
-    transition: border-color 0.3s var(--ease-out), background-color 0.3s var(--ease-out);
-  }
-
-  .follow a:hover,
-  .follow a:focus-visible {
-    border-color: var(--ink);
-    background: color-mix(in oklab, var(--gold-2) 18%, transparent);
-  }
-
-  .follow svg {
-    width: 0.9rem;
-    height: 0.9rem;
-    transition: transform 0.5s var(--ease-out);
-  }
-
-  .follow a:hover svg {
-    transform: translate(3px, -3px);
-  }
-
   /* ---------- the form ---------- */
 
   .write {
@@ -545,7 +517,7 @@ const youtube = profile.social[1];
     padding: 4px;
     border: 0;
     border-radius: 999px;
-    background: var(--paper-3);
+    background: color-mix(in oklab, var(--ink) 6%, #fff);
   }
 
   .seg__pill {
@@ -656,16 +628,16 @@ const youtube = profile.social[1];
 
   .field.bad input,
   .field.bad textarea {
-    border-color: var(--accent);
+    border-color: var(--danger);
   }
 
   .field.bad label {
-    color: var(--accent);
+    color: var(--danger);
   }
 
   .field__err {
     font-size: 0.76rem;
-    color: var(--accent);
+    color: var(--danger);
   }
 
   .field__err:empty {
@@ -713,18 +685,11 @@ const youtube = profile.social[1];
 
   .form__fail {
     font-size: 0.86rem;
-    color: var(--accent);
+    color: var(--danger);
   }
 
-  .btn {
+  .form__foot .btn {
     flex: none;
-    height: 3.5rem;
-    padding: 0 1.9rem;
-    border: 0;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 1rem;
-    white-space: nowrap;
   }
 
   .btn:disabled {
@@ -763,7 +728,7 @@ const youtube = profile.social[1];
   }
 
   .done__seal {
-    fill: var(--accent);
+    fill: var(--danger);
     transform-box: fill-box;
     transform-origin: center;
     transform: scale(0.6);
@@ -783,13 +748,6 @@ const youtube = profile.social[1];
 
   .done__again {
     margin-top: 0.4rem;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    font: inherit;
-    font-size: 0.86rem;
-    color: var(--ink);
-    box-shadow: 0 1px 0 currentColor;
   }
 
   /* Posting: the form gives way to the letter it wrote (choreographed in the script). */
@@ -1074,7 +1032,7 @@ const youtube = profile.social[1];
     border-radius: 48% 52% 50% 50% / 52% 47% 53% 48%;
     background:
       radial-gradient(circle at 50% 50%, transparent 54%, oklch(33% 0.12 28 / 0.55) 56%, transparent 62%),
-      radial-gradient(circle at 34% 28%, oklch(60% 0.17 30), var(--accent) 55%, oklch(34% 0.12 26));
+      radial-gradient(circle at 34% 28%, oklch(60% 0.17 30), var(--danger) 55%, oklch(34% 0.12 26));
     box-shadow:
       0 1px 1px oklch(25% 0.1 28 / 0.5),
       0 4px 10px -2px oklch(25% 0.1 28 / 0.45),
@@ -1327,7 +1285,7 @@ const youtube = profile.social[1];
       flex-direction: column;
       align-items: stretch;
     }
-    .btn {
+    .form__foot .btn {
       justify-content: center;
     }
   }

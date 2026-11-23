@@ -239,8 +239,9 @@ const [lead, ...body] = profile.aboutLead;
     margin-inline: auto;
     padding: clamp(2.5rem, 5vw, 4.5rem) clamp(1.5rem, 5vw, 5rem);
     text-align: center;
-    background: var(--paper-2);
-    border: 1px solid var(--line);
+    /* White with a fine gold edge (white, black and gold). */
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--gold-line) 55%, transparent);
     border-radius: 22px;
     box-shadow:
       0 1px 2px oklch(19% 0.012 60 / 0.04),
