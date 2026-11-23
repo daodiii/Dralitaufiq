@@ -30,7 +30,8 @@ const CROP = new Set(['sira', 'companions']);
 const pic = (l: Lesson, big: boolean) => {
   const p = pictureOf(l);
   const size: StillSize = big ? sharpSizes(p.x)[0] : 'mq';
-  return { src: still(p.id, p.f, size), bars: size === 'sd' || size === 'hq' };
+  const src = still(p.id, p.f, size);
+  return { src, bars: !src.startsWith('/lecture-portraits/') && (size === 'sd' || size === 'hq') };
 };
 
 const LINES: Record<string, string> = {
@@ -43,7 +44,15 @@ const LINES: Record<string, string> = {
   hisn: '4 lessons',
 };
 
-const series = ROOM.map((key) => ({ key, s: SERIES[key], line: LINES[key], lead: pic(byN(key, LEAD[key]), true), small: pic(byN(key, LEAD[key]), false) }));
+/* Series artwork is shared with the homepage. Individual lesson tiles keep their own frames. */
+const series = ROOM.map((key) => {
+  const edited = key !== 'hisn';
+  return {
+    key, s: SERIES[key], line: LINES[key], edited,
+    lead: edited ? { src: `/lecture-portraits/${key}-1600.webp`, bars: false } : pic(byN(key, LEAD[key]), true),
+    small: edited ? { src: `/lecture-portraits/${key}-480.webp`, bars: false } : pic(byN(key, LEAD[key]), false),
+  };
+});
 const Q = series[0];
 const firstQ = data.quran.lessons[0];
 
@@ -106,7 +115,7 @@ const prophet = (s: string) => s.split('ﷺ');
       {
         series.map((x, i) => (
           <a class:list={['lr-prog__row', i === 0 && 'is-on']} href={`#s-${x.key}`}>
-            <span class:list={['lr-fr', CROP.has(x.key) && 'crop']}>
+            <span class:list={['lr-fr', !x.edited && CROP.has(x.key) && 'crop']}>
               <img src={x.small.src} alt="" width="320" height="180" loading="lazy" />
             </span>
             <span class="lr-prog__txt">
@@ -164,7 +173,7 @@ const prophet = (s: string) => s.split('ﷺ');
   <section class="lr-comp" id="s-companions" aria-label={SERIES.companions.title}>
     <div>
       {(() => { const x = series.find((s) => s.key === 'companions')!; return (
-        <span class="lr-fr crop" class:list={[x.lead.bars && 'bars']}><img src={x.lead.src} alt="" width="640" height="360" loading="lazy" /></span>
+        <span class="lr-fr" class:list={[!x.edited && 'crop', x.lead.bars && 'bars']}><img src={x.lead.src} alt="" width="640" height="360" loading="lazy" /></span>
       ); })()}
       <h3 class="lr-h3">{SERIES.companions.title}<span lang="ar" dir="rtl">{SERIES.companions.ar}</span></h3>
       <p class="lr-meta">{LINES.companions}</p>
@@ -179,7 +188,7 @@ const prophet = (s: string) => s.split('ﷺ');
     {
       others.map((x) => (
         <div class="lr-ser" id={`s-${x.key}`}>
-          <span class:list={['lr-fr', CROP.has(x.key) && 'crop', x.lead.bars && 'bars']}>
+          <span class:list={['lr-fr', !x.edited && CROP.has(x.key) && 'crop', x.lead.bars && 'bars']}>
             <img src={x.lead.src} alt="" width="640" height="360" loading="lazy" />
           </span>
           <h3 class="lr-h3">{x.s.title}<span lang="ar" dir="rtl">{x.s.ar}</span></h3>
@@ -275,7 +284,7 @@ const prophet = (s: string) => s.split('ﷺ');
   .lr-fr img { width: 100%; height: 100%; object-fit: cover; }
   .lr-fr.crop img { position: absolute; width: 132%; max-width: none; height: auto; left: -16%; top: 0; object-fit: fill; }
   .lr-fr.crop.bars img { top: -22%; }
-  .lr-fr--lit { box-shadow: 0 0 0 1px oklch(61% 0.125 82 / 0.5), 0 0 120px 10px rgb(255 214 140 / 0.35), 0 30px 50px -22px rgb(60 35 10 / 0.5); }
+  .lr-fr--lit { box-shadow: none; }
 
   .lr-screen__t { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-top: 1.25rem; font-size: 1.625rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
   .lr-screen__t span { font-family: var(--font-arabic); font-size: 1.5rem; font-weight: 400; color: var(--gold-3); }

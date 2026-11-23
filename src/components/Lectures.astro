@@ -2,18 +2,18 @@
 /**
  * The lectures on the home page: one whole screen, a single line of words at the top and under it
  * the six series he teaches on YouTube, one picture each, three by two. Each is a link to its
- * playlist. The pictures (assets/lectures/home) were picked by eye from every frame of each series
- * for a good angle, eyes on the camera, then upscaled with Upscayl (Remacri) and graded and sharpened in PhotoCraft.
+ * playlist. The retouched series photographs (assets/lectures/edited) are shared with the
+ * mobile screen and lectures page; the original video stills remain in the assets directory.
  * Phones get "the screen" instead (LecturesScreen); without the script they keep the six.
  */
 import { Image } from 'astro:assets';
 import { SERIES, playlist, seriesMeta } from '../lib/lectures';
-import quran from '../assets/lectures/home/quran.jpg';
-import sira from '../assets/lectures/home/sira.jpg';
-import brief from '../assets/lectures/home/brief.jpg';
-import riyad from '../assets/lectures/home/riyad.jpg';
-import companions from '../assets/lectures/home/companions.jpg';
-import bulugh from '../assets/lectures/home/bulugh.jpg';
+import quran from '../assets/lectures/edited/quran.jpg';
+import sira from '../assets/lectures/edited/sira.jpg';
+import brief from '../assets/lectures/edited/brief.jpg';
+import riyad from '../assets/lectures/edited/riyad.jpg';
+import companions from '../assets/lectures/edited/companions.jpg';
+import bulugh from '../assets/lectures/edited/bulugh.jpg';
 import LecturesScreen from './LecturesScreen.astro';
 
 /* The whole Qur'an first, then the rest. */
@@ -50,7 +50,7 @@ const six = SIX.map(({ key, pic }) => {
               <Image
                 src={x.pic}
                 alt=""
-                widths={[480, 800, 1280].filter((w) => w <= x.pic.width)}
+                widths={[480, 800, 1280, 1600].filter((w) => w <= x.pic.width)}
                 sizes="(max-width: 1100px) 46vw, 30vw"
                 loading="lazy"
                 decoding="async"
