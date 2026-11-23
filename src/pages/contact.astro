@@ -28,10 +28,9 @@ const youtube = profile.social[1];
 
       <section class="who">
         <div class="calli in" role="img" aria-label={profile.nameArabic} style="--i:0"></div>
-        <h1 class="who__title in" style="--i:1">Lectures, books, <i>or a question.</i></h1>
+        <h1 class="who__title in" style="--i:1">Contact the Shaykh</h1>
         <p class="who__lede in" style="--i:2">
-          Invite him to speak, ask about his books and translations, or write with a question. Write in Arabic,
-          English, Somali or Norwegian.
+          Invite him to speak, ask about his books and translations, or write to him with a question.
         </p>
         <nav class="follow in" aria-label="Follow" style="--i:3">
           <a class="btn btn--ghost" href={facebook.url} target="_blank" rel="noopener">{facebook.label} <svg class="btn__arrow btn__arrow--out" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
@@ -464,17 +463,11 @@ const youtube = profile.social[1];
     text-wrap: balance;
   }
 
-  .who__title i {
-    font-style: normal;
-    font-weight: 300;
-    color: var(--ink-3);
-  }
-
   .who__lede {
     max-width: 34rem;
     font-size: clamp(1.05rem, 1.3vw, 1.3rem);
     line-height: 1.5;
-    color: var(--ink-2);
+    color: var(--ink);
     text-wrap: pretty;
   }
 

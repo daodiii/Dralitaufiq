@@ -299,6 +299,10 @@ const prophet = (s: string) => s.split('ﷺ');
   .lr-paper { padding-top: 3rem; }
   .lr-hd { font-size: 0.97rem; color: var(--ink-2); margin-bottom: 1.125rem; list-style: none; }
   .lr-hd b { color: var(--ink); font-weight: 600; }
+  /* A series linked from the first screen (or by its address) lands just below the scrolled bar
+     instead of behind it (smooth.ts reads this as the landing offset). */
+  [id^='s-'] { scroll-margin-top: calc(var(--nav-h) - 0.75rem + 1.25rem); }
+
   .lr-open { display: grid; grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); gap: 2.5rem; }
   .lr-g4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.5rem 1.25rem; }
   .lr-les { display: block; color: var(--ink); }
