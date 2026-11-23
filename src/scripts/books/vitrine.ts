@@ -1,8 +1,8 @@
 /**
  * The books page's vitrine (components/books/BooksVitrine.astro). A book still below the reader
- * stands turned away; as it comes up it turns to face them, once (.is-in, a CSS transition). The
- * whole description opens in the side sheet. ?book=<id> was already brought into view before the
- * first paint (books.astro); the books above it are shown as turned.
+ * stands turned away; as it comes up it turns to face them, once (.is-low removed, a CSS
+ * transition). The whole description opens in the side sheet. ?book=<id> was already brought into
+ * view before the first paint (books.astro).
  */
 import { nav, showNav } from '../nav';
 import { reveals } from '../reveals';
@@ -13,25 +13,18 @@ nav();
 showNav();
 reveals();
 
-const books = Array.from(document.querySelectorAll<HTMLElement>('.vt__bk'));
-
-/* Everything already in view or passed shows at rest without turning. */
-const settle = () => {
-  for (const b of books) if (b.getBoundingClientRect().top < innerHeight * 0.85) b.classList.add('is-in');
-};
-settle();
-
+/* The books below the reader (.is-low, set before the first paint) turn to face them as they come up. */
 const io = new IntersectionObserver(
   (entries) => {
     for (const e of entries) {
       if (!e.isIntersecting) continue;
-      e.target.classList.add('is-in');
+      e.target.classList.remove('is-low');
       io.unobserve(e.target);
     }
   },
   { rootMargin: '0px 0px -15% 0px' }
 );
-books.filter((b) => !b.classList.contains('is-in')).forEach((b) => io.observe(b));
+document.querySelectorAll('.vt__bk.is-low').forEach((b) => io.observe(b));
 
 /* Fonts and pictures arriving can grow the text above it a little; until the reader moves, the
    linked book stays at the top. */
