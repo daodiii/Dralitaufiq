@@ -44,7 +44,6 @@ const facebook = profile.social[0];
       </div>
     </div>
     <span class="hero__veil" aria-hidden="true"></span>
-    <span class="hero__grain" aria-hidden="true"></span>
 
     <div class="hero__title" data-open-title>
       <div class="hero__sub" data-open-sub><i class="in"></i></div>
@@ -174,34 +173,6 @@ const facebook = profile.social[0];
     display: none;
   }
 
-  .hero__grain {
-    position: absolute;
-    inset: -60%;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 240px 240px;
-    opacity: 0.14;
-    mix-blend-mode: soft-light;
-    animation: grain 0.8s steps(6) infinite;
-    pointer-events: none;
-  }
-
-  @keyframes grain {
-    0% {
-      transform: translate(0, 0);
-    }
-    25% {
-      transform: translate(-3%, 2%);
-    }
-    50% {
-      transform: translate(2%, -4%);
-    }
-    75% {
-      transform: translate(-4%, -1%);
-    }
-    100% {
-      transform: translate(3%, 3%);
-    }
-  }
 
   /* The title block sits where it sits on the banner: on the wall, left of the curtain. */
   .hero__title {
@@ -314,7 +285,7 @@ const facebook = profile.social[0];
   }
 
   /* While Books comes up over the hero these two are scaled: as layers of their own they keep
-     their raster, where otherwise the portrait, the grain and the words were re-rastered at each
+     their raster, where otherwise the portrait and the words were re-rastered at each
      new scale (raster flush 1,370 -> 360 ms in a two-swipe trace at 1536x960 @1.25). */
   :global(html.hero-cover) .hero__open,
   :global(html.hero-cover) .hero__page {
