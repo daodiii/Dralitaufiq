@@ -111,20 +111,30 @@ const year = new Date().getFullYear();
     width: min(100%, 15rem);
     aspect-ratio: 885 / 310;
     margin-top: 1.1rem;
-    background-image: linear-gradient(112deg, oklch(70% 0.13 80) 0%, oklch(95% 0.1 95) 42%, oklch(78% 0.14 84) 58%, oklch(97% 0.08 97) 78%, oklch(68% 0.13 78) 100%);
-    background-size: 220% 100%;
+    position: relative;
+    overflow: hidden;
     -webkit-mask: var(--calli) left center / contain no-repeat;
     mask: var(--calli) left center / contain no-repeat;
+  }
+
+  /* The glint slides by a transform, as in the hero (no repaint per frame). */
+  .footer__calli::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 220%;
+    background-image: linear-gradient(112deg, oklch(70% 0.13 80) 0%, oklch(95% 0.1 95) 42%, oklch(78% 0.14 84) 58%, oklch(97% 0.08 97) 78%, oklch(68% 0.13 78) 100%);
     animation: footer-glint 7s ease-in-out infinite alternate;
+    will-change: transform;
   }
 
   @keyframes footer-glint {
-    from { background-position: 0% 50%; }
-    to { background-position: 100% 50%; }
+    from { transform: translateX(0); }
+    to { transform: translateX(-54.5455%); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .footer__calli { animation: none; }
+    .footer__calli::before { animation: none; }
   }
 
   .footer__h {

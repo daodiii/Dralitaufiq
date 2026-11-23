@@ -275,8 +275,22 @@ const facebook = profile.social[0];
 
   /* ---------- gilded calligraphy ---------- */
 
+  /* The gold is a gradient 2.2 times as wide, slid across under the mask by a transform: moving
+     the background itself (background-position) repainted the calligraphy on every frame, at rest
+     too, and with it about half the GPU's raster work while the hero is on screen. */
   .hero__calli {
+    position: relative;
+    overflow: hidden;
     aspect-ratio: 885 / 310;
+    -webkit-mask: var(--calli) center / contain no-repeat;
+    mask: var(--calli) center / contain no-repeat;
+  }
+
+  .hero__calli::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 220%;
     background-image: linear-gradient(
       112deg,
       oklch(70% 0.13 80) 0%,
@@ -285,19 +299,26 @@ const facebook = profile.social[0];
       oklch(97% 0.08 97) 78%,
       oklch(68% 0.13 78) 100%
     );
-    background-size: 220% 100%;
-    -webkit-mask: var(--calli) center / contain no-repeat;
-    mask: var(--calli) center / contain no-repeat;
     animation: glint 7s ease-in-out infinite alternate;
+    will-change: transform;
   }
 
+  /* background-position 0% to 100% of a 220% image: a slide of 1.2 widths, 120/220 of its own. */
   @keyframes glint {
     from {
-      background-position: 0% 50%;
+      transform: translateX(0);
     }
     to {
-      background-position: 100% 50%;
+      transform: translateX(-54.5455%);
     }
+  }
+
+  /* While Books comes up over the hero these two are scaled: as layers of their own they keep
+     their raster, where otherwise the portrait, the grain and the words were re-rastered at each
+     new scale (raster flush 1,370 -> 360 ms in a two-swipe trace at 1536x960 @1.25). */
+  :global(html.hero-cover) .hero__open,
+  :global(html.hero-cover) .hero__page {
+    will-change: transform;
   }
 
   /* Placed over the slot by script, then flown to the page. */
@@ -538,6 +559,7 @@ const facebook = profile.social[0];
      for one screen while Books comes up over it, like the next page laid on top. */
   const HOLD = 1;
   const books = document.querySelector<HTMLElement>('#books');
+  const paper = books?.querySelector<HTMLElement>('.works__paper') ?? null;
 
   /* Where his face sits in the banner photograph (source pixels). */
   const SHOT = { w: 2400, h: 2400, fx: 1178, fy: 792 };
@@ -635,7 +657,7 @@ const facebook = profile.social[0];
     const back = [open, page].filter(Boolean) as HTMLElement[];
     tl.to(back, { scale: 0.94, yPercent: -3, transformOrigin: '50% 100%', duration: 1, ease: 'power1.in' }, 0);
     if (dusk) tl.fromTo(dusk, { autoAlpha: 0 }, { autoAlpha: 0.55, duration: 1, ease: 'power1.in' }, 0);
-    if (books) tl.fromTo(books, { '--lift': 1 }, { '--lift': 0, duration: 1, ease: 'power2.in' }, 0);
+    if (paper) tl.fromTo(paper, { borderTopLeftRadius: 28, borderTopRightRadius: 28 }, { borderTopLeftRadius: 0, borderTopRightRadius: 0, duration: 1, ease: 'power2.in' }, 0);
     return tl;
   }
 
@@ -693,7 +715,8 @@ const facebook = profile.social[0];
     pose = null;
     document.documentElement.classList.remove('hero-cover');
     books?.style.removeProperty('--cover-pull');
-    books?.style.removeProperty('--lift');
+    paper?.style.removeProperty('border-top-left-radius');
+    paper?.style.removeProperty('border-top-right-radius');
     const targets = [open, page, dusk, openMedia, openCalli, sub, latin, handle, calli, name, titles, lede, cta].filter(Boolean) as HTMLElement[];
     gsap.set(targets, { clearProps: 'all' });
   }
