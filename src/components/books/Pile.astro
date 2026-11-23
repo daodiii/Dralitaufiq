@@ -151,7 +151,7 @@ const books = await Promise.all(
   /* A link to one book opens on it from the first paint, before the pile's script arrives. */
   (function () {
     var id = document.documentElement.dataset.book;
-    /* Only where the page chose the pile; the reading room opens its own book (BooksRoom.astro). */
+    /* Only where the page chose the pile; the vitrine is brought to its own book (books.astro). */
     if (!id || !document.documentElement.classList.contains('books-pile')) return;
     var book = Array.prototype.find.call(document.querySelectorAll('.pview__book'), function (a) {
       return a.dataset.id === id;

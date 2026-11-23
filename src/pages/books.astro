@@ -1,13 +1,13 @@
 ---
-/* The books: the reading room (BooksRoom.astro, scripts/books/room.ts), and on a phone the pile
-   (scripts/books/pile.ts).
+/* The books: the vitrine at night (BooksVitrine.astro, scripts/books/vitrine.ts), and on a phone the
+   pile (scripts/books/pile.ts).
    The home page's shelf and fan link here, to one book with ?book=<id>. A phone gets the pile
    however it is held (html.phone, Base.astro), and so does any window narrower than 760px, the
-   home page's split. Decided once, before the first paint, so a phone never flashes the room. */
+   home page's split. Decided once, before the first paint, so a phone never flashes the vitrine. */
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import BooksRoom from '../components/books/BooksRoom.astro';
+import BooksVitrine from '../components/books/BooksVitrine.astro';
 import Pile from '../components/books/Pile.astro';
 import BookSheet from '../components/books/BookSheet.astro';
 import { allBooks } from '../lib/books';
@@ -18,18 +18,43 @@ const books = await allBooks();
 <Base title="Books · Prof. Dr. Ali Mohamed Salah" description="The books of Prof. Dr. Ali Mohamed Salah in Arabic, English and Somali.">
   <script is:inline>
     /* A window that reports no width yet (an embedded browser opening hidden) is not a phone. */
-    /* A link to one book opens on it: the pile shows it as the page is read (Pile.astro), the room
-       opens it (BooksRoom.astro). */
+    /* A link to one book opens on it: the pile shows it as the page is read (Pile.astro), the vitrine
+       is brought to it before the first paint (below). The vitrine is at night (books-night), so the
+       bar reads light from the start. */
     var book = new URLSearchParams(location.search).get('book');
     if (book) document.documentElement.dataset.book = book;
     if ((window.innerWidth > 0 && !window.matchMedia('(min-width: 760px)').matches) || document.documentElement.classList.contains('phone')) {
       document.documentElement.classList.add('books-pile');
+    } else {
+      document.documentElement.classList.add('books-night');
+      /* Linked to one book: the vitrine stays hidden until it has been brought to it (below), so the
+         shelf never shows first while the page is still arriving. */
+      if (book) document.documentElement.classList.add('vt-wait');
     }
   </script>
   <Nav page="inner" />
   <main>
-    <h1 class="sr-only">The library</h1>
-    <BooksRoom books={books} />
+    <h1 class="sr-only books-pile-h1">The library</h1>
+    <BooksVitrine books={books} />
+    <script is:inline>
+      /* ?book=<id> opens on that book: brought into view as soon as it is in the page, before the
+         first paint, so the shelf never flashes first. The books below the reader are turned away
+         (is-low) for scripts/books/vitrine.ts to turn as they come up; the rest stand at rest. */
+      (function () {
+        var h = document.documentElement;
+        if (h.classList.contains('books-pile')) return;
+        var el = h.dataset.book && document.getElementById('bk-' + h.dataset.book);
+        if (el) {
+          if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+          el.scrollIntoView({ block: 'start' });
+        }
+        h.classList.remove('vt-wait');
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        document.querySelectorAll('.vt__bk').forEach(function (b) {
+          if (b.getBoundingClientRect().top >= innerHeight * 0.85) b.classList.add('is-low');
+        });
+      })();
+    </script>
     <Pile books={books} />
   </main>
   <Footer page="inner" />
@@ -38,6 +63,6 @@ const books = await allBooks();
     import '../scripts/smooth';
 
     if (document.documentElement.classList.contains('books-pile')) import('../scripts/books/pile');
-    else import('../scripts/books/room');
+    else import('../scripts/books/vitrine');
   </script>
 </Base>
