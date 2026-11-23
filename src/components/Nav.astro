@@ -1,5 +1,14 @@
 ---
+/**
+ * The bar (2026-11-23, "Signature", picked as A): his name in the gilded calligraphy, a thin gold
+ * rule, then "Prof. Dr." over "Ali Mohamed Salah"; Lectures and Contact as words on the right and
+ * Books as the polished-gold button after them. Clear over the black hero; once the page scrolls, a
+ * solid band (paper, or black on the night pages) with a gold hairline under it. On a phone the
+ * name stays, Books stays as the button beside the menu, and the menu opens as a black page of its
+ * own with the three links large and the calligraphy at its foot.
+ */
 import profile from '../data/profile.json';
+import calligraphy from '../assets/hero/calligraphy-name.png';
 
 interface Props {
   /* Books, Lectures and Contact open their pages from anywhere, and an inner page marks its own.
@@ -12,42 +21,63 @@ interface Props {
 const { page = 'home', current, booksHref = '/books' } = Astro.props;
 const home = page === 'home';
 const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
+const links = [
+  { k: 'books' as const, href: booksHref, en: 'Books', ar: 'الكتب' },
+  { k: 'lectures' as const, href: '/lectures', en: 'Lectures', ar: 'الدروس' },
+  { k: 'contact' as const, href: '/contact', en: 'Contact', ar: 'تواصل' },
+];
 ---
 
-<header class="nav">
+<header class="nav" style={`--calli: url(${calligraphy.src})`}>
   <div class="container nav__inner">
     <a
       class="nav__brand"
       href={home ? '#top' : '/'}
-      aria-label={home ? 'Prof. Dr. Ali Mohamed Salah, back to top' : 'Prof. Dr. Ali Mohamed Salah, home'}
+      aria-label={home ? `${profile.name}, back to top` : `${profile.name}, home`}
     >
-      <span class="nav__en">Prof. Dr. Ali Mohamed Salah</span>
-      <span class="nav__ar" lang="ar">{profile.nameArabic}</span>
+      <span class="nav__calli" aria-hidden="true"></span>
+      <span class="nav__rule" aria-hidden="true"></span>
+      <span class="nav__name" aria-hidden="true">
+        <span class="nav__pre">Prof. Dr.</span>
+        <span class="nav__en">Ali Mohamed Salah</span>
+      </span>
     </a>
-    <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="site-menu">
-      <span class="sr-only">Menu</span>
-      <i></i><i></i>
-    </button>
-    <nav class="nav__menu" id="site-menu" aria-label="Primary">
-      <a href={booksHref} class:list={[here('books') && 'is-active']} aria-current={here('books') ? 'page' : undefined}>
-        Books
-      </a>
-      <a
-        href="/lectures"
-        class:list={[here('lectures') && 'is-active']}
-        aria-current={here('lectures') ? 'page' : undefined}
-      >
-        Lectures
-      </a>
-      <a href="/contact" class:list={[here('contact') && 'is-active']} aria-current={here('contact') ? 'page' : undefined}>
-        Contact
-      </a>
-    </nav>
+    <div class="nav__end">
+      <nav class="nav__menu" id="site-menu" aria-label="Primary">
+        {
+          links.map((l) => (
+            <a
+              href={l.href}
+              class:list={[`nav__link nav__link--${l.k}`, here(l.k) && 'is-active']}
+              aria-current={here(l.k) ? 'page' : undefined}
+            >
+              {l.en}
+              <span class="nav__ar" lang="ar" aria-hidden="true">{l.ar}</span>
+            </a>
+          ))
+        }
+        <div class="nav__foot" aria-hidden="true">
+          <span class="nav__double"></span>
+          <span class="nav__calli nav__calli--foot"></span>
+          <span class="nav__where">{profile.name} · Oslo</span>
+        </div>
+      </nav>
+      <a class="btn btn--sm nav__books" href={booksHref} aria-current={here('books') ? 'page' : undefined}>Books</a>
+      <button class="nav__toggle" type="button" aria-expanded="false" aria-controls="site-menu">
+        <span class="sr-only">Menu</span>
+        <i></i><i></i>
+      </button>
+    </div>
   </div>
 </header>
 
 <style>
   .nav {
+    --fg: var(--ink);
+    --fg-2: var(--ink-2);
+    --fg-3: var(--ink-3);
+    /* The gold of the calligraphy: a step deeper on paper, where the leaf gold is too pale. */
+    --gild: linear-gradient(112deg, oklch(52% 0.11 76) 0%, oklch(72% 0.13 86) 42%, oklch(56% 0.12 78) 58%, oklch(74% 0.12 88) 78%, oklch(48% 0.1 74) 100%);
     position: fixed;
     inset: 0 0 auto 0;
     z-index: 70;
@@ -55,119 +85,141 @@ const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
     display: flex;
     align-items: center;
     transition:
-      background 0.6s var(--ease-out),
-      box-shadow 0.6s var(--ease-out),
-      height 0.6s var(--ease-out);
+      background 0.5s var(--ease-out),
+      box-shadow 0.5s var(--ease-out),
+      height 0.5s var(--ease-out);
   }
 
-  .nav.is-scrolled {
-    height: calc(var(--nav-h) - 1rem);
-    background: color-mix(in oklab, var(--paper) 90%, transparent);
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
-    box-shadow: 0 1px 0 var(--line);
-  }
-
-  /* Over the banner the chrome is light; it turns to ink as the page assembles. */
-  .nav.is-light.is-scrolled {
-    background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow: none;
-  }
-
-  .nav.is-light:not(.is-open) .nav__en,
-  .nav.is-light:not(.is-open) .nav__menu a {
-    color: oklch(97% 0.005 80);
-  }
-
-  .nav.is-light:not(.is-open) .nav__ar {
-    color: oklch(86% 0.01 80);
-  }
-
-  .nav.is-light:not(.is-open) .nav__menu a::after,
-  .nav.is-light:not(.is-open) .nav__toggle i {
-    background: oklch(97% 0.005 80);
+  /* Over the black hero, at night, and with the menu open: light words and the leaf gold. */
+  .nav.is-light,
+  .nav.is-open,
+  :global(html.lectures-night) .nav,
+  :global(html.books-night) .nav {
+    --fg: oklch(97% 0.005 80);
+    --fg-2: rgb(246 239 226 / 0.78);
+    --fg-3: rgb(246 239 226 / 0.58);
+    --gild: linear-gradient(112deg, oklch(70% 0.13 80) 0%, oklch(95% 0.1 95) 42%, oklch(78% 0.14 84) 58%, oklch(97% 0.08 97) 78%, oklch(68% 0.13 78) 100%);
   }
 
   /* The lectures and the books are at night (html.lectures-night / html.books-night, set by each page
-     before the bar paints): the same parts in light words on black, gold for the accent. */
+     before the bar paints): the band is black there. */
   :global(html.lectures-night) .nav,
   :global(html.books-night) .nav {
-    --ink: #f6efe2;
-    --ink-2: #efe7d8;
-    --ink-3: #a9a192;
     --paper: #0c0b09;
     --accent: #d9b45a;
-    --line: rgb(246 239 226 / 0.12);
-    --line-strong: rgb(246 239 226 / 0.28);
+  }
+
+  /* Scrolled: a solid band (nothing shows through it, no blur) with a gold hairline. */
+  .nav.is-scrolled {
+    height: calc(var(--nav-h) - 0.75rem);
+    background: var(--paper);
+    box-shadow: 0 1px 0 color-mix(in oklab, var(--gold-line) 55%, transparent);
+  }
+
+  .nav.is-light.is-scrolled {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .nav :focus-visible {
+    outline-color: var(--gold-line);
   }
 
   .nav__inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1.5rem;
   }
 
+  /* ---------- the name ---------- */
+
   .nav__brand {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .nav__calli {
+    display: block;
+    height: 2.35rem;
+    aspect-ratio: 885 / 310;
+    flex: none;
+    background: var(--gild);
+    background-size: 160% 100%;
+    background-position: 30% 50%;
+    -webkit-mask: var(--calli) center / contain no-repeat;
+    mask: var(--calli) center / contain no-repeat;
+  }
+
+  .nav__rule {
+    width: 1px;
+    height: 2rem;
+    flex: none;
+    background: linear-gradient(var(--gold-hi), var(--gold-lo));
+    opacity: 0.85;
+  }
+
+  .nav__name {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.28rem;
     line-height: 1;
+    white-space: nowrap;
+  }
+
+  .nav__pre {
+    font-size: 0.76rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--fg-3);
+    transition: color 0.5s;
   }
 
   .nav__en {
     font-family: var(--font-display);
     font-size: 1rem;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: var(--ink);
+    font-weight: 560;
+    letter-spacing: -0.015em;
+    color: var(--fg);
     transition: color 0.5s;
   }
 
-  .nav__ar {
-    font-size: 0.86rem;
-    color: var(--ink-3);
-    text-align: left;
-    transition: color 0.5s;
+  /* ---------- the links ---------- */
+
+  .nav__end {
+    display: flex;
+    align-items: center;
+    gap: 2.4rem;
   }
 
   .nav__menu {
     display: flex;
+    align-items: center;
     gap: 2.4rem;
   }
 
-  .nav__menu a {
-    position: relative;
+  .nav__link {
     padding: 0.4rem 0;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    color: var(--ink-2);
-    transition: color 0.5s;
+    color: var(--fg-2);
+    transition: color 0.3s;
   }
 
-  .nav__menu a::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: var(--ink);
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.55s var(--ease-out-quint);
+  .nav__link:hover,
+  .nav__link.is-active {
+    color: var(--fg);
   }
 
-  .nav__menu a:hover,
-  .nav__menu a.is-active {
-    color: var(--ink);
-  }
-
-  .nav__menu a:hover::after,
-  .nav__menu a.is-active::after {
-    transform: scaleX(1);
-    transform-origin: left;
+  /* Books is the button beside the words on a wide screen; the menu's own Books is for the phone. */
+  .nav__link--books,
+  .nav__ar,
+  .nav__foot {
+    display: none;
   }
 
   .nav__toggle {
@@ -176,6 +228,7 @@ const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
     z-index: 2;
     width: 2.75rem;
     height: 2.75rem;
+    margin-right: -0.55rem;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -184,73 +237,201 @@ const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
 
   .nav__toggle i {
     display: block;
-    width: 1.5rem;
-    height: 1px;
-    background: var(--ink);
+    width: 1.4rem;
+    height: 1.5px;
+    background: var(--gold-mid);
     transition: transform 0.5s var(--ease-out-quint);
   }
 
+  /* ---------- phones ---------- */
+
   @media (max-width: 760px) {
-    /* On a phone the bar is its own solid band, so the page never shows through it. No blur: a
-       backdrop-filter makes the bar the containing block of the fixed menu, which then opened
-       squeezed inside the bar, its words printed over the page. Over the banner it stays clear. */
-    .nav,
-    .nav.is-scrolled {
-      background: var(--paper);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-      box-shadow: 0 1px 0 var(--line);
+    .nav__inner {
+      gap: 0.75rem;
     }
 
-    .nav.is-light:not(.is-open) {
-      background: transparent;
-      box-shadow: none;
-    }
-
-    /* The name stays in the bar above the open menu, beside the close button. */
     .nav__brand {
+      gap: 0.7rem;
+    }
+
+    .nav__calli {
+      height: 1.75rem;
+    }
+
+    .nav__rule {
+      height: 1.7rem;
+    }
+
+    .nav__pre {
+      font-size: 0.68rem;
+    }
+
+    .nav__en {
+      font-size: 0.86rem;
+    }
+
+    .nav__end {
+      gap: 0.6rem;
+    }
+
+    .nav__books {
       position: relative;
       z-index: 2;
+      height: 2.3rem;
+      padding: 0 0.95rem;
+      font-size: 0.82rem;
     }
 
     .nav__toggle {
       display: flex;
     }
 
+    /* The menu: a black page of its own under the bar, the links large, the calligraphy at its foot. */
     .nav__menu {
       position: fixed;
       inset: 0;
       z-index: 1;
       flex-direction: column;
       justify-content: center;
-      align-items: flex-start;
-      gap: 1.6rem;
+      align-items: stretch;
+      gap: 0;
       padding: 0 var(--gutter);
-      background: var(--paper);
+      background: #0c0b09;
       opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.5s var(--ease-out);
+      visibility: hidden;
+      transition:
+        opacity 0.45s var(--ease-out),
+        visibility 0s 0.45s;
     }
 
     .nav.is-open .nav__menu {
       opacity: 1;
-      pointer-events: auto;
+      visibility: visible;
+      transition: opacity 0.45s var(--ease-out);
     }
 
-    .nav__menu a {
+    .nav__link,
+    .nav__link--books {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid rgb(217 180 90 / 0.22);
       font-family: var(--font-display);
-      font-size: clamp(2.6rem, 11vw, 4rem);
-      font-weight: 320;
+      font-size: clamp(2.4rem, 11vw, 3.4rem);
+      font-weight: 330;
       letter-spacing: -0.03em;
-      color: var(--ink);
+      color: oklch(97% 0.005 80);
     }
 
-    .nav.is-open .nav__toggle i:first-child {
-      transform: translateY(3.5px) rotate(45deg);
+    .nav__link.is-active {
+      color: var(--gold-hi);
     }
 
-    .nav.is-open .nav__toggle i:last-child {
-      transform: translateY(-3.5px) rotate(-45deg);
+    .nav__ar {
+      display: inline;
+      font-size: 1.35rem;
+      letter-spacing: 0;
+      color: rgb(246 239 226 / 0.55);
+    }
+
+    .nav__foot {
+      position: absolute;
+      left: var(--gutter);
+      right: var(--gutter);
+      bottom: max(2rem, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .nav__double {
+      width: 5rem;
+      height: 4px;
+      border-top: 1px solid rgb(217 180 90 / 0.6);
+      border-bottom: 1px solid rgb(217 180 90 / 0.6);
+    }
+
+    .nav__calli--foot {
+      height: 3.6rem;
+      background: linear-gradient(112deg, oklch(70% 0.13 80) 0%, oklch(95% 0.1 95) 42%, oklch(78% 0.14 84) 58%, oklch(97% 0.08 97) 78%, oklch(68% 0.13 78) 100%);
+      -webkit-mask-position: left center;
+      mask-position: left center;
+    }
+
+    .nav__where {
+      font-size: 0.84rem;
+      color: rgb(246 239 226 / 0.58);
+    }
+
+    .nav.is-open {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .nav.is-open .nav__toggle i:first-of-type {
+      transform: translateY(3.75px) rotate(45deg);
+    }
+
+    .nav.is-open .nav__toggle i:last-of-type {
+      transform: translateY(-3.75px) rotate(-45deg);
+    }
+  }
+
+  /* Smaller phones (under 390px): everything a little tighter, so the name never runs under Books. */
+  @media (max-width: 389px) {
+    .nav__brand {
+      gap: 0.5rem;
+    }
+
+    .nav__calli {
+      height: 1.45rem;
+    }
+
+    .nav__rule {
+      height: 1.45rem;
+    }
+
+    .nav__pre {
+      font-size: 0.64rem;
+    }
+
+    .nav__en {
+      font-size: 0.8rem;
+    }
+
+    .nav__end {
+      gap: 0.4rem;
+    }
+
+    .nav__books {
+      padding: 0 0.8rem;
+    }
+  }
+
+  /* Under 360px (a folded phone, 344): no rule between the gold and the name. */
+  @media (max-width: 359px) {
+    .nav__rule {
+      display: none;
+    }
+
+    .nav__books {
+      padding: 0 0.7rem;
+    }
+  }
+
+  /* The narrowest phones: the calligraphy carries the name alone. */
+  @media (max-width: 339px) {
+    .nav__rule,
+    .nav__name {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav,
+    .nav__menu {
+      transition: none;
     }
   }
 </style>
