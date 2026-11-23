@@ -11,11 +11,27 @@ import BooksVitrine from '../components/books/BooksVitrine.astro';
 import Pile from '../components/books/Pile.astro';
 import BookSheet from '../components/books/BookSheet.astro';
 import { allBooks } from '../lib/books';
+import { bookHref } from '../lib/vitrine';
+import { personRef } from '../lib/schema';
 
 const books = await allBooks();
+/* For search: the page is the collection of his books, each with its own page. */
+const list = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'The library',
+  url: new URL('/books', Astro.site).href,
+  about: personRef(Astro.site),
+  mainEntity: {
+    '@type': 'ItemList',
+    numberOfItems: books.length,
+    itemListElement: books.map((b, i) => ({ '@type': 'ListItem', position: i + 1, name: b.data.title, url: new URL(bookHref(b.id), Astro.site).href })),
+  },
+};
 ---
 
-<Base theme="#0c0b09" title="Books · Prof. Dr. Ali Mohamed Salah" description="The books of Prof. Dr. Ali Mohamed Salah in Arabic, English and Somali.">
+<Base theme="#0c0b09" title="Books · Prof. Dr. Ali Mohamed Salah" description="All twenty books of Prof. Dr. Ali Mohamed Salah in English, Arabic and Somali: on faith and doubt, marriage and the family, and Islamic law in the West.">
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(list)} />
   <script is:inline>
     /* A window that reports no width yet (an embedded browser opening hidden) is not a phone. */
     /* A link to one book opens on it: the pile shows it as the page is read (Pile.astro), the vitrine
@@ -34,7 +50,9 @@ const books = await allBooks();
   </script>
   <Nav page="inner" current="books" />
   <main>
-    <h1 class="sr-only books-pile-h1">The library</h1>
+    <!-- The phone's heading (the vitrine, with the page's one <h1>, is hidden there): a level-one
+         heading for screen readers that does not give the page a second <h1>. -->
+    <p class="sr-only books-pile-h1" role="heading" aria-level="1">The library</p>
     <BooksVitrine books={books} />
     <script is:inline>
       /* ?book=<id> opens on that book: brought into view as soon as it is in the page, before the
