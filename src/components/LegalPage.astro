@@ -16,7 +16,7 @@ const { title, description, heading, updated, noindex } = Astro.props;
 ---
 
 <Base title={title} description={description} noindex={noindex}>
-  <Nav page="inner" current="books" />
+  <Nav page="inner" />
   <main class="legal">
     <div class="container legal__body">
       <h1 class="legal__h">{heading}</h1>
@@ -46,9 +46,10 @@ const { title, description, heading, updated, noindex } = Astro.props;
   }
   .legal__h {
     font-family: var(--font-display);
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    /* One size for the pages that open on a big title: contact, privacy, terms. */
+    font-size: clamp(2.6rem, 4.4vw, 4.8rem);
     font-weight: 500;
-    line-height: 1.05;
+    line-height: 0.98;
     letter-spacing: -0.035em;
   }
   .legal__updated {
@@ -58,8 +59,8 @@ const { title, description, heading, updated, noindex } = Astro.props;
   }
   .legal__body h2 {
     margin-top: 2.4rem;
-    font-size: 1.15rem;
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 500;
     letter-spacing: -0.01em;
   }
   .legal__body p,

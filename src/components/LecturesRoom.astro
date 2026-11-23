@@ -96,7 +96,10 @@ const prophet = (s: string) => s.split('ﷺ');
       if (k) addEventListener('load', function () { var el = document.getElementById('s-' + k); if (el) el.scrollIntoView(); });
     })();
   </script>
-  <h1 class="sr-only" id="lr-title">The lectures</h1>
+  <div class="container lr-head">
+    <h1 id="lr-title">The lectures</h1>
+    <p>Every lesson on YouTube, series by series, with his talks in English and Somali.</p>
+  </div>
   <div class="container lr-top__in">
     <div class="lr-screen">
       <a class="lr-fr lr-fr--lit" href={watch(firstQ.id, pl('quran'))} aria-label={`${Q.s.title}: begin`}>
@@ -268,14 +271,18 @@ const prophet = (s: string) => s.split('ﷺ');
   }
   :global(html.lectures-night) { background: #0c0b09; }
   .lr-dim { color: var(--cream-2); }
-  .lr-top { padding: calc(var(--nav-h) + 2.6rem) 0 3.2rem; border-top: 0; }
+  .lr-top { padding: calc(var(--nav-h) + 2.2rem) 0 3.2rem; border-top: 0; }
+  /* The heading line, as on the home page and /books. */
+  .lr-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem 2.5rem; margin-bottom: 2.4rem; }
+  .lr-head h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.6rem, 2.3vw, 2.3rem); letter-spacing: -0.035em; line-height: 1.1; color: var(--cream); white-space: nowrap; }
+  .lr-head p { max-width: 34rem; font-size: clamp(1rem, 1.15vw, 1.12rem); line-height: 1.5; color: var(--cream-2); text-wrap: pretty; }
   .lr-top__in { display: grid; grid-template-columns: minmax(0, 820fr) minmax(0, 404fr); gap: 3rem; align-items: start; }
 
   .lr-fr { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 2px; background: #0c0b09; }
   .lr-fr img { width: 100%; height: 100%; object-fit: contain; }
   .lr-fr--lit { box-shadow: none; }
 
-  .lr-screen__t { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-top: 1.25rem; font-size: 1.625rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+  .lr-screen__t { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-top: 1.25rem; font-size: 1.625rem; font-weight: 500; letter-spacing: -0.02em; line-height: 1.15; }
   .lr-screen__t span { font-family: var(--font-arabic); font-size: 1.5rem; font-weight: 400; color: var(--gold-3); }
   .lr-screen p { margin-top: 0.25rem; font-size: 0.875rem; }
   .lr-begin { margin-top: 1rem; }
@@ -308,7 +315,7 @@ const prophet = (s: string) => s.split('ﷺ');
   .lr-sidx a:hover span { color: var(--accent); }
 
   .lr-comp { display: grid; grid-template-columns: minmax(0, 416fr) minmax(0, 880fr); gap: 2.5rem; margin-top: 4rem; padding-top: 2.5rem; border-top: 1px solid var(--line-strong); }
-  .lr-h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; margin-top: 0.875rem; font-size: 1.25rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; }
+  .lr-h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; margin-top: 0.875rem; font-size: 1.25rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.2; }
   .lr-h3 span { font-family: var(--font-arabic); font-size: 1.2rem; font-weight: 400; color: var(--gold-3); white-space: nowrap; }
   .lr-names { columns: 4; column-gap: 1.5rem; font-size: 0.84rem; line-height: 1.85; }
   .lr-names a { display: block; color: var(--ink); break-inside: avoid; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -323,7 +330,7 @@ const prophet = (s: string) => s.split('ﷺ');
   .lr-band__line { font-size: 0.94rem; margin-bottom: 1.125rem; }
   .lr-three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.75rem; }
   .lr-tk { display: block; color: var(--cream); }
-  .lr-tk b { display: block; margin-top: 0.875rem; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .lr-tk b { display: block; margin-top: 0.875rem; font-size: 1.15rem; font-weight: 500; letter-spacing: -0.01em; line-height: 1.25; }
   .lr-tk .lr-dim { display: block; font-size: 0.84rem; margin-top: 0.125rem; }
   .lr-fr :global(img) { width: 100%; height: 100%; object-fit: contain; }
 
@@ -349,6 +356,7 @@ const prophet = (s: string) => s.split('ﷺ');
   }
   @media (max-width: 760px) {
     .lr-top { padding: calc(var(--nav-h) + 1.25rem) 0 1.75rem; }
+    .lr-head { margin-bottom: 1.5rem; }
     .lr-top__in { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
     .lr-prog { color: var(--cream); }
     .lr-open { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }

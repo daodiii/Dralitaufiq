@@ -165,8 +165,8 @@ const v = (id: string) => view.find((x) => x.b.id === id)!;
     background: radial-gradient(48% 70% at 50% 72%, rgb(255 226 170 / 0.17), transparent 70%);
   }
   .vt__head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem 2.5rem; }
-  .vt__head h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.6rem, 2.3vw, 2.3rem); letter-spacing: -0.035em; line-height: 1.1; color: #f6efe2; }
-  .vt__head p { max-width: 34rem; font-size: 1.08rem; line-height: 1.5; color: #a9a192; }
+  .vt__head h1 { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.6rem, 2.3vw, 2.3rem); letter-spacing: -0.035em; line-height: 1.1; color: #f6efe2; white-space: nowrap; }
+  .vt__head p { max-width: 34rem; font-size: clamp(1rem, 1.15vw, 1.12rem); line-height: 1.5; color: #a9a192; text-wrap: pretty; }
 
   /* The shelf: three rows, one per language, side by side while they fit, one under another after. */
   .vt__shelf { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 2.5rem clamp(1.6rem, 3vw, 3.2rem); margin-top: 2.6rem; }

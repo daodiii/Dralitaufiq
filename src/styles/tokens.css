@@ -1,5 +1,6 @@
 :root {
-  /* North light: warm paper, warm ink, one madder-red accent. */
+  /* White, black and gold (2026-11-23): warm paper, warm ink, dark gold as the accent on white.
+     Madder red is kept only for what is wrong (--danger) and the contact page's wax seal. */
   --paper: oklch(98.6% 0.004 85);
   --paper-2: oklch(96.4% 0.006 85);
   --paper-3: oklch(93% 0.008 80);
@@ -7,8 +8,9 @@
   --ink-2: oklch(36% 0.012 60);
   --ink-3: oklch(52% 0.012 60);
   --ink-4: oklch(54% 0.01 60);
-  --accent: oklch(46% 0.15 28);
-  --accent-2: oklch(56% 0.16 32);
+  --accent: oklch(45% 0.1 76);
+  --accent-2: oklch(56% 0.12 80);
+  --danger: oklch(46% 0.15 28);
   --gold: oklch(61% 0.125 82);
   --gold-2: oklch(84% 0.12 92);
   --gold-3: oklch(45% 0.1 76);

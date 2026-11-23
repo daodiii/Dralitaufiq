@@ -32,7 +32,7 @@ const books = await allBooks();
       if (book) document.documentElement.classList.add('vt-wait');
     }
   </script>
-  <Nav page="inner" />
+  <Nav page="inner" current="books" />
   <main>
     <h1 class="sr-only books-pile-h1">The library</h1>
     <BooksVitrine books={books} />

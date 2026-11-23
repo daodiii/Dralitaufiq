@@ -380,7 +380,7 @@ const youtube = profile.social[1];
     display: grid;
     place-items: center;
     padding: calc(var(--nav-h) + 0.25rem) var(--gutter) clamp(1.25rem, 4vh, 3rem);
-    background: var(--paper-2);
+    background: var(--paper);
   }
 
   .folio {
@@ -392,7 +392,8 @@ const youtube = profile.social[1];
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
     gap: clamp(2.5rem, 5vw, 6rem);
     padding: clamp(2rem, 6vh, 4.5rem) clamp(2rem, 5vw, 5.5rem);
-    background: var(--paper);
+    /* White inside its gold frame (white, black and gold). */
+    background: #fff;
     box-shadow: var(--shadow-plate);
   }
 
@@ -516,7 +517,7 @@ const youtube = profile.social[1];
     padding: 4px;
     border: 0;
     border-radius: 999px;
-    background: var(--paper-3);
+    background: color-mix(in oklab, var(--ink) 6%, #fff);
   }
 
   .seg__pill {
@@ -627,16 +628,16 @@ const youtube = profile.social[1];
 
   .field.bad input,
   .field.bad textarea {
-    border-color: var(--accent);
+    border-color: var(--danger);
   }
 
   .field.bad label {
-    color: var(--accent);
+    color: var(--danger);
   }
 
   .field__err {
     font-size: 0.76rem;
-    color: var(--accent);
+    color: var(--danger);
   }
 
   .field__err:empty {
@@ -684,7 +685,7 @@ const youtube = profile.social[1];
 
   .form__fail {
     font-size: 0.86rem;
-    color: var(--accent);
+    color: var(--danger);
   }
 
   .form__foot .btn {
@@ -727,7 +728,7 @@ const youtube = profile.social[1];
   }
 
   .done__seal {
-    fill: var(--accent);
+    fill: var(--danger);
     transform-box: fill-box;
     transform-origin: center;
     transform: scale(0.6);
@@ -1031,7 +1032,7 @@ const youtube = profile.social[1];
     border-radius: 48% 52% 50% 50% / 52% 47% 53% 48%;
     background:
       radial-gradient(circle at 50% 50%, transparent 54%, oklch(33% 0.12 28 / 0.55) 56%, transparent 62%),
-      radial-gradient(circle at 34% 28%, oklch(60% 0.17 30), var(--accent) 55%, oklch(34% 0.12 26));
+      radial-gradient(circle at 34% 28%, oklch(60% 0.17 30), var(--danger) 55%, oklch(34% 0.12 26));
     box-shadow:
       0 1px 1px oklch(25% 0.1 28 / 0.5),
       0 4px 10px -2px oklch(25% 0.1 28 / 0.45),
