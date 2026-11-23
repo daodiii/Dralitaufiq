@@ -1,0 +1,401 @@
+{
+  "tool": "built-in imagegen",
+  "note": "AI-enhanced renditions of original recording frames. Fine details may differ; original assets are retained.",
+  "photos": [
+    {
+      "name": "quran-3",
+      "kind": "lesson",
+      "video": "8nQoeSLaBL0",
+      "frame": 3,
+      "source": "https://i.ytimg.com/vi/8nQoeSLaBL0/maxres3.jpg",
+      "title": "Al-Baqarah, verses 43 to 59",
+      "previouslyMissing": true
+    },
+    {
+      "name": "quran-4",
+      "kind": "lesson",
+      "video": "laPH20wGe_o",
+      "frame": 1,
+      "source": "https://i.ytimg.com/vi/laPH20wGe_o/sd1.jpg",
+      "title": "Al-Baqarah, verses 60 to 74",
+      "previouslyMissing": false
+    },
+    {
+      "name": "quran-5",
+      "kind": "lesson",
+      "video": "gvuRVNx7pAU",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/gvuRVNx7pAU/sd2.jpg",
+      "title": "Al-Baqarah, verses 75 to 91",
+      "previouslyMissing": true
+    },
+    {
+      "name": "quran-6",
+      "kind": "lesson",
+      "video": "VdR3cO62Ms8",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/VdR3cO62Ms8/hq2.jpg",
+      "title": "Al-Baqarah, verses 92 to 105",
+      "previouslyMissing": true
+    },
+    {
+      "name": "quran-7",
+      "kind": "lesson",
+      "video": "x_qDPEMMZqI",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/x_qDPEMMZqI/sd2.jpg",
+      "title": "Al-Baqarah, verses 106 to 123",
+      "previouslyMissing": true
+    },
+    {
+      "name": "quran-8",
+      "kind": "lesson",
+      "video": "7n_FDDG54mE",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/7n_FDDG54mE/sd2.jpg",
+      "title": "Al-Baqarah, verses 124 to 141",
+      "previouslyMissing": true
+    },
+    {
+      "name": "quran-9",
+      "kind": "lesson",
+      "video": "1AQbS0-x58E",
+      "frame": 1,
+      "source": "https://i.ytimg.com/vi/1AQbS0-x58E/hq1.jpg",
+      "title": "Al-Baqarah, verses 142 to 157",
+      "previouslyMissing": false
+    },
+    {
+      "name": "quran-10",
+      "kind": "lesson",
+      "video": "buIoI7PchLg",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/buIoI7PchLg/sd2.jpg",
+      "title": "Al-Baqarah, verses 158 to 176",
+      "previouslyMissing": true
+    },
+    {
+      "name": "quran-12",
+      "kind": "lesson",
+      "video": "v3o2o6J4KFk",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/v3o2o6J4KFk/hq2.jpg",
+      "title": "Al-Baqarah, verses 189 to 195",
+      "previouslyMissing": false
+    },
+    {
+      "name": "quran-17",
+      "kind": "lesson",
+      "video": "viZNDKHIVfA",
+      "frame": 3,
+      "source": "https://i.ytimg.com/vi/viZNDKHIVfA/maxres3.jpg",
+      "title": "Al-Baqarah, verses 221 to 223",
+      "previouslyMissing": false
+    },
+    {
+      "name": "quran-18",
+      "kind": "lesson",
+      "video": "cp6vWq6lIOc",
+      "frame": 3,
+      "source": "https://i.ytimg.com/vi/cp6vWq6lIOc/maxres3.jpg",
+      "title": "Al-Baqarah, verses 222 to 225",
+      "previouslyMissing": false
+    },
+    {
+      "name": "hisn",
+      "kind": "series",
+      "video": "7IntiZTYGw4",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/7IntiZTYGw4/maxres2.jpg",
+      "title": "Hisn al-Muslim",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-kZRrJvN4h3s",
+      "kind": "talk",
+      "video": "kZRrJvN4h3s",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/kZRrJvN4h3s/maxres2.jpg",
+      "title": "Let the Qur’an Enter Your Life",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-TJ4a-EghNW4",
+      "kind": "talk",
+      "video": "TJ4a-EghNW4",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/TJ4a-EghNW4/maxres2.jpg",
+      "title": "Lights on Sūrat al-Ḥujurāt",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-13NorFteApg",
+      "kind": "talk",
+      "video": "13NorFteApg",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/13NorFteApg/maxres2.jpg",
+      "title": "How Muslims Can Become Happy",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-lmJSQv9SmdM",
+      "kind": "talk",
+      "video": "lmJSQv9SmdM",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/lmJSQv9SmdM/maxres2.jpg",
+      "title": "Jesus Christ: A Messenger of Allah?",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-dORQ8eJYh0A",
+      "kind": "talk",
+      "video": "dORQ8eJYh0A",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/dORQ8eJYh0A/hq2.jpg",
+      "title": "Dacwah of the Prophets",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-QnBwH7Dkbq8",
+      "kind": "talk",
+      "video": "QnBwH7Dkbq8",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/QnBwH7Dkbq8/maxres2.jpg",
+      "title": "The Devil’s Deception",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-o0Nhtjvt970",
+      "kind": "talk",
+      "video": "o0Nhtjvt970",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/o0Nhtjvt970/maxres2.jpg",
+      "title": "Signs of the Last Hour",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-vlQGcjGEmCM",
+      "kind": "talk",
+      "video": "vlQGcjGEmCM",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/vlQGcjGEmCM/maxres2.jpg",
+      "title": "Black Magic: Cures and Protection",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-kklUBxkvmUg",
+      "kind": "talk",
+      "video": "kklUBxkvmUg",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/kklUBxkvmUg/maxres2.jpg",
+      "title": "How to Unite the Ummah",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-Ff89iIB1oa4",
+      "kind": "talk",
+      "video": "Ff89iIB1oa4",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/Ff89iIB1oa4/maxres2.jpg",
+      "title": "Etiquette of Seeking Knowledge",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk--DNgx2Uyl7M",
+      "kind": "talk",
+      "video": "-DNgx2Uyl7M",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/-DNgx2Uyl7M/maxres2.jpg",
+      "title": "The Youth That Changed the World",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-vfCmNidou0w",
+      "kind": "talk",
+      "video": "vfCmNidou0w",
+      "frame": 3,
+      "source": "https://i.ytimg.com/vi/vfCmNidou0w/maxres3.jpg",
+      "title": "Accountability",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-3kuUW3nsbHg",
+      "kind": "talk",
+      "video": "3kuUW3nsbHg",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/3kuUW3nsbHg/maxres2.jpg",
+      "title": "The Best in the Sight of Allah",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-cbnyxmu77iM",
+      "kind": "talk",
+      "video": "cbnyxmu77iM",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/cbnyxmu77iM/maxres2.jpg",
+      "title": "Qorsheynta mustaqbalka da’yarta muslimiinta",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-f-2pX_4_9sE",
+      "kind": "talk",
+      "video": "f-2pX_4_9sE",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/f-2pX_4_9sE/maxres2.jpg",
+      "title": "Sidee ubadka Soomaaliyeed qurbaha loogu tarbiyeyn karaa?",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-IfvlfY9lRFM",
+      "kind": "talk",
+      "video": "IfvlfY9lRFM",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/IfvlfY9lRFM/maxres2.jpg",
+      "title": "Nafta iyo sida loo carbiyo",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-zaWqnIohxA4",
+      "kind": "talk",
+      "video": "zaWqnIohxA4",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/zaWqnIohxA4/maxres2.jpg",
+      "title": "Iimaan ma leh ninka aan amaanada ilaalin",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-kZDynBs3rg0",
+      "kind": "talk",
+      "video": "kZDynBs3rg0",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/kZDynBs3rg0/maxres2.jpg",
+      "title": "What Is Happening in the World Today",
+      "previouslyMissing": false
+    },
+    {
+      "name": "talk-c81we5gC6wI",
+      "kind": "talk",
+      "video": "c81we5gC6wI",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/c81we5gC6wI/maxres2.jpg",
+      "title": "Diinta oo shaki lagu geliyo",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-kJ32HvfggUM",
+      "kind": "talk",
+      "video": "kJ32HvfggUM",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/kJ32HvfggUM/sd2.jpg",
+      "title": "Jacaylka Nabigeena ﷺ",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-8BmHYBnVKT4",
+      "kind": "talk",
+      "video": "8BmHYBnVKT4",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/8BmHYBnVKT4/maxres2.jpg",
+      "title": "Xishoodku waa qayb ka mid ah iimaanka",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-o1jWC0TqfSo",
+      "kind": "talk",
+      "video": "o1jWC0TqfSo",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/o1jWC0TqfSo/maxres2.jpg",
+      "title": "Tarbiyadda iimaanka",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk--yzDhHv1unQ",
+      "kind": "talk",
+      "video": "-yzDhHv1unQ",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/-yzDhHv1unQ/maxres2.jpg",
+      "title": "Dumarka iyo xaqa ay diintu siisay",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-j7mdWGZ6WxI",
+      "kind": "talk",
+      "video": "j7mdWGZ6WxI",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/j7mdWGZ6WxI/maxres2.jpg",
+      "title": "Islaamka iyo dagaalka lagu hayo",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-0jrhbLvsgXQ",
+      "kind": "talk",
+      "video": "0jrhbLvsgXQ",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/0jrhbLvsgXQ/maxres2.jpg",
+      "title": "10ka dhibaato ee ribada",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-htKSSmkjnnY",
+      "kind": "talk",
+      "video": "htKSSmkjnnY",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/htKSSmkjnnY/maxres2.jpg",
+      "title": "Kitaabka Alle oo la isku xukumo",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-JsRAJ7MiamA",
+      "kind": "talk",
+      "video": "JsRAJ7MiamA",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/JsRAJ7MiamA/hq2.jpg",
+      "title": "Hoos u dhaca iimaanka iyo dawadiisa",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-BJx8k_mSBj8",
+      "kind": "talk",
+      "video": "BJx8k_mSBj8",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/BJx8k_mSBj8/sd2.jpg",
+      "title": "Maareynta carada",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-CzA5vTOIH6k",
+      "kind": "talk",
+      "video": "CzA5vTOIH6k",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/CzA5vTOIH6k/maxres2.jpg",
+      "title": "Muranka iyo khilaafka diiniga ah",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-Hi227KTtAc8",
+      "kind": "talk",
+      "video": "Hi227KTtAc8",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/Hi227KTtAc8/maxres2.jpg",
+      "title": "Ha quusan weligaa",
+      "previouslyMissing": true
+    },
+    {
+      "name": "talk-SI3mfkCj9NM",
+      "kind": "talk",
+      "video": "SI3mfkCj9NM",
+      "frame": 2,
+      "source": "https://i.ytimg.com/vi/SI3mfkCj9NM/hq2.jpg",
+      "title": "Mid wax tar leh noqo",
+      "previouslyMissing": true
+    },
+    {
+      "name": "sira-wide",
+      "kind": "series",
+      "video": "A4h5rqVyH4I",
+      "frame": 3,
+      "source": "https://i.ytimg.com/vi/A4h5rqVyH4I/maxres3.jpg",
+      "title": "The Prophet's life: wider library portrait"
+    }
+  ]
+}

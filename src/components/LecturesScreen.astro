@@ -17,7 +17,7 @@ import quran from '../assets/lectures/edited/quran.jpg';
 import riyad from '../assets/lectures/edited/riyad.jpg';
 import brief from '../assets/lectures/edited/brief.jpg';
 import companions from '../assets/lectures/edited/companions.jpg';
-import sira from '../assets/lectures/edited/sira.jpg';
+import sira from '../assets/lectures/edited/sira-wide.jpg';
 import bulugh from '../assets/lectures/edited/bulugh.jpg';
 
 /* A picture of him from each series, chosen by eye (tools/lecture-pictures). */
@@ -277,30 +277,9 @@ const heading = (x: { num: string; title: string; len: string }, series: string)
   .screen__shot img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transform-origin: 50% 30%;
+    object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
-  }
-
-  /* The picture draws slowly closer, as a camera would. */
-  .screen__shot.is-on img {
-    animation: screen-closer 18s ease-in-out infinite alternate;
-  }
-
-  @keyframes screen-closer {
-    from {
-      transform: scale(1.01);
-    }
-    to {
-      transform: scale(1.12);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .screen__shot.is-on img {
-      animation: none;
-    }
   }
 
   .screen__shot:focus-visible {
@@ -317,14 +296,13 @@ const heading = (x: { num: string; title: string; len: string }, series: string)
 
   .screen__play {
     position: absolute;
-    left: 50%;
-    top: 50%;
+    right: 1rem;
+    bottom: 1rem;
     z-index: 1;
     display: grid;
     place-items: center;
-    width: 4rem;
-    height: 4rem;
-    margin: -2rem 0 0 -2rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: 50%;
     background: oklch(98.6% 0.004 85 / 0.9);
     color: var(--ink);

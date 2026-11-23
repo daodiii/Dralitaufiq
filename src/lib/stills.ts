@@ -14,13 +14,25 @@ export type StillSize = '' | 'mq' | 'hq' | 'sd' | 'maxres';
 /* Retouched versions of these exact video frames. Other lessons keep their own pictures.
    Frame identity matters: a different frame from the same video must not borrow the portrait. */
 const EDITED: Record<string, string> = {
-  '2BvSE_jiq9s:3': 'opening',
-  'g52cuiHSq38:1': 'quran',
-  'KcAzkOnBti4:2': 'brief',
-  'eE8yC43Z160:2': 'riyad',
-  'vS-8Djv1CTU:1': 'companions',
-  'A4h5rqVyH4I:3': 'sira',
-  'Ni5qVkEbga8:2': 'bulugh',
+  "2BvSE_jiq9s:3": "opening",
+  "g52cuiHSq38:1": "quran",
+  "KcAzkOnBti4:2": "brief",
+  "eE8yC43Z160:2": "riyad",
+  "vS-8Djv1CTU:1": "companions",
+  "A4h5rqVyH4I:3": "sira-wide",
+  "Ni5qVkEbga8:2": "bulugh",
+  "8nQoeSLaBL0:3": "quran-3",
+  "laPH20wGe_o:1": "quran-4",
+  "gvuRVNx7pAU:2": "quran-5",
+  "VdR3cO62Ms8:2": "quran-6",
+  "x_qDPEMMZqI:2": "quran-7",
+  "7n_FDDG54mE:2": "quran-8",
+  "1AQbS0-x58E:1": "quran-9",
+  "buIoI7PchLg:2": "quran-10",
+  "v3o2o6J4KFk:2": "quran-12",
+  "viZNDKHIVfA:3": "quran-17",
+  "cp6vWq6lIOc:3": "quran-18",
+  "7IntiZTYGw4:2": "hisn"
 };
 
 export const still = (id: string, f: number | undefined, size: StillSize) => {

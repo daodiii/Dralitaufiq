@@ -2,8 +2,9 @@
  * His single talks, from the two playlists the client sent (2026-11-22): PLbywE47BtkDE in English
  * (43 videos, most by Islam Net in Oslo) and PLQYUp9URG-XQ in Somali (142 videos from many
  * channels). Curated: full talks only, no trailers, promos or second uploads. `pic` marks the
- * talks with a frame checked by eye (src/assets/talks/<id>.jpg: he is not caught mid-word); the
- * others show as text tiles. Durations as the playlists list them.
+ * talks with an original frame checked by eye (src/assets/talks/<id>.jpg). The lecture page now
+ * uses local enhanced frames for every talk, including those without that original flag.
+ * Durations as the playlists list them.
  */
 export interface TalkItem {
   id: string;
