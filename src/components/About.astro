@@ -334,9 +334,14 @@ const [lead, ...body] = profile.aboutLead;
 
   /* ---------- the parting (JS adds .is-live) ---------- */
 
+  .about:has(.about__pin.is-live) {
+    padding-top: clamp(1.5rem, 3vw, 3rem);
+  }
+
   .about__pin.is-live {
     --gap: 0;
     --fade: 0;
+    --rec-top: clamp(0.5rem, 2vh, 1.5rem);
     height: 100svh;
     overflow: hidden;
   }
@@ -390,8 +395,16 @@ const [lead, ...body] = profile.aboutLead;
     transform: translateX(calc(var(--gap) * 14vw));
   }
 
+  /* The records start at the top of the pages, as every section's words start at the top of
+     theirs; centred, they left the seam alone above them for a screen's third (2026-11-23). The
+     right page's rows start level with the left page's, under its title. */
+  .is-live .about__records {
+    align-content: start;
+    padding-top: var(--rec-top);
+  }
+
   .is-live .about__records--r {
-    padding-top: clamp(3.2rem, 6vh, 4.6rem);
+    padding-top: calc(var(--rec-top) + clamp(1.9rem, 2.9vw, 2.9rem) * 1.05 + clamp(0.5rem, 2vh, 1.5rem) + 1.5rem);
   }
 
   .is-live .about__slot {
