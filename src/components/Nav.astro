@@ -1,7 +1,7 @@
 ---
 /**
  * The bar (2026-11-23, "Signature", picked as A): his name in the gilded calligraphy, a thin gold
- * rule, then "Prof. Dr." over "Ali Mohamed Salah"; Lectures and Contact as words on the right and
+ * rule, then "Prof. Dr." over "Ali Mohamed Salah"; Home, Lectures and Contact as words on the right and
  * Books as the polished-gold button after them. Clear over the black hero; once the page scrolls, a
  * solid band (paper, or black on the night pages) with a gold hairline under it. On a phone the
  * name stays, Books stays as the button beside the menu, and the menu opens as a black page of its
@@ -20,8 +20,9 @@ interface Props {
 
 const { page = 'home', current, booksHref = '/books' } = Astro.props;
 const home = page === 'home';
-const here = (k: 'books' | 'lectures' | 'contact') => !home && current === k;
+const here = (k: 'home' | 'books' | 'lectures' | 'contact') => (k === 'home' ? home : !home && current === k);
 const links = [
+  { k: 'home' as const, href: home ? '#top' : '/', en: 'Home', ar: 'الرئيسية' },
   { k: 'books' as const, href: booksHref, en: 'Books', ar: 'الكتب' },
   { k: 'lectures' as const, href: '/lectures', en: 'Lectures', ar: 'الدروس' },
   { k: 'contact' as const, href: '/contact', en: 'Contact', ar: 'تواصل' },
