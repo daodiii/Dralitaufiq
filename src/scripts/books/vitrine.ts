@@ -130,8 +130,12 @@ function arc() {
   );
   books.forEach((b) => now.observe(b));
 
-  /* Shown once the shelf at the top is above the middle of the screen. */
-  const shelf = new IntersectionObserver(([e]) => box.classList.toggle('is-on', !e.isIntersecting), { rootMargin: '0px 0px -50% 0px' });
+  /* Shown once the shelf at the top has gone up past the middle of the screen. The band under the
+     bar is left out, so a shelf that ends exactly at the top edge (the first book lands there) counts
+     as gone: an observer counts touching edges as intersecting. */
+  const shelf = new IntersectionObserver(([e]) => box.classList.toggle('is-on', !e.isIntersecting), {
+    rootMargin: `-${Math.round(bar?.offsetHeight ?? 0)}px 0px -50% 0px`,
+  });
   shelf.observe(head);
 
   place();

@@ -94,7 +94,9 @@ document.addEventListener('click', (event) => {
   const target = document.getElementById(id);
   if (!target) return;
   event.preventDefault();
-  scrollToEl(target, 0);
+  /* A target that keeps clear of the bar says so with scroll-margin-top (the lectures' series):
+     it lands that far below the top, as the browser's own jump to it would. */
+  scrollToEl(target, -(parseFloat(getComputedStyle(target).scrollMarginTop) || 0));
   /* The address stays clean: no #part on it. */
   if (location.hash) history.replaceState(history.state, '', location.pathname + location.search);
 });
