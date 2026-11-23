@@ -31,7 +31,10 @@ export async function spineInfo(b: Book): Promise<SpineInfo> {
   const { height = 1000 } = await img.metadata();
   const px = await sharp(file).extract({ left: 0, top: 0, width: 40, height }).resize(1, 1).raw().toBuffer();
   const [r, g, bl] = [px[0], px[1], px[2]];
-  const lum = (0.2126 * r + 0.7152 * g + 0.0722 * bl) / 255;
+  /* Relative luminance; the title takes whichever of the two inks reads better on it (they cross
+     at about 0.19). */
+  const lin = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(bl);
   const d = b.data;
   const info: SpineInfo = {
     id: b.id,
@@ -40,7 +43,7 @@ export async function spineInfo(b: Book): Promise<SpineInfo> {
     title: d.title,
     short: d.language === 'ar' ? d.title.split(' ').slice(0, 3).join(' ') : d.title.replace(/\s*ﷺ/, ''),
     colour: `rgb(${r} ${g} ${bl})`,
-    ink: lum < 0.55 ? 'rgb(250 246 236 / .92)' : 'rgb(30 24 18 / .86)',
+    ink: lum < 0.19 ? 'rgb(250 246 236)' : 'rgb(12 11 9)',
     t: d.size.t,
     h: d.size.h,
     w: d.size.w,

@@ -240,5 +240,7 @@ const v = (id: string) => view.find((x) => x.b.id === id)!;
 
   @media (max-width: 1180px) {
     .vt__bk { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    /* The text runs taller than the book here; the floor's light would cross behind it. */
+    .vt__bk::before { display: none; }
   }
 </style>

@@ -9,9 +9,11 @@ interface Props {
   title: string;
   description: string;
   noindex?: boolean;
+  /* The colour of the phone's browser bar: the black of the night pages, or the white. */
+  theme?: string;
 }
 
-const { title, description, noindex = false } = Astro.props;
+const { title, description, noindex = false, theme = '#fbfaf7' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 
 /* The viewport never scales below 1 (zooming in still works). Otherwise a touch device zooms out
@@ -31,7 +33,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#fbfaf7" />
+    <meta name="theme-color" content={theme} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

@@ -15,7 +15,7 @@ import { allBooks } from '../lib/books';
 const books = await allBooks();
 ---
 
-<Base title="Books · Prof. Dr. Ali Mohamed Salah" description="The books of Prof. Dr. Ali Mohamed Salah in Arabic, English and Somali.">
+<Base theme="#0c0b09" title="Books · Prof. Dr. Ali Mohamed Salah" description="The books of Prof. Dr. Ali Mohamed Salah in Arabic, English and Somali.">
   <script is:inline>
     /* A window that reports no width yet (an embedded browser opening hidden) is not a phone. */
     /* A link to one book opens on it: the pile shows it as the page is read (Pile.astro), the vitrine
@@ -24,7 +24,7 @@ const books = await allBooks();
     var book = new URLSearchParams(location.search).get('book');
     if (book) document.documentElement.dataset.book = book;
     if ((window.innerWidth > 0 && !window.matchMedia('(min-width: 760px)').matches) || document.documentElement.classList.contains('phone')) {
-      document.documentElement.classList.add('books-pile');
+      document.documentElement.classList.add('books-pile', 'books-night');
     } else {
       document.documentElement.classList.add('books-night');
       /* Linked to one book: the vitrine stays hidden until it has been brought to it (below), so the
