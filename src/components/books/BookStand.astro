@@ -1,0 +1,84 @@
+---
+/**
+ * One book standing in its pool of light (styles/vitrine.css): the book as an object, turned a
+ * little towards the reader, beside its title, words, colophon and Amazon listings. On the books
+ * page (BooksVitrine.astro) its title and "Read the whole description" lead to the book's own page;
+ * on that page (page) the title is the page's h1 and the whole description stands beside the book.
+ */
+import { Image } from 'astro:assets';
+import { bookHref, type VitrineBook } from '../../lib/vitrine';
+
+interface Props {
+  x: VitrineBook;
+  page?: boolean;
+}
+
+const { x, page = false } = Astro.props;
+const prophet = (s: string) => s.split('ﷺ');
+const parts = prophet(x.b.data.title);
+const H = page ? 'h1' : 'h2';
+---
+
+<article
+  class="vt__bk"
+  id={page ? undefined : `bk-${x.b.id}`}
+  dir={x.rtl ? 'rtl' : undefined}
+  lang={x.b.data.language}
+  style={`--bg:${x.colour};--sink:${x.ink};--glow:${x.glow};--d:${x.depth}px`}
+>
+  <div class="vt__stage" dir="ltr">
+    <div class="vt__book">
+      <div class="vt__spine" aria-hidden="true">
+        <span class:list={[x.rtl && 'is-ar']}>{parts.map((p, i) => (i ? [<bdi>ﷺ</bdi>, p] : p))}</span>
+      </div>
+      <div class="vt__front">
+        <Image
+          src={x.b.data.cover}
+          alt={`The cover of ${x.b.data.title}`}
+          widths={[400, 640, 960]}
+          sizes="(max-width: 760px) 70vw, (max-width: 1180px) 36vw, 420px"
+          loading={page || x.i < 2 ? 'eager' : 'lazy'}
+          fetchpriority={page ? 'high' : undefined}
+          decoding="async"
+        />
+        <i />
+      </div>
+    </div>
+    <span class="vt__floor" aria-hidden="true" />
+  </div>
+  <div class="vt__txt">
+    <H class="vt__t">{page ? parts.map((p, i) => (i ? [<bdi>ﷺ</bdi>, p] : p)) : <a href={bookHref(x.b.id)}>{parts.map((p, i) => (i ? [<bdi>ﷺ</bdi>, p] : p))}</a>}</H>
+    {x.sub && <p class="vt__sub" dir={/[؀-ۿ]/.test(x.sub) ? 'rtl' : 'ltr'}>{x.sub}</p>}
+    {x.en && <p class="vt__en" lang="en" dir="ltr">{x.en}</p>}
+    {x.role && <p class="vt__en" lang="en" dir="ltr">{x.role}</p>}
+    {
+      page ? (
+        <div class="vt__all">
+          {x.all.map((p) => (
+            <p lang={p.lang} dir={p.dir}>
+              {p.lead && <b>{p.lead}: </b>}
+              {p.text}
+            </p>
+          ))}
+        </div>
+      ) : (
+        <>
+          <p class="vt__desc" lang={x.desc.lang} dir={x.desc.dir}>
+            {x.desc.lead && <b>{x.desc.lead}: </b>}
+            {x.desc.text}
+          </p>
+          <a class="link vt__whole" href={bookHref(x.b.id)}>{x.rtl ? 'الوصف كاملًا' : 'Read the whole description'}</a>
+        </>
+      )
+    }
+    <p class="vt__colo" lang="en" dir="ltr">{x.colo}</p>
+    <div class="vt__pills" dir="ltr">
+      {x.b.data.amazon.map((a, i) => (
+        <a class:list={['btn', i > 0 && 'btn--ghost']} href={a.url} target="_blank" rel="noopener">
+          {i === 0 ? `Buy on Amazon · ${a.label}` : a.label}
+          <svg class="btn__arrow btn__arrow--out" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg>
+        </a>
+      ))}
+    </div>
+  </div>
+</article>

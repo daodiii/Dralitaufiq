@@ -17,7 +17,8 @@ import WorksFan from './WorksFan.astro';
 const all = await allBooks();
 const infos = await Promise.all(all.map(spineInfo));
 const groups = LANGS.map((L) => ({ ...L, spines: infos.filter((s) => s.lang === L.k) }));
-const href = (id: string) => `/books?book=${id}`;
+/* Each book has a page of its own (pages/books/[id]). */
+const href = (id: string) => `/books/${id}`;
 ---
 
 <section class="works" id="books" aria-labelledby="works-title">
