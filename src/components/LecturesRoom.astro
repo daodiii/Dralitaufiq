@@ -1,7 +1,8 @@
 ---
 /**
- * The lectures page, "the reading room" (picked as R8-B, 2026-11-22), in daylight like the books room
- * since the same day. A warm band with one lit screen, the whole Qur'an explained, beside the
+ * The lectures page, "the reading room" (picked as R8-B, 2026-11-22), at night since 2026-11-23: the
+ * site's three colours are white, black and gold, so the bands that were cream are black (#0c0b09, the
+ * hero's and the books vitrine's black). A black band with one lit screen, the whole Qur'an explained, beside the
  * programme of all seven series; then on white paper that series opened (its first lessons and every sūrah), the Companions by name, the other series,
  * and the talks in English and Somali, each language under a short band of its own.
  *
@@ -250,22 +251,26 @@ const prophet = (s: string) => s.split('ﷺ');
 </script>
 
 <style>
-  /* The room in daylight, the same light as the books room (BooksRoom.astro). */
+  /* The room at night: black bands, light words, gold Arabic and rules. White paper between. */
   .lr-room {
-    --cream: var(--ink);
-    --cream-2: oklch(42% 0.03 65);
-    --rule: rgb(70 45 20 / 0.16);
+    --cream: #f6efe2;
+    --cream-2: #a9a192;
+    --rule: rgb(246 239 226 / 0.12);
+    --gold: #d9b45a;
+    --gold-3: #d9b45a;
+    --accent: #d9b45a;
     position: relative;
     color: var(--cream);
-    background: radial-gradient(65% 75% at 50% 45%, #fffaf0, transparent 75%), #ece2cf;
-    border-top: 1px solid oklch(61% 0.125 82 / 0.35);
-    border-bottom: 1px solid oklch(61% 0.125 82 / 0.35);
+    background: #0c0b09;
+    border-top: 1px solid rgb(217 180 90 / 0.35);
+    border-bottom: 1px solid rgb(217 180 90 / 0.35);
   }
+  :global(html.lectures-night) { background: #0c0b09; }
   .lr-dim { color: var(--cream-2); }
-  .lr-top { margin-top: var(--nav-h); padding: 2.6rem 0 3.2rem; }
+  .lr-top { padding: calc(var(--nav-h) + 2.6rem) 0 3.2rem; border-top: 0; }
   .lr-top__in { display: grid; grid-template-columns: minmax(0, 820fr) minmax(0, 404fr); gap: 3rem; align-items: start; }
 
-  .lr-fr { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 2px; background: #dccbab; }
+  .lr-fr { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 2px; background: #0c0b09; }
   .lr-fr img { width: 100%; height: 100%; object-fit: contain; }
   .lr-fr--lit { box-shadow: none; }
 
@@ -276,7 +281,7 @@ const prophet = (s: string) => s.split('ﷺ');
 
   .lr-prog__hd { font-size: 0.8125rem; padding: 0 0 0.625rem 0.875rem; border-bottom: 1px solid var(--rule); }
   .lr-prog__row { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 1rem; align-items: center; padding: 0.5rem 0 0.5rem 0.875rem; border-bottom: 1px solid var(--rule); color: var(--cream); }
-  .lr-prog__row .lr-fr { box-shadow: 0 6px 12px -6px rgb(60 35 10 / 0.45); }
+  .lr-prog__row .lr-fr { box-shadow: 0 0 0 1px rgb(246 239 226 / 0.08); }
   .lr-prog__row.is-on .lr-fr, .lr-prog__row:hover .lr-fr, .lr-prog__row:focus-visible .lr-fr { filter: none; }
   .lr-prog__row.is-on::before { content: ''; position: absolute; left: 0; top: 0.625rem; bottom: 0.625rem; width: 2px; background: var(--gold); }
   .lr-prog__txt b { display: block; font-size: 0.97rem; font-weight: 500; line-height: 1.25; }
@@ -342,7 +347,7 @@ const prophet = (s: string) => s.split('ﷺ');
     .lr-g4 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
   @media (max-width: 760px) {
-    .lr-top { padding: 1.25rem 0 1.75rem; }
+    .lr-top { padding: calc(var(--nav-h) + 1.25rem) 0 1.75rem; }
     .lr-top__in { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
     .lr-prog { color: var(--cream); }
     .lr-open { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }

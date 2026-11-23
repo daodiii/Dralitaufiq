@@ -64,6 +64,21 @@ const year = new Date().getFullYear();
     border-top: 1px solid var(--line);
   }
 
+  /* The lectures page is at night (html.lectures-night, set in pages/lectures.astro before the bar
+     paints): the same parts in light words on black, gold for the accent. */
+  :global(html.lectures-night) .footer {
+    --ink: #f6efe2;
+    --ink-2: #efe7d8;
+    --ink-3: #a9a192;
+    --paper: #0c0b09;
+    --accent: #d9b45a;
+    --line: rgb(246 239 226 / 0.12);
+    --line-strong: rgb(246 239 226 / 0.28);
+    color: var(--ink);
+    background: var(--paper);
+    border-top-color: rgb(217 180 90 / 0.35);
+  }
+
   .footer__grid {
     display: grid;
     grid-template-columns: 1.6fr 1fr 0.7fr;
