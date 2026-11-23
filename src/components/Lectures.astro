@@ -9,7 +9,7 @@
 import { Image } from 'astro:assets';
 import { SERIES, playlist, seriesMeta } from '../lib/lectures';
 import quran from '../assets/lectures/edited/quran.jpg';
-import sira from '../assets/lectures/edited/sira.jpg';
+import sira from '../assets/lectures/edited/sira-wide.jpg';
 import brief from '../assets/lectures/edited/brief.jpg';
 import riyad from '../assets/lectures/edited/riyad.jpg';
 import companions from '../assets/lectures/edited/companions.jpg';
@@ -115,10 +115,8 @@ const six = SIX.map(({ key, pic }) => {
     text-wrap: pretty;
   }
 
-  /* Three by two; each picture as tall as two rows of them leave room for on the screen (the
-     line of words, two captions, the link), within reason. */
+  /* Keep every photograph's full 16:9 composition, including on shorter desktop screens. */
   .lectures__six {
-    --pic-h: clamp(9rem, calc((100svh - 30rem) / 2), 24rem);
     flex: 1;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -144,7 +142,7 @@ const six = SIX.map(({ key, pic }) => {
   .lectures__pic {
     grid-area: pic;
     display: block;
-    height: var(--pic-h);
+    aspect-ratio: 16 / 9;
     overflow: hidden;
     border-radius: 4px;
     background: var(--paper-3);
@@ -154,12 +152,7 @@ const six = SIX.map(({ key, pic }) => {
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    transition: transform 0.7s var(--ease-out-quint);
-  }
-
-  .lectures__one:hover .lectures__pic :global(img) {
-    transform: scale(1.035);
+    object-fit: contain;
   }
 
   .lectures__t {

@@ -7,31 +7,27 @@
  *
  * Every picture of him is one checked by eye: a lesson's own chosen frame (lib/stills.ts, data
  * `f`/`fv`) where it was checked again for this page (mouth closed or smiling, docs/research/
- * subjects-and-books-round-2026-11-22), and src/assets/talks for the talks. Everything else is a
- * text tile. Every lesson, sūrah and name opens on YouTube inside its playlist.
+ * subjects-and-books-round-2026-11-22). Enhanced versions now cover every displayed lesson and
+ * talk card. Every lesson, sūrah and name opens on YouTube inside its playlist.
  */
-import { Image } from 'astro:assets';
 import LESSONS from '../data/lessons.json';
 import { SERIES, ROOM, mins, playlist, video, watch, type Lesson, type Lessons } from '../lib/lectures';
-import { still, pictureOf, sharpSizes, type StillSize } from '../lib/stills';
+import { still, pictureOf } from '../lib/stills';
 import { SURAHS } from '../lib/surahs';
 import * as T from '../lib/talks';
 
 const data = LESSONS as Lessons;
-const byN = (key: string, n: number) => data[key].lessons.find((l) => l.n === n)!;
 const pl = (key: string) => data[key].pl;
 
-/* The checked lessons: the picture each series leads with, and the Qur'an lessons with a picture. */
-const LEAD: Record<string, number> = { quran: 13, brief: 15, sira: 4, companions: 8, riyad: 19, bulugh: 7, hisn: 1 };
-const QURAN_PICS = new Set([2, 4, 9, 12, 17, 18]);
-/* Two series carry a banner across the bottom of the frame: show its upper part. */
-const CROP = new Set(['sira', 'companions']);
+/* Two additional early lessons, alongside the opening lessons in teaching order. */
+const QURAN_EXTRA = new Set([17, 18]);
 
-const pic = (l: Lesson, big: boolean) => {
+const photo = (name: string, width: number = 480) => `/lecture-portraits/${name}-${width}.webp`;
+const photoSet = (name: string) => [480, 960, 1600].map((w) => `${photo(name, w)} ${w}w`).join(', ');
+
+const pic = (l: Lesson) => {
   const p = pictureOf(l);
-  const size: StillSize = big ? sharpSizes(p.x)[0] : 'mq';
-  const src = still(p.id, p.f, size);
-  return { src, bars: !src.startsWith('/lecture-portraits/') && (size === 'sd' || size === 'hq') };
+  return { src: still(p.id, p.f, 'mq') };
 };
 
 const LINES: Record<string, string> = {
@@ -46,11 +42,11 @@ const LINES: Record<string, string> = {
 
 /* Series artwork is shared with the homepage. Individual lesson tiles keep their own frames. */
 const series = ROOM.map((key) => {
-  const edited = key !== 'hisn';
+  const photoName = key === 'sira' ? 'sira-wide' : key;
   return {
-    key, s: SERIES[key], line: LINES[key], edited,
-    lead: edited ? { src: `/lecture-portraits/${key}-1600.webp`, bars: false } : pic(byN(key, LEAD[key]), true),
-    small: edited ? { src: `/lecture-portraits/${key}-480.webp`, bars: false } : pic(byN(key, LEAD[key]), false),
+    key, s: SERIES[key], line: LINES[key], photoName,
+    lead: { src: photo(photoName, 1600) },
+    small: { src: photo(photoName) },
   };
 });
 const Q = series[0];
@@ -58,10 +54,10 @@ const firstQ = data.quran.lessons[0];
 
 /* The Qur'an opened: its first twelve lessons, in order. */
 const opened = data.quran.lessons
-  .filter((l) => l.n <= 13 || QURAN_PICS.has(l.n))
+  .filter((l) => l.n <= 13 || QURAN_EXTRA.has(l.n))
   .filter((l) => l.n !== 11 && l.n !== 13)
   .slice(0, 12)
-  .map((l) => ({ l, href: watch(l.id, pl('quran')), pic: QURAN_PICS.has(l.n) ? pic(l, false) : null }));
+  .map((l) => ({ l, href: watch(l.id, pl('quran')), pic: pic(l) }));
 
 /* Every sūrah that has lessons, opening the lesson where it begins. */
 const surahs: { name: string; ar: string; href: string }[] = [];
@@ -81,9 +77,8 @@ const others = ['brief', 'sira', 'riyad', 'bulugh', 'hisn'].map((key) => ({
   first: data[key].lessons.slice(0, 3).map((l) => ({ t: l.t, len: mins(l.m), href: watch(l.id, pl(key)) })),
 }));
 
-/* The talks' checked frames. */
-const frames = import.meta.glob<{ default: ImageMetadata }>('../assets/talks/*.jpg', { eager: true });
-const talkPic = (id: string) => frames[`../assets/talks/${id}.jpg`]?.default;
+/* Every talk has an enhanced frame from that recording, including the former text tiles. */
+const talkPic = (id: string) => photo(`talk-${id}`);
 
 const languages = [
   { id: 'talks-en', line: T.EN_LINE, talks: T.EN_TALKS, lit: 3, all: playlist(T.EN_PLAYLIST), count: T.EN_COUNT },
@@ -103,8 +98,8 @@ const prophet = (s: string) => s.split('ﷺ');
   <h1 class="sr-only" id="lr-title">The lectures</h1>
   <div class="container lr-top__in">
     <div class="lr-screen">
-      <a class="lr-fr lr-fr--lit" class:list={[Q.lead.bars && 'bars']} href={watch(firstQ.id, pl('quran'))} aria-label={`${Q.s.title}: begin`}>
-        <img src={Q.lead.src} alt="" width="1280" height="720" fetchpriority="high" />
+      <a class="lr-fr lr-fr--lit" href={watch(firstQ.id, pl('quran'))} aria-label={`${Q.s.title}: begin`}>
+        <img src={Q.lead.src} srcset={photoSet(Q.photoName)} sizes="(max-width: 760px) 92vw, 60vw" alt="" width="1600" height="900" fetchpriority="high" />
       </a>
       <h2 class="lr-screen__t">{Q.s.title}<span lang="ar" dir="rtl">{Q.s.ar}</span></h2>
       <p class="lr-dim">{Q.line}</p>
@@ -115,7 +110,7 @@ const prophet = (s: string) => s.split('ﷺ');
       {
         series.map((x, i) => (
           <a class:list={['lr-prog__row', i === 0 && 'is-on']} href={`#s-${x.key}`}>
-            <span class:list={['lr-fr', !x.edited && CROP.has(x.key) && 'crop']}>
+            <span class="lr-fr">
               <img src={x.small.src} alt="" width="320" height="180" loading="lazy" />
             </span>
             <span class="lr-prog__txt">
@@ -136,17 +131,11 @@ const prophet = (s: string) => s.split('ﷺ');
       <p class="lr-hd"><b>{Q.s.title}</b>, from the start</p>
       <div class="lr-g4">
         {
-          opened.map(({ l, href, pic: p }) =>
-            p ? (
+          opened.map(({ l, href, pic: p }) => (
               <a class="lr-les" href={href}>
-                <span class:list={['lr-fr', p.bars && 'bars']}><img src={p.src} alt="" width="320" height="180" loading="lazy" /></span>
+                <span class="lr-fr"><img src={p.src} alt="" width="480" height="270" loading="lazy" decoding="async" /></span>
                 <b>{l.t}</b>
                 <span class="lr-meta">Lesson {l.n} · {mins(l.m)}</span>
-              </a>
-            ) : (
-              <a class="lr-les" href={href}>
-                <span class="lr-tile"><span class="lr-tile__len">{mins(l.m)}</span><b>{l.t}</b></span>
-                <span class="lr-meta">Lesson {l.n}</span>
               </a>
             )
           )
@@ -173,7 +162,7 @@ const prophet = (s: string) => s.split('ﷺ');
   <section class="lr-comp" id="s-companions" aria-label={SERIES.companions.title}>
     <div>
       {(() => { const x = series.find((s) => s.key === 'companions')!; return (
-        <span class="lr-fr" class:list={[!x.edited && 'crop', x.lead.bars && 'bars']}><img src={x.lead.src} alt="" width="640" height="360" loading="lazy" /></span>
+        <span class="lr-fr"><img src={x.lead.src} srcset={photoSet(x.photoName)} sizes="(max-width: 760px) 92vw, 30vw" alt="" width="1600" height="900" loading="lazy" /></span>
       ); })()}
       <h3 class="lr-h3">{SERIES.companions.title}<span lang="ar" dir="rtl">{SERIES.companions.ar}</span></h3>
       <p class="lr-meta">{LINES.companions}</p>
@@ -188,8 +177,8 @@ const prophet = (s: string) => s.split('ﷺ');
     {
       others.map((x) => (
         <div class="lr-ser" id={`s-${x.key}`}>
-          <span class:list={['lr-fr', !x.edited && CROP.has(x.key) && 'crop', x.lead.bars && 'bars']}>
-            <img src={x.lead.src} alt="" width="640" height="360" loading="lazy" />
+          <span class="lr-fr">
+            <img src={x.lead.src} srcset={photoSet(x.photoName)} sizes="(max-width: 760px) 44vw, 18vw" alt="" width="1600" height="900" loading="lazy" />
           </span>
           <h3 class="lr-h3">{x.s.title}<span lang="ar" dir="rtl">{x.s.ar}</span></h3>
           <p class="lr-meta">{x.line}</p>
@@ -207,7 +196,7 @@ const prophet = (s: string) => s.split('ﷺ');
 
 {
   languages.map((g) => {
-    const lit = g.talks.filter((t) => t.pic).slice(0, g.lit);
+    const lit = g.talks.slice(0, g.lit);
     const rest = g.talks.filter((t) => !lit.includes(t));
     return (
       <>
@@ -217,7 +206,7 @@ const prophet = (s: string) => s.split('ﷺ');
             <div class="lr-three">
               {lit.map((t) => (
                 <a class="lr-tk" href={video(t.id)}>
-                  <span class="lr-fr lr-fr--lit"><Image src={talkPic(t.id)!} alt="" widths={[480, 800]} sizes="(max-width: 760px) 92vw, 30vw" loading="lazy" /></span>
+                  <span class="lr-fr lr-fr--lit"><img src={talkPic(t.id)} srcset={photoSet(`talk-${t.id}`)} alt="" width="1600" height="900" sizes="(max-width: 760px) 92vw, 30vw" loading="lazy" decoding="async" /></span>
                   <b>{prophet(t.title).map((p, i) => (i ? [<bdi>ﷺ</bdi>, p] : p))}</b>
                   <span class="lr-dim">{[t.len, t.place].filter(Boolean).join(' · ')}</span>
                 </a>
@@ -229,11 +218,7 @@ const prophet = (s: string) => s.split('ﷺ');
           <div class="lr-ledger">
             {rest.map((t) => (
               <a class="lr-lr" href={video(t.id)}>
-                {t.pic ? (
-                  <span class="lr-fr"><Image src={talkPic(t.id)!} alt="" widths={[240]} sizes="112px" loading="lazy" /></span>
-                ) : (
-                  <span class="lr-blk" aria-hidden="true"></span>
-                )}
+                <span class="lr-fr"><img src={talkPic(t.id)} srcset={photoSet(`talk-${t.id}`)} alt="" width="1600" height="900" sizes="112px" loading="lazy" decoding="async" /></span>
                 <b>{prophet(t.title).map((p, i) => (i ? [<bdi>ﷺ</bdi>, p] : p))}</b>
                 <span>{[t.place, t.len].filter(Boolean).join(' · ')}</span>
               </a>
@@ -281,9 +266,7 @@ const prophet = (s: string) => s.split('ﷺ');
   .lr-top__in { display: grid; grid-template-columns: minmax(0, 820fr) minmax(0, 404fr); gap: 3rem; align-items: start; }
 
   .lr-fr { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 2px; background: #dccbab; }
-  .lr-fr img { width: 100%; height: 100%; object-fit: cover; }
-  .lr-fr.crop img { position: absolute; width: 132%; max-width: none; height: auto; left: -16%; top: 0; object-fit: fill; }
-  .lr-fr.crop.bars img { top: -22%; }
+  .lr-fr img { width: 100%; height: 100%; object-fit: contain; }
   .lr-fr--lit { box-shadow: none; }
 
   .lr-screen__t { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-top: 1.25rem; font-size: 1.625rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
@@ -293,7 +276,7 @@ const prophet = (s: string) => s.split('ﷺ');
 
   .lr-prog__hd { font-size: 0.8125rem; padding: 0 0 0.625rem 0.875rem; border-bottom: 1px solid var(--rule); }
   .lr-prog__row { position: relative; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 1rem; align-items: center; padding: 0.5rem 0 0.5rem 0.875rem; border-bottom: 1px solid var(--rule); color: var(--cream); }
-  .lr-prog__row .lr-fr { filter: saturate(0.7) opacity(0.82); box-shadow: 0 6px 12px -6px rgb(60 35 10 / 0.45); transition: filter 0.3s var(--ease-out); }
+  .lr-prog__row .lr-fr { box-shadow: 0 6px 12px -6px rgb(60 35 10 / 0.45); }
   .lr-prog__row.is-on .lr-fr, .lr-prog__row:hover .lr-fr, .lr-prog__row:focus-visible .lr-fr { filter: none; }
   .lr-prog__row.is-on::before { content: ''; position: absolute; left: 0; top: 0.625rem; bottom: 0.625rem; width: 2px; background: var(--gold); }
   .lr-prog__txt b { display: block; font-size: 0.97rem; font-weight: 500; line-height: 1.25; }
@@ -308,18 +291,13 @@ const prophet = (s: string) => s.split('ﷺ');
   .lr-les { display: block; color: var(--ink); }
   .lr-les > b { display: block; font-size: 0.84rem; font-weight: 500; line-height: 1.3; margin-top: 0.5rem; }
   .lr-meta { display: block; font-size: 0.78rem; color: var(--ink-3); }
-  .lr-tile { position: relative; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 16 / 9; background: var(--paper-2); border: 1px solid var(--line); border-radius: 2px; padding: 0.75rem; }
-  .lr-tile::before { content: ''; position: absolute; top: 0.875rem; left: 0.75rem; width: 28px; height: 2px; background: var(--gold); }
-  .lr-tile__len { position: absolute; top: 0.5rem; right: 0.75rem; font-size: 0.72rem; color: var(--ink-3); }
-  .lr-tile b { font-size: 0.9rem; font-weight: 500; line-height: 1.28; }
-  .lr-les:hover .lr-tile, .lr-les:focus-visible .lr-tile { border-color: var(--line-strong); }
   .lr-all { display: inline-block; margin-top: 0.875rem; font-size: 0.875rem; color: var(--ink); border-bottom: 1px solid var(--ink); }
 
   .lr-sur__d summary { cursor: default; }
   .lr-sur__d summary::-webkit-details-marker { display: none; }
-  .lr-sidx { display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: column; grid-template-rows: repeat(41, auto); column-gap: 1.125rem; font-size: 0.78rem; line-height: 1.09rem; }
+  .lr-sidx { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(41, auto); column-gap: 1.125rem; font-size: 0.78rem; line-height: 1.09rem; }
   .lr-sidx a { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; border-bottom: 1px solid var(--line); color: var(--ink); }
-  .lr-sidx a span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lr-sidx a span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .lr-sidx a i { font-style: normal; font-family: var(--font-arabic); font-size: 0.82rem; color: var(--gold-3); white-space: nowrap; }
   .lr-sidx a:hover span { color: var(--accent); }
 
@@ -341,14 +319,12 @@ const prophet = (s: string) => s.split('ﷺ');
   .lr-tk { display: block; color: var(--cream); }
   .lr-tk b { display: block; margin-top: 0.875rem; font-size: 1.15rem; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
   .lr-tk .lr-dim { display: block; font-size: 0.84rem; margin-top: 0.125rem; }
-  .lr-fr :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .lr-fr :global(img) { width: 100%; height: 100%; object-fit: contain; }
 
   .lr-paper--talks { padding-top: 1.125rem; }
   .lr-ledger { display: grid; grid-template-columns: 1fr 1fr; column-gap: 2.5rem; }
   .lr-lr { display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; gap: 1rem; align-items: center; min-height: 4rem; padding: 0.375rem 0; border-bottom: 1px solid var(--line); color: var(--ink); }
   .lr-lr .lr-fr { width: 112px; }
-  .lr-blk { position: relative; width: 112px; aspect-ratio: 16 / 9; background: var(--paper-2); border: 1px solid var(--line); border-radius: 2px; }
-  .lr-blk::before { content: ''; position: absolute; top: 9px; left: 10px; width: 20px; height: 2px; background: var(--gold); }
   .lr-lr b { font-size: 0.97rem; font-weight: 500; line-height: 1.3; }
   .lr-lr > span:last-child { font-size: 0.8125rem; color: var(--ink-3); white-space: nowrap; }
   .lr-lr:hover b { color: var(--accent); }
@@ -384,7 +360,7 @@ const prophet = (s: string) => s.split('ﷺ');
     .lr-three { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; }
     .lr-ledger { grid-template-columns: minmax(0, 1fr); }
     .lr-lr { grid-template-columns: 88px minmax(0, 1fr); gap: 0.25rem 0.875rem; }
-    .lr-lr .lr-fr, .lr-blk { width: 88px; grid-row: span 2; }
+    .lr-lr .lr-fr { width: 88px; grid-row: span 2; }
     .lr-lr > span:last-child { grid-column: 2; }
   }
 </style>

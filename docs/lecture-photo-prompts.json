@@ -1,0 +1,232 @@
+{
+  "tool": "built-in imagegen",
+  "note": "AI-enhanced recording stills; fine details may differ from the originals.",
+  "prompts": [
+    "Use case: identity-preserve. Edit target: this original real lecture video frame. Professionally retouch into a clear, high-quality natural editorial photograph, landscape 16:9. Preserve the exact scholar's identity, age, facial proportions, expression, beard, cap, glasses, clothing, hand gestures, microphones, books, original setting and other people. Correct uneven exposure and yellow/magenta casts, use soft natural light on the face, neutral whites, restrained true colors, reduce compression artifacts and noise, recover subtle detail while retaining authentic skin texture. WIDE COMPOSITION: use the entire active video picture with generous breathing room above the cap and beside both shoulders; keep all visible torso and hands in frame. Remove only black letterbox/pillarbox borders; extend the same background subtly if needed to fit 16:9 without cropping the person. No close-up, zoom-in, tighter crop, cut-off cap or shoulders. Do not invent or rewrite text, logos or book lettering; keep indistinct text indistinct. No new people, invented gestures, beauty smoothing, HDR, dramatic effects or excessive sharpening. Retain the library shelves and the scholar's full cap, shoulders, upper torso and visible hands, with generous breathing room. Remove the promotional channel marks, social-media icons, Instagram phone-shaped overlay and all follower/statistic text. Replace those promotional overlays only with a natural continuation of the actual bookshelf background. No added text or new objects. Keep his identity, face, clothing, expression and hand gestures unchanged. The result should be an uncluttered professional editorial lecture photograph, not a branded poster.",
+    "Use case: identity-preserve. Edit target: this original real lecture video frame. Professionally retouch into a clear, high-quality natural editorial photograph, landscape 16:9. Preserve the exact scholar's identity, age, facial proportions, expression, beard, cap, glasses, clothing, hand gestures, microphones, books, original setting and other people. Correct uneven exposure and yellow/magenta casts, use soft natural light on the face, neutral whites, restrained true colors, reduce compression artifacts and noise, recover subtle detail while retaining authentic skin texture. WIDE COMPOSITION: use the entire active video picture with generous breathing room above the cap and beside both shoulders; keep all visible torso and hands in frame. Remove only black letterbox/pillarbox borders; extend the same background subtly if needed to fit 16:9 without cropping the person. No close-up, zoom-in, tighter crop, cut-off cap or shoulders. Do not invent or rewrite text, logos or book lettering; keep indistinct text indistinct. No new people, invented gestures, beauty smoothing, HDR, dramatic effects or excessive sharpening. Do not add new props, furniture, books or decorative objects. Retouch this recording rather than staging a new scene.",
+    "Use case: identity-preserve. Edit target: this original real lecture video frame. Professionally retouch into a clear, high-quality natural editorial photograph, landscape 16:9. Preserve the exact scholar's identity, age, facial proportions, expression, beard, cap, glasses, clothing, hand gestures, microphones, books, original setting and other people. Correct uneven exposure and yellow/magenta casts, use soft natural light on the face, neutral whites, restrained true colors, reduce compression artifacts and noise, recover subtle detail while retaining authentic skin texture. WIDE COMPOSITION: use the entire active video picture with generous breathing room above the cap and beside both shoulders; keep all visible torso and hands in frame. Remove only black letterbox/pillarbox borders; extend the same background subtly if needed to fit 16:9 without cropping the person. No close-up, zoom-in, tighter crop, cut-off cap or shoulders. Do not invent or rewrite text, logos or book lettering; keep indistinct text indistinct. No new people, invented gestures, beauty smoothing, HDR, dramatic effects or excessive sharpening.",
+    "Use case: identity-preserve. Edit target: this original real lecture video frame. Professionally retouch into a clear, high-quality natural editorial photograph, landscape 16:9. Preserve the exact scholar's identity, age, facial proportions, expression, beard, cap, glasses, clothing, hand gestures, microphones, books, original setting and other people. Correct uneven exposure and yellow/magenta casts, use soft natural light on the face, neutral whites, restrained true colors, reduce compression artifacts and noise, recover subtle detail while retaining authentic skin texture. WIDE COMPOSITION: use the entire active video picture with generous breathing room above the cap and beside both shoulders; keep all visible torso and hands in frame. Remove only black letterbox/pillarbox borders; extend the same background subtly if needed to fit 16:9 without cropping the person. No close-up, zoom-in, tighter crop, cut-off cap or shoulders. Do not invent or rewrite text, logos or book lettering; keep indistinct text indistinct. No new people, invented gestures, beauty smoothing, HDR, dramatic effects or excessive sharpening. Do not add new props, furniture, books or decorative objects. Retouch this recording rather than staging a new scene. Special framing correction: pull back from the tight previous portrait. Keep full cap, both shoulders and his white-clothed torso through at least the waist with room on every side, using the same library shelves. Remove the large broadcast promotional lower third and subscribe overlay, extending only existing clothing and shelves underneath. Keep facial structure, age, expression, glasses and cap pattern unchanged. Do not enlarge his face."
+  ],
+  "images": [
+    {
+      "name": "talk--DNgx2Uyl7M",
+      "prompt": 0,
+      "source": "https://i.ytimg.com/vi/-DNgx2Uyl7M/maxres2.jpg"
+    },
+    {
+      "name": "talk--yzDhHv1unQ",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/-yzDhHv1unQ/maxres2.jpg"
+    },
+    {
+      "name": "talk-0jrhbLvsgXQ",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/0jrhbLvsgXQ/maxres2.jpg"
+    },
+    {
+      "name": "talk-13NorFteApg",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/13NorFteApg/maxres2.jpg"
+    },
+    {
+      "name": "talk-3kuUW3nsbHg",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/3kuUW3nsbHg/maxres2.jpg"
+    },
+    {
+      "name": "talk-8BmHYBnVKT4",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/8BmHYBnVKT4/maxres2.jpg"
+    },
+    {
+      "name": "talk-BJx8k_mSBj8",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/BJx8k_mSBj8/sd2.jpg"
+    },
+    {
+      "name": "talk-c81we5gC6wI",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/c81we5gC6wI/maxres2.jpg"
+    },
+    {
+      "name": "talk-cbnyxmu77iM",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/cbnyxmu77iM/maxres2.jpg"
+    },
+    {
+      "name": "talk-CzA5vTOIH6k",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/CzA5vTOIH6k/maxres2.jpg"
+    },
+    {
+      "name": "talk-dORQ8eJYh0A",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/dORQ8eJYh0A/hq2.jpg"
+    },
+    {
+      "name": "talk-f-2pX_4_9sE",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/f-2pX_4_9sE/maxres2.jpg"
+    },
+    {
+      "name": "talk-Ff89iIB1oa4",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/Ff89iIB1oa4/maxres2.jpg"
+    },
+    {
+      "name": "talk-Hi227KTtAc8",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/Hi227KTtAc8/maxres2.jpg"
+    },
+    {
+      "name": "hisn",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/7IntiZTYGw4/maxres2.jpg"
+    },
+    {
+      "name": "talk-htKSSmkjnnY",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/htKSSmkjnnY/maxres2.jpg"
+    },
+    {
+      "name": "talk-IfvlfY9lRFM",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/IfvlfY9lRFM/maxres2.jpg"
+    },
+    {
+      "name": "talk-j7mdWGZ6WxI",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/j7mdWGZ6WxI/maxres2.jpg"
+    },
+    {
+      "name": "talk-JsRAJ7MiamA",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/JsRAJ7MiamA/hq2.jpg"
+    },
+    {
+      "name": "talk-kJ32HvfggUM",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/kJ32HvfggUM/sd2.jpg"
+    },
+    {
+      "name": "talk-kklUBxkvmUg",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/kklUBxkvmUg/maxres2.jpg"
+    },
+    {
+      "name": "talk-kZDynBs3rg0",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/kZDynBs3rg0/maxres2.jpg"
+    },
+    {
+      "name": "talk-kZRrJvN4h3s",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/kZRrJvN4h3s/maxres2.jpg"
+    },
+    {
+      "name": "talk-lmJSQv9SmdM",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/lmJSQv9SmdM/maxres2.jpg"
+    },
+    {
+      "name": "talk-o0Nhtjvt970",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/o0Nhtjvt970/maxres2.jpg"
+    },
+    {
+      "name": "talk-o1jWC0TqfSo",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/o1jWC0TqfSo/maxres2.jpg"
+    },
+    {
+      "name": "talk-QnBwH7Dkbq8",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/QnBwH7Dkbq8/maxres2.jpg"
+    },
+    {
+      "name": "quran-10",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/buIoI7PchLg/sd2.jpg"
+    },
+    {
+      "name": "quran-12",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/v3o2o6J4KFk/hq2.jpg"
+    },
+    {
+      "name": "quran-17",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/viZNDKHIVfA/maxres3.jpg"
+    },
+    {
+      "name": "quran-18",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/cp6vWq6lIOc/maxres3.jpg"
+    },
+    {
+      "name": "quran-3",
+      "prompt": 2,
+      "source": "https://i.ytimg.com/vi/8nQoeSLaBL0/maxres3.jpg"
+    },
+    {
+      "name": "quran-4",
+      "prompt": 2,
+      "source": "https://i.ytimg.com/vi/laPH20wGe_o/sd1.jpg"
+    },
+    {
+      "name": "quran-5",
+      "prompt": 2,
+      "source": "https://i.ytimg.com/vi/gvuRVNx7pAU/sd2.jpg"
+    },
+    {
+      "name": "quran-6",
+      "prompt": 2,
+      "source": "https://i.ytimg.com/vi/VdR3cO62Ms8/hq2.jpg"
+    },
+    {
+      "name": "quran-7",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/x_qDPEMMZqI/sd2.jpg"
+    },
+    {
+      "name": "quran-8",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/7n_FDDG54mE/sd2.jpg"
+    },
+    {
+      "name": "quran-9",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/1AQbS0-x58E/hq1.jpg"
+    },
+    {
+      "name": "talk-SI3mfkCj9NM",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/SI3mfkCj9NM/hq2.jpg"
+    },
+    {
+      "name": "sira-wide",
+      "prompt": 3,
+      "source": "https://i.ytimg.com/vi/A4h5rqVyH4I/maxres3.jpg"
+    },
+    {
+      "name": "talk-TJ4a-EghNW4",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/TJ4a-EghNW4/maxres2.jpg"
+    },
+    {
+      "name": "talk-vfCmNidou0w",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/vfCmNidou0w/maxres3.jpg"
+    },
+    {
+      "name": "talk-vlQGcjGEmCM",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/vlQGcjGEmCM/maxres2.jpg"
+    },
+    {
+      "name": "talk-zaWqnIohxA4",
+      "prompt": 1,
+      "source": "https://i.ytimg.com/vi/zaWqnIohxA4/maxres2.jpg"
+    }
+  ]
+}
