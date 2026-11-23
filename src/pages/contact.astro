@@ -1,6 +1,7 @@
 ---
-/* Contact, on one screen: the folio the hero lands on, ruled in gold with corner marks. Who he is
-   and where to follow him on the left, the form on the right. The form posts to api/contact.ts,
+/* Contact, on one screen: a folio ruled in gold with corner marks, filling the screen. On the left
+   the gold name, the title, one line (with the languages to write in) and two buttons, Facebook and
+   YouTube; the form on the right. The form posts to api/contact.ts,
    which emails it through Resend. Sending traces a red line once round the folio and draws a tick;
    a failure leaves what was written in place and points to the Facebook page instead. */
 import Base from '../layouts/Base.astro';
@@ -27,41 +28,14 @@ const youtube = profile.social[1];
 
       <section class="who">
         <div class="calli in" role="img" aria-label={profile.nameArabic} style="--i:0"></div>
-        <div class="in" style="--i:1">
-          <p class="eyebrow">Contact</p>
-          <h1 class="who__title">Lectures, books, <i>or a question.</i></h1>
-        </div>
+        <h1 class="who__title in" style="--i:1">Lectures, books, <i>or a question.</i></h1>
         <p class="who__lede in" style="--i:2">
-          Invite Dr. Ali to speak, ask about his books and translations, or write with something on your mind.
+          Invite him to speak, ask about his books and translations, or write with a question. Write in Arabic,
+          English, Somali or Norwegian.
         </p>
-        <dl class="facts in" style="--i:3">
-          <div><dt>Based in</dt><dd>{profile.city}</dd></div>
-          <div><dt>Mosque</dt><dd>Tawfiiq Islamic Centre</dd></div>
-          <div><dt>Write in</dt><dd>Arabic, English, Somali, Norwegian</dd></div>
-          <div><dt>Organisations</dt><dd>Iqra Foundation</dd></div>
-        </dl>
-        <nav class="follow in" aria-label="Follow" style="--i:4">
-          <a href={facebook.url} target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M13.5 22v-8.2h2.8l.4-3.2h-3.2V8.5c0-.9.3-1.6 1.6-1.6h1.7V4.1c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3v2.3H7.3v3.2h2.8V22h3.4Z" />
-            </svg>
-            <b>{facebook.label}</b><span>The official page</span>
-            <svg class="follow__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg>
-          </a>
-          <a href={youtube.url} target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.8a2.5 2.5 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8c.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8ZM10 15V9l5.2 3L10 15Z" />
-            </svg>
-            <b>{youtube.label}</b><span>Lessons on Tawfiiq Duruus</span>
-            <svg class="follow__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg>
-          </a>
-          <a href={profile.bookstore} target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-              <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5v-13ZM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" />
-            </svg>
-            <b>Books</b><span>Amazon author store</span>
-            <svg class="follow__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg>
-          </a>
+        <nav class="follow in" aria-label="Follow" style="--i:3">
+          <a href={facebook.url} target="_blank" rel="noopener">{facebook.label} <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
+          <a href={youtube.url} target="_blank" rel="noopener">{youtube.label} <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
         </nav>
       </section>
 
@@ -411,13 +385,13 @@ const youtube = profile.social[1];
 
   .folio {
     position: relative;
-    width: min(100%, 76rem);
+    width: 100%;
     height: calc(100svh - var(--nav-h) - 0.25rem - clamp(1.25rem, 4vh, 3rem));
-    max-height: 46rem;
+    max-height: 60rem;
     display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-    gap: clamp(2rem, 4.5vw, 4.5rem);
-    padding: clamp(1.6rem, 4.2vh, 3rem) clamp(1.6rem, 3.6vw, 3.4rem);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2.5rem, 5vw, 6rem);
+    padding: clamp(2rem, 6vh, 4.5rem) clamp(2rem, 5vw, 5.5rem);
     background: var(--paper);
     box-shadow: var(--shadow-plate);
   }
@@ -463,13 +437,15 @@ const youtube = profile.social[1];
   /* ---------- who, where, follow ---------- */
 
   .who {
-    display: grid;
-    grid-template-rows: auto auto auto 1fr auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(1.1rem, 3vh, 2.2rem);
     min-height: 0;
   }
 
   .calli {
-    width: min(100%, 17rem);
+    width: min(100%, 19rem);
     aspect-ratio: 885 / 310;
     background: var(--gilt);
     background-size: 200% 100%;
@@ -478,17 +454,9 @@ const youtube = profile.social[1];
     animation: rise 0.9s var(--ease-out) both, shine 7s linear infinite;
   }
 
-  .eyebrow {
-    margin-top: clamp(0.8rem, 2.2vh, 1.4rem);
-    font-size: 0.8rem;
-    letter-spacing: 0.04em;
-    color: var(--accent);
-  }
-
   .who__title {
-    margin-top: 0.35rem;
     font-family: var(--font-display);
-    font-size: clamp(2rem, 3.6vw, 3.4rem);
+    font-size: clamp(2.6rem, 4.4vw, 4.8rem);
     font-weight: 500;
     line-height: 0.98;
     letter-spacing: -0.04em;
@@ -502,89 +470,47 @@ const youtube = profile.social[1];
   }
 
   .who__lede {
-    margin-top: clamp(0.6rem, 1.6vh, 1rem);
-    max-width: 30rem;
-    font-size: 0.98rem;
+    max-width: 34rem;
+    font-size: clamp(1.05rem, 1.3vw, 1.3rem);
+    line-height: 1.5;
     color: var(--ink-2);
     text-wrap: pretty;
   }
 
-  .facts {
-    align-self: center;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: clamp(0.8rem, 2vh, 1.2rem) 1.6rem;
-    padding-block: clamp(0.8rem, 2vh, 1.4rem);
-    font-size: 0.88rem;
-  }
-
-  .facts dt {
-    font-size: 0.74rem;
-    color: var(--ink-3);
-  }
-
-  .facts dd {
-    color: var(--ink-2);
-  }
-
+  /* Facebook and YouTube: two outlined buttons. */
   .follow {
-    display: grid;
-    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
   .follow a {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    display: grid;
-    grid-template-columns: 1.6rem 6.5rem 1fr auto;
+    display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    padding-block: clamp(0.55rem, 1.4vh, 0.8rem);
-    border-bottom: 1px solid var(--line);
-    font-size: 0.92rem;
+    height: 3rem;
+    padding: 0 1.35rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: 1rem;
+    color: var(--ink);
+    transition: border-color 0.3s var(--ease-out), background-color 0.3s var(--ease-out);
   }
 
-  /* a gold wash slides in under the row */
-  .follow a::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background: linear-gradient(90deg, color-mix(in oklab, var(--gold-2) 30%, transparent), transparent);
-    transform: translateX(-101%);
-    transition: transform 0.6s var(--ease-out-quint);
-  }
-
-  .follow a:hover::before,
-  .follow a:focus-visible::before {
-    transform: none;
+  .follow a:hover,
+  .follow a:focus-visible {
+    border-color: var(--ink);
+    background: color-mix(in oklab, var(--gold-2) 18%, transparent);
   }
 
   .follow svg {
-    width: 1.1rem;
-    height: 1.1rem;
-    color: var(--ink-2);
-  }
-
-  .follow b {
-    font-weight: 500;
-  }
-
-  .follow span {
-    font-size: 0.82rem;
-    color: var(--ink-3);
-  }
-
-  .follow .follow__arrow {
     width: 0.9rem;
     height: 0.9rem;
-    transition: transform 0.5s var(--ease-out), color 0.4s;
+    transition: transform 0.5s var(--ease-out);
   }
 
-  .follow a:hover .follow__arrow {
+  .follow a:hover svg {
     transform: translate(3px, -3px);
-    color: var(--accent);
   }
 
   /* ---------- the form ---------- */
@@ -598,13 +524,14 @@ const youtube = profile.social[1];
   .form {
     display: grid;
     grid-template-rows: auto auto auto 1fr auto;
-    gap: clamp(0.7rem, 1.8vh, 1.05rem);
+    align-content: center;
+    gap: clamp(0.9rem, 2.3vh, 1.5rem);
     min-height: 0;
     transition: opacity 0.5s, transform 0.6s var(--ease-out);
   }
 
   .form__h {
-    font-size: 1.15rem;
+    font-size: clamp(1.35rem, 1.8vw, 1.85rem);
     font-weight: 500;
     letter-spacing: -0.02em;
   }
@@ -647,8 +574,8 @@ const youtube = profile.social[1];
 
   .seg span {
     display: block;
-    padding: 0.5rem 0.4rem;
-    font-size: 0.8rem;
+    padding: 0.8rem 0.4rem;
+    font-size: clamp(0.88rem, 1vw, 1rem);
     white-space: nowrap;
     color: var(--ink-2);
     transition: color 0.4s;
@@ -680,13 +607,13 @@ const youtube = profile.social[1];
   .field input,
   .field textarea {
     width: 100%;
-    padding: 0.95rem 1rem 0.65rem;
+    padding: 1.25rem 1.15rem 0.8rem;
     border: 1px solid var(--line-strong);
-    border-radius: 12px;
+    border-radius: 14px;
     outline: 0;
     background: var(--paper);
     font: inherit;
-    font-size: 1rem;
+    font-size: 1.08rem;
     color: var(--ink);
     transition: border-color 0.35s, box-shadow 0.5s var(--ease-out);
   }
@@ -774,8 +701,8 @@ const youtube = profile.social[1];
   }
 
   .form__note {
-    max-width: 18rem;
-    font-size: 0.76rem;
+    max-width: 22rem;
+    font-size: 0.88rem;
     color: var(--ink-3);
   }
 
@@ -790,9 +717,14 @@ const youtube = profile.social[1];
   }
 
   .btn {
+    flex: none;
+    height: 3.5rem;
+    padding: 0 1.9rem;
     border: 0;
     cursor: pointer;
     font-family: inherit;
+    font-size: 1rem;
+    white-space: nowrap;
   }
 
   .btn:disabled {
@@ -1354,21 +1286,16 @@ const youtube = profile.social[1];
     }
   }
 
-  /* Short laptop screens: a smaller name and three facts, so the folio still fits. */
+  /* Short laptop screens: a smaller name and title, so the folio still fits. */
   @media (max-height: 760px) and (min-width: 900px) {
     .calli {
-      width: min(100%, 13rem);
+      width: min(100%, 14rem);
     }
-    .facts {
-      grid-template-columns: repeat(3, auto);
-      justify-content: start;
-      column-gap: 2rem;
-    }
-    .facts div:last-child {
-      display: none;
+    .who__title {
+      font-size: clamp(2.2rem, 3.6vw, 3.6rem);
     }
     .who__lede {
-      font-size: 0.9rem;
+      font-size: 1rem;
     }
   }
 
@@ -1396,8 +1323,12 @@ const youtube = profile.social[1];
     .write {
       min-height: 32rem;
     }
-    .follow a {
-      grid-template-columns: 1.6rem 5.5rem 1fr auto;
+    .form__foot {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .btn {
+      justify-content: center;
     }
   }
 
