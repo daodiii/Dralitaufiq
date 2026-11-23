@@ -95,5 +95,6 @@ document.addEventListener('click', (event) => {
   if (!target) return;
   event.preventDefault();
   scrollToEl(target, 0);
-  history.replaceState(null, '', `#${id}`);
+  /* The address stays clean: no #part on it. */
+  if (location.hash) history.replaceState(history.state, '', location.pathname + location.search);
 });
