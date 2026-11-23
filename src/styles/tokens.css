@@ -12,6 +12,19 @@
   --gold: oklch(61% 0.125 82);
   --gold-2: oklch(84% 0.12 92);
   --gold-3: oklch(45% 0.1 76);
+  /* The polished gold (picked as A, 2026-11-23): the one gold of every button and gold line. Lit
+     from above (hi), body (mid), shadowed below (lo); ink is the text on it. */
+  --gold-hi: #f7e08c;
+  --gold-mid: #e6bd4f;
+  --gold-lo: #c9952f;
+  --gold-ink: #1a1205;
+  --gold-line: #d9b45a;
+  --gold-metal: linear-gradient(180deg, var(--gold-hi) 0%, var(--gold-mid) 45%, var(--gold-lo) 100%);
+  /* The black of the night pages, and its light words. */
+  --night: #0c0b09;
+  --night-ink: #f6efe2;
+  --night-ink-2: #efe7d8;
+  --night-ink-3: #a9a192;
   --line: color-mix(in oklab, var(--ink) 12%, transparent);
   --line-strong: color-mix(in oklab, var(--ink) 28%, transparent);
 

@@ -34,8 +34,8 @@ const youtube = profile.social[1];
           English, Somali or Norwegian.
         </p>
         <nav class="follow in" aria-label="Follow" style="--i:3">
-          <a href={facebook.url} target="_blank" rel="noopener">{facebook.label} <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
-          <a href={youtube.url} target="_blank" rel="noopener">{youtube.label} <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
+          <a class="btn btn--ghost" href={facebook.url} target="_blank" rel="noopener">{facebook.label} <svg class="btn__arrow btn__arrow--out" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
+          <a class="btn btn--ghost" href={youtube.url} target="_blank" rel="noopener">{youtube.label} <svg class="btn__arrow btn__arrow--out" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg></a>
         </nav>
       </section>
 
@@ -142,7 +142,7 @@ const youtube = profile.social[1];
           </svg>
           <p class="done__h">Sent, thank you.</p>
           <p class="done__p">Your message is on its way. Any reply comes to the email you gave.</p>
-          <button class="done__again" type="button">Send another</button>
+          <button class="link done__again" type="button">Send another</button>
         </div>
       </section>
     </article>
@@ -484,35 +484,6 @@ const youtube = profile.social[1];
     gap: 0.75rem;
   }
 
-  .follow a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    height: 3rem;
-    padding: 0 1.35rem;
-    border: 1px solid var(--line-strong);
-    border-radius: 999px;
-    font-size: 1rem;
-    color: var(--ink);
-    transition: border-color 0.3s var(--ease-out), background-color 0.3s var(--ease-out);
-  }
-
-  .follow a:hover,
-  .follow a:focus-visible {
-    border-color: var(--ink);
-    background: color-mix(in oklab, var(--gold-2) 18%, transparent);
-  }
-
-  .follow svg {
-    width: 0.9rem;
-    height: 0.9rem;
-    transition: transform 0.5s var(--ease-out);
-  }
-
-  .follow a:hover svg {
-    transform: translate(3px, -3px);
-  }
-
   /* ---------- the form ---------- */
 
   .write {
@@ -716,15 +687,8 @@ const youtube = profile.social[1];
     color: var(--accent);
   }
 
-  .btn {
+  .form__foot .btn {
     flex: none;
-    height: 3.5rem;
-    padding: 0 1.9rem;
-    border: 0;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 1rem;
-    white-space: nowrap;
   }
 
   .btn:disabled {
@@ -783,13 +747,6 @@ const youtube = profile.social[1];
 
   .done__again {
     margin-top: 0.4rem;
-    border: 0;
-    background: none;
-    cursor: pointer;
-    font: inherit;
-    font-size: 0.86rem;
-    color: var(--ink);
-    box-shadow: 0 1px 0 currentColor;
   }
 
   /* Posting: the form gives way to the letter it wrote (choreographed in the script). */
@@ -1327,7 +1284,7 @@ const youtube = profile.social[1];
       flex-direction: column;
       align-items: stretch;
     }
-    .btn {
+    .form__foot .btn {
       justify-content: center;
     }
   }

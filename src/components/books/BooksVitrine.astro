@@ -128,12 +128,13 @@ const v = (id: string) => view.find((x) => x.b.id === id)!;
           {x.en && <p class="vt__en" lang="en" dir="ltr">{x.en}</p>}
           {x.role && <p class="vt__en" lang="en" dir="ltr">{x.role}</p>}
           <p class="vt__desc" lang={x.desc.lang} dir={x.desc.dir}>{x.desc.lead && <b>{x.desc.lead}: </b>}{x.desc.text}</p>
-          <button class="vt__whole" type="button" data-open={x.b.id}>{x.rtl ? 'الوصف كاملًا' : 'Read the whole description'}</button>
+          <button class="link vt__whole" type="button" data-open={x.b.id}>{x.rtl ? 'الوصف كاملًا' : 'Read the whole description'}</button>
           <p class="vt__colo" lang="en" dir="ltr">{x.colo}</p>
           <div class="vt__pills" dir="ltr">
             {x.b.data.amazon.map((a, i) => (
-              <a class:list={['vt__pill', i > 0 && 'is-ghost']} href={a.url} target="_blank" rel="noopener">
+              <a class:list={['btn', i > 0 && 'btn--ghost']} href={a.url} target="_blank" rel="noopener">
                 {i === 0 ? `Buy on Amazon · ${a.label}` : a.label}
+                <svg class="btn__arrow btn__arrow--out" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6" /></svg>
               </a>
             ))}
           </div>
@@ -152,6 +153,8 @@ const v = (id: string) => view.find((x) => x.b.id === id)!;
 
   .vt {
     --bh: clamp(360px, min(calc(100vh - 300px), 50vw), 640px);
+    --btn-ghost: var(--night-ink-2);
+    --link-ink: var(--night-ink-2);
     color: #efe7d8;
     background: #0c0b09;
   }
@@ -229,19 +232,13 @@ const v = (id: string) => view.find((x) => x.b.id === id)!;
   .vt__bk[dir='rtl'] .vt__en, .vt__bk[dir='rtl'] .vt__colo { text-align: right; }
   /* An Arabic book's English lines keep the site's own letters, not the Arabic book face. */
   .vt__bk[dir='rtl'] .vt__en, .vt__bk[dir='rtl'] .vt__colo, .vt__bk[dir='rtl'] .vt__pills, .vt__bk[dir='rtl'] .vt__sub[dir='ltr'], .vt__bk[dir='rtl'] .vt__desc[dir='ltr'] { font-family: var(--font-body); }
-  .vt__whole { margin-top: 0.6rem; padding: 0; border: 0; background: none; font: inherit; font-size: 0.94rem; color: #efe7d8; border-bottom: 1px solid rgb(217 180 90 / 0.7); cursor: pointer; }
+  .vt__whole { margin-top: 0.8rem; }
   .vt__bk[dir='rtl'] .vt__whole { font-family: var(--font-arabic); font-size: 1.1rem; }
-  .vt__whole:focus-visible, .vt__pill:focus-visible { outline: 2px solid #d9b45a; outline-offset: 3px; }
   .vt__colo { margin: 1.3rem 0 1rem; font-size: 0.92rem; color: #a9a192; }
   .vt__pills { display: flex; flex-wrap: wrap; gap: 0.6rem; }
   .vt__bk[dir='rtl'] .vt__pills { justify-content: flex-end; }
-  .vt__pill { display: inline-flex; align-items: center; height: 3.1rem; padding: 0 1.5rem; border-radius: 999px; font-size: 1rem; font-weight: 500; white-space: nowrap; background: #d9b45a; color: #17120a; transition: background 0.3s var(--ease-out); }
-  .vt__pill:hover { background: #e6c46e; }
-  .vt__pill.is-ghost { background: transparent; color: #efe7d8; box-shadow: inset 0 0 0 1.5px rgb(239 231 216 / 0.55); }
-  .vt__pill.is-ghost:hover { background: rgb(239 231 216 / 0.08); }
 
   @media (max-width: 1180px) {
     .vt__bk { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-    .vt__pill { height: 2.75rem; padding: 0 1.1rem; font-size: 0.94rem; }
   }
 </style>
