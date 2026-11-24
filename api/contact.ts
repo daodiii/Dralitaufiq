@@ -10,7 +10,9 @@
                      address that owns the Resend account.
 
    A bot that fills in the hidden "website" field, or sends within 3 seconds of the page loading,
-   gets the same answer as a person but nothing is sent. */
+   gets the same answer as a person but nothing is sent. The page reports how long it has been open
+   ("elapsed", in ms, measured on its own clock), so a visitor whose clock is set wrong is not taken
+   for a bot. Pages from before that field send "loadedAt" (their clock) and are checked against ours. */
 
 declare const process: { env: Record<string, string | undefined> };
 
@@ -36,8 +38,8 @@ const text = (v: unknown) => (typeof v === 'string' ? v.trim() : '');
 export function check(body: unknown, now = Date.now()): Checked {
   const b = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>;
 
-  const loadedAt = Number(text(b.loadedAt) || NaN);
-  if (text(b.website) !== '' || !(loadedAt > 0) || now - loadedAt < FASTEST_MS) return { kind: 'spam' };
+  const elapsed = text(b.elapsed) !== '' ? Number(text(b.elapsed)) : now - Number(text(b.loadedAt) || NaN);
+  if (text(b.website) !== '' || !(elapsed >= FASTEST_MS)) return { kind: 'spam' };
 
   // One line each, so nothing written in the name can reach the subject as a second header line.
   const name = text(b.name).replace(/\s+/g, ' ');
@@ -84,16 +86,22 @@ export async function POST(request: Request): Promise<Response> {
     return json(500, { error: 'not-configured' });
   }
 
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: process.env.CONTACT_FROM || 'Website <onboarding@resend.dev>',
-      to,
-      reply_to: checked.message.email,
-      ...compose(checked.message),
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.CONTACT_FROM || 'Website <onboarding@resend.dev>',
+        to,
+        reply_to: checked.message.email,
+        ...compose(checked.message),
+      }),
+    });
+  } catch (err) {
+    console.error('contact: Resend could not be reached', err);
+    return json(502, { error: 'send-failed' });
+  }
   if (!res.ok) {
     console.error('contact: Resend answered', res.status, await res.text());
     return json(502, { error: 'send-failed' });

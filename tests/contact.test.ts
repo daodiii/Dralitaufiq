@@ -45,6 +45,13 @@ test('the hidden field filled, a send within 3 seconds, or no load time is taken
   assert.equal(check({ ...good, loadedAt: '' }, NOW).kind, 'spam');
 });
 
+test("the time on the page is measured on the visitor's own clock, so a clock set wrong cannot hide a message", () => {
+  // The page says it has been open 40 s; a load time from a clock an hour fast is ignored.
+  assert.equal(check({ ...good, elapsed: '40000', loadedAt: String(NOW + 3_600_000) }, NOW).kind, 'ok');
+  assert.equal(check({ ...good, elapsed: '1200' }, NOW).kind, 'spam');
+  assert.equal(check({ ...good, elapsed: 'soon' }, NOW).kind, 'spam');
+});
+
 test('an unknown topic becomes "other", and a name cannot break onto a second line', () => {
   const r = check({ ...good, topic: 'constructor', name: 'Amina\r\nBcc: x@example.com' }, NOW);
   assert.equal(r.kind, 'ok');
@@ -93,4 +100,15 @@ test('bad JSON is 400, an invalid message 422, missing settings 500, a Resend fa
   process.env.CONTACT_TO = 'office@example.com';
   globalThis.fetch = (async () => new Response('{"message":"domain not verified"}', { status: 403 })) as typeof fetch;
   assert.equal((await post({ ...good, loadedAt: String(Date.now() - 10_000) })).status, 502);
+});
+
+test('Resend out of reach is a 502 too, not a crash', async () => {
+  process.env.RESEND_API_KEY = 're_test';
+  process.env.CONTACT_TO = 'office@example.com';
+  globalThis.fetch = (async () => {
+    throw new TypeError('fetch failed');
+  }) as typeof fetch;
+  const res = await post({ ...good, elapsed: '20000' });
+  assert.equal(res.status, 502);
+  assert.deepEqual(await res.json(), { error: 'send-failed' });
 });
