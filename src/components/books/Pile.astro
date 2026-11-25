@@ -426,18 +426,22 @@ const books = await Promise.all(
 
   /* ---------- the book drawn out ---------- */
 
+  /* Its own colour: the title has none, and inherited the day's dark ink from the page, dark on
+     the night (2026-11-25). */
   .pview {
     position: fixed;
     inset: 0;
     z-index: 130;
+    color: var(--ink);
   }
 
+  /* A solid veil (2026-11-25). At 86% with a blur, the pile's warm light showed through it in
+     soft patches that stood still while the book's words scrolled over them, like a shadow left
+     behind. The veil still fades in and out over the pile (pile.ts). */
   .pview__scrim {
     position: absolute;
     inset: 0;
-    background: color-mix(in oklab, var(--paper) 86%, transparent);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
+    background: var(--paper);
   }
 
   .pview__body {
