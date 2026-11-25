@@ -37,7 +37,8 @@ export function person(site: URL | undefined, image: string) {
     memberOf: profile.roles.filter((r) => r.org !== 'Tawfiiq Islamic Centre, Oslo').map((r) => ({ '@type': 'Organization', name: r.org })),
     knowsLanguage: profile.languages,
     knowsAbout: profile.fields.map((f) => f.en),
-    sameAs: profile.social.map((s) => s.url),
+    // Not the YouTube channel: it is Tawfiiq Duruus, the centre's channel, not his own.
+    sameAs: profile.social.filter((s) => s.label !== 'YouTube').map((s) => s.url),
   };
 }
 
