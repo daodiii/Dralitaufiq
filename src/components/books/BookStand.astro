@@ -7,6 +7,7 @@
  */
 import { Image } from 'astro:assets';
 import { bookHref, type VitrineBook } from '../../lib/vitrine';
+import profile from '../../data/profile.json';
 
 interface Props {
   x: VitrineBook;
@@ -51,6 +52,11 @@ const H = page ? 'h1' : 'h2';
     {x.sub && <p class="vt__sub" dir={/[؀-ۿ]/.test(x.sub) ? 'rtl' : 'ltr'}>{x.sub}</p>}
     {x.en && <p class="vt__en" lang="en" dir="ltr">{x.en}</p>}
     {x.role && <p class="vt__en" lang="en" dir="ltr">{x.role}</p>}
+    {page && x.byline && (
+      <p class="vt__en vt__by" lang="en" dir="ltr">
+        {x.byline} <a class="link" href="/">{profile.name}</a>
+      </p>
+    )}
     {
       page ? (
         <div class="vt__all">

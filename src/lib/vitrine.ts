@@ -51,6 +51,9 @@ export async function vitrine(books: Book[]) {
       sub: d.subtitle,
       en: d.language !== 'en' && d.titleEn && d.titleEn !== d.subtitle ? d.titleEn : null,
       role: d.role !== 'Author' ? d.role : null,
+      /* On the book's own page, who made it, his name in the words a reader (and a search engine)
+         sees: "By …" for his own books, the role and his name where the role line lacks it. */
+      byline: d.role === 'Author' ? 'By' : d.role.includes('Ali Mohamed Salah') ? null : `${d.role}, by`,
       colo:
         d.badge === 'Coming soon'
           ? [d.badge, d.publisher].filter(Boolean).join(' · ')
