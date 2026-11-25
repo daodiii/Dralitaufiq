@@ -339,8 +339,6 @@ const [lead, ...body] = profile.aboutLead;
   }
 
   .about__pin.is-live {
-    --gap: 0;
-    --fade: 0;
     --rec-top: clamp(0.5rem, 2vh, 1.5rem);
     height: 100svh;
     overflow: hidden;
@@ -371,7 +369,8 @@ const [lead, ...body] = profile.aboutLead;
     gap: 1rem;
   }
 
-  /* The two pages. They cover the portrait, then slide off it. */
+  /* The two pages. They cover the portrait, then slide off it (scripts/motion.ts moves them, and
+     dims their records, as transforms and opacity). */
   .is-live .about__page {
     position: absolute;
     top: 0;
@@ -387,12 +386,10 @@ const [lead, ...body] = profile.aboutLead;
   .is-live .about__page--l {
     left: 0;
     border-right: 1px solid var(--line);
-    transform: translateX(calc(var(--gap) * -14vw));
   }
 
   .is-live .about__page--r {
     right: 0;
-    transform: translateX(calc(var(--gap) * 14vw));
   }
 
   /* The records start at the top of the pages, as every section's words start at the top of
@@ -409,10 +406,10 @@ const [lead, ...body] = profile.aboutLead;
 
   .is-live .about__slot {
     min-height: 0;
-    opacity: calc(1 - var(--fade) * 0.72);
   }
 
   .is-live .about__mission {
+    --fade: 0;
     position: absolute;
     left: 50%;
     bottom: 5svh;
@@ -446,14 +443,6 @@ const [lead, ...body] = profile.aboutLead;
   @media (max-width: 900px) {
     .is-live .about__between {
       width: min(40vw, 300px);
-    }
-
-    .is-live .about__page--l {
-      transform: translateX(calc(var(--gap) * -22vw));
-    }
-
-    .is-live .about__page--r {
-      transform: translateX(calc(var(--gap) * 22vw));
     }
   }
 </style>

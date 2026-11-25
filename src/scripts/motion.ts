@@ -29,23 +29,36 @@ function about() {
   mm.add('(min-width: 760px) and (prefers-reduced-motion: no-preference)', () => {
     pin.classList.add('is-live');
     const state = { gap: 0, fade: 0 };
+    const pages = $$('.about__page', pin);
+    const slots = $$('.about__slot', pin);
+    const mission = $('.about__mission', pin);
+    const narrow = window.matchMedia('(max-width: 900px)');
 
-    /* The pages part and fade, and the mission arrives whole, by custom properties. */
+    /* The pages part and fade, and the mission arrives whole. Written on the moving elements
+       themselves, as transforms and opacity: a custom property on the pin restyled everything
+       inside it on every frame. */
     const render = () => {
-      pin.style.setProperty('--gap', state.gap.toFixed(4));
-      pin.style.setProperty('--fade', state.fade.toFixed(4));
+      const shift = state.gap * window.innerWidth * (narrow.matches ? 0.22 : 0.14);
+      pages.forEach((p, i) => (p.style.transform = `translate3d(${(i ? shift : -shift).toFixed(2)}px, 0, 0)`));
+      const dim = (1 - state.fade * 0.72).toFixed(4);
+      slots.forEach((s) => (s.style.opacity = dim));
+      mission?.style.setProperty('--fade', state.fade.toFixed(4));
     };
 
+    /* 2026-11-25: the pin was 1.9 screens, and 0.9 of its 2.05 units were holds before and after
+       the parting, so a mouse took 18 notches to get through it, 8 of them with nothing moving.
+       Now one screen, nearly all of it the parting, on a gentle sine so the pages follow the
+       scroll rather than wait and then rush. */
     const tl = gsap.timeline({ paused: true, onUpdate: render });
-    tl.to({}, { duration: 0.4 });
-    tl.to(state, { gap: 1, duration: 1.1, ease: 'power2.inOut' });
-    tl.to(state, { fade: 1, duration: 0.9, ease: 'power2.inOut' }, '<0.25');
-    tl.to({}, { duration: 0.5 });
+    tl.to({}, { duration: 0.08 });
+    tl.to(state, { gap: 1, duration: 1, ease: 'sine.inOut' });
+    tl.to(state, { fade: 1, duration: 0.8, ease: 'sine.inOut' }, '<0.2');
+    tl.to({}, { duration: 0.14 });
 
     const st = ScrollTrigger.create({
       trigger: pin,
       start: 'top top',
-      end: () => `+=${Math.round(window.innerHeight * 1.9)}`,
+      end: () => `+=${Math.round(window.innerHeight * 1.0)}`,
       pin: true,
       scrub: true,
       animation: tl,
@@ -57,8 +70,9 @@ function about() {
     return () => {
       st.kill();
       tl.kill();
-      pin.style.removeProperty('--gap');
-      pin.style.removeProperty('--fade');
+      pages.forEach((p) => p.style.removeProperty('transform'));
+      slots.forEach((s) => s.style.removeProperty('opacity'));
+      mission?.style.removeProperty('--fade');
       pin.classList.remove('is-live');
     };
   });
