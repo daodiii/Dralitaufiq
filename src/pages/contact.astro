@@ -2,7 +2,7 @@
 /* Contact, on one screen: a folio ruled in gold with corner marks, filling the screen. On the left
    the gold name, the title, one line (with the languages to write in) and two buttons, Facebook and
    YouTube; the form on the right. The form posts to api/contact.ts,
-   which emails it through Resend. Sending traces a red line once round the folio and draws a tick;
+   which emails it through Webhuset's SMTP server. Sending traces a red line once round the folio and draws a tick;
    a failure leaves what was written in place and points to the Facebook page instead. */
 import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
@@ -71,7 +71,6 @@ const youtube = profile.social[1];
           <div class="trap" aria-hidden="true">
             <label>Website <input name="website" tabindex="-1" autocomplete="off" /></label>
           </div>
-          <input type="hidden" name="loadedAt" value="" />
           <div class="form__foot in" style="--i:6">
             <p class="form__note" id="c-note">Your name and email are used only to answer you. <a href="/privacy">Privacy</a></p>
             <button class="btn" type="submit">
@@ -83,6 +82,7 @@ const youtube = profile.social[1];
             The message could not be sent. Please try again, or write through the official <a href={facebook.url} target="_blank" rel="noopener">Facebook page</a>.
           </p>
         </form>
+        <p class="sr-only" role="status" id="c-status"></p>
         <!-- The letter: written from the form, folded in three, put in the envelope and sealed -->
         <div class="post" aria-hidden="true">
           <div class="post__group">
@@ -161,8 +161,9 @@ const youtube = profile.social[1];
     const send = form.querySelector<HTMLElement>('.form__send')!;
     const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
     const done = folio.querySelector<HTMLElement>('.done')!;
-    const loadedAt = form.elements.namedItem('loadedAt') as HTMLInputElement;
-    loadedAt.value = String(Date.now());
+    const status = document.getElementById('c-status')!;
+    // How long the page has been open, on this page's own clock (api/contact.ts turns away sends under 3 s).
+    let opened = performance.now();
 
     const topics = [...form.querySelectorAll<HTMLInputElement>('[name=topic]')];
     const movePill = () => {
@@ -178,10 +179,13 @@ const youtube = profile.social[1];
       control(f).setAttribute('aria-invalid', String(text !== ''));
       f.querySelector('.field__err')!.textContent = text;
     };
+    // The same rules as api/contact.ts, on the trimmed value, so the server rarely has to say no.
+    const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     const say = (el: HTMLInputElement | HTMLTextAreaElement) => {
-      if (el.validity.valueMissing) return el.name === 'message' ? 'Write a message.' : `Fill in your ${el.name}.`;
-      if (el.validity.typeMismatch) return 'This does not look like an email address.';
-      if (el.validity.tooShort) return 'Write a little more (at least 10 characters).';
+      const v = el.value.trim();
+      if (!v) return el.name === 'message' ? 'Write a message.' : `Fill in your ${el.name}.`;
+      if (el.name === 'email' && !EMAIL.test(v)) return 'This does not look like an email address.';
+      if (el.name === 'message' && v.length < 10) return 'Write a little more (at least 10 characters).';
       return '';
     };
 
@@ -210,19 +214,33 @@ const youtube = profile.social[1];
 
       button.disabled = true;
       send.textContent = 'Sending …';
+      let sent = false;
       try {
         const res = await fetch(form.action, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+          body: JSON.stringify({ ...Object.fromEntries(new FormData(form)), elapsed: String(Math.round(performance.now() - opened)) }),
         });
+        // The server's own field check: show its words on the fields, as the page's check would.
+        if (res.status === 422) {
+          const errors: Record<string, string> = (await res.json().catch(() => ({}))).errors ?? {};
+          const marked = fields.filter((f) => {
+            setError(f, errors[control(f).name] ?? '');
+            return f.classList.contains('bad');
+          });
+          if (marked.length) return control(marked[0]).focus();
+        }
         if (!res.ok) throw new Error(String(res.status));
+        sent = true;
+        form.inert = true;
+        status.textContent = 'Sent, thank you. Any reply comes to the email you gave.';
         post();
       } catch {
         fail.hidden = false;
       } finally {
-        button.disabled = false;
         send.textContent = 'Send message';
+        // Once sent, the form stays shut until "Send another".
+        if (!sent) button.disabled = false;
       }
     });
 
@@ -364,7 +382,10 @@ const youtube = profile.social[1];
       movePill();
       count.textContent = '0 / 5000';
       fields.forEach(sync);
-      loadedAt.value = String(Date.now());
+      opened = performance.now();
+      status.textContent = '';
+      form.inert = false;
+      button.disabled = false;
       folio.classList.remove('is-sent');
       control(fields[0]).focus();
     });
