@@ -6,7 +6,8 @@ const books = defineCollection({
   loader: file('src/data/books.json'),
   schema: ({ image }) =>
     z.object({
-      ean: z.string(),
+      /* A book announced before publication (badge "Coming soon") has no ISBN, listing or page count yet. */
+      ean: z.string().nullable(),
       order: z.number(),
       title: z.string(),
       subtitle: z.string().nullable(),
@@ -23,8 +24,8 @@ const books = defineCollection({
       coverHeight: z.number(),
       description: z.array(z.string()),
       /* Amazon UK listings: one per format (Paperback, Hardcover) or volume. */
-      amazon: z.array(z.object({ label: z.string(), url: z.string() })).min(1),
-      pages: z.number(),
+      amazon: z.array(z.object({ label: z.string(), url: z.string() })),
+      pages: z.number().nullable(),
       /* The printed book in centimetres, from the Amazon listing: width, height, thickness. */
       size: z.object({ w: z.number(), h: z.number(), t: z.number() }),
       endorsements: z

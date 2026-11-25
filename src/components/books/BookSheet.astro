@@ -24,7 +24,7 @@ const sheets = await Promise.all(
       b.data.role === 'Author' ? null : shortRole(b.data.role),
       languageLabel[b.data.language],
       b.data.year,
-      `${b.data.pages} pages`,
+      b.data.pages && `${b.data.pages} pages`,
     ]
       .filter(Boolean)
       .join(' · '),
