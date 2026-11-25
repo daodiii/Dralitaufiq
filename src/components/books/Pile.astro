@@ -437,19 +437,27 @@ const books = await Promise.all(
 
   /* A solid veil (2026-11-25). At 86% with a blur, the pile's warm light showed through it in
      soft patches that stood still while the book's words scrolled over them, like a shadow left
-     behind. The veil still fades in and out over the pile (pile.ts). */
+     behind. The veil still fades in and out over the pile (pile.ts).
+     Both run past the bottom of the screen as it is when the book opens (2026-11-25): on a phone
+     the browser's bar slides away as the book's words are scrolled, the screen grows, and the
+     veil and the words stopped at the old edge, with the pile showing below until the browser
+     caught up. The veil reaches well below; the words' box is as tall as the screen with the bar
+     gone (100lvh), its last lines kept clear of the bar while it shows. */
   .pview__scrim {
     position: absolute;
-    inset: 0;
+    inset: -10vh 0 -50vh;
     background: var(--paper);
   }
 
   .pview__body {
     position: absolute;
-    inset: 0;
+    inset: 0 0 auto;
+    height: 100vh;
+    height: 100lvh;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 4.4rem var(--gutter) 3rem;
+    padding-bottom: calc(3rem + 100lvh - 100svh);
   }
 
   .pview__close {
