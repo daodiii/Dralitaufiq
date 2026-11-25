@@ -1,6 +1,6 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { check, compose, mailer, POST, resetRateLimit } from '../api/contact.ts';
+import { check, compose, mailDomainOk, mailer, POST, resetRateLimit } from '../api/contact.ts';
 
 /* The contact form's sender: what it accepts, what it quietly drops, and what it hands Webhuset's
    SMTP server. No mail server is reached; the transport is replaced for each test. */
@@ -11,8 +11,11 @@ const NOW = 1_000_000;
 const good = { topic: 'event', name: 'Amina Hassan', email: 'amina@example.com', message: 'Assalamu alaykum, an invitation to Bergen.', website: '', loadedAt: String(NOW - 10_000) };
 
 const realCreate = mailer.createTransport;
+// No test reaches real DNS: every domain can take mail unless a test says otherwise.
+mailer.domainOk = async () => true;
 afterEach(() => {
   mailer.createTransport = realCreate;
+  mailer.domainOk = async () => true;
   resetRateLimit();
   delete process.env.SMTP_USER;
   delete process.env.SMTP_PASS;
@@ -135,4 +138,54 @@ test('five sends per address per quarter hour; the sixth is refused, another add
   assert.equal(sixth.status, 429);
   assert.equal((await post(fresh, '198.51.100.9')).status, 200);
   assert.equal(sent.length, 6);
+});
+
+/* Can the domain after the @ receive mail? The same rule as iqrasti.no (lib/kontakt/domene.ts). */
+const err = (code: string) => Object.assign(new Error(code), { code });
+const dns = (o: { mx?: () => Promise<{ exchange: string }[]>; a?: () => Promise<string[]>; aaaa?: () => Promise<string[]> }) => ({
+  resolveMx: o.mx ?? (() => Promise.reject(err('ENODATA'))),
+  resolve4: o.a ?? (() => Promise.reject(err('ENODATA'))),
+  resolve6: o.aaaa ?? (() => Promise.reject(err('ENODATA'))),
+});
+
+test('a domain with a mail server passes', async () => {
+  assert.equal(await mailDomainOk('gmail.com', dns({ mx: async () => [{ exchange: 'gmail-smtp-in.l.google.com' }] })), true);
+});
+
+test('a domain that does not exist (gmail.con) or takes no mail (null MX) is refused', async () => {
+  assert.equal(await mailDomainOk('gmail.con', dns({ mx: () => Promise.reject(err('ENOTFOUND')) })), false);
+  assert.equal(await mailDomainOk('example.com', dns({ mx: async () => [{ exchange: '.' }] })), false);
+  assert.equal(await mailDomainOk('example.com', dns({ mx: async () => [{ exchange: '' }] })), false);
+});
+
+test('no MX but an address record still takes mail; nothing at all is refused', async () => {
+  assert.equal(await mailDomainOk('liten.no', dns({ a: async () => ['192.0.2.1'] })), true);
+  assert.equal(await mailDomainOk('liten.no', dns({ aaaa: async () => ['2001:db8::1'] })), true);
+  assert.equal(await mailDomainOk('tom.no', dns({})), false);
+});
+
+test('when DNS itself is in trouble the writer is not blocked', async () => {
+  for (const code of ['ETIMEOUT', 'ESERVFAIL', 'ECONNREFUSED']) {
+    assert.equal(await mailDomainOk('kari.no', dns({ mx: () => Promise.reject(err(code)) })), true, code);
+  }
+});
+
+test('an address on a domain that cannot take mail comes back as an email error, and nothing is sent', async () => {
+  configure();
+  const sent = fakeSmtp();
+  let asked = '';
+  mailer.domainOk = async (d) => ((asked = d), false);
+  const res = await post({ ...fresh, email: 'amina@gmail.con' });
+  assert.equal(res.status, 422);
+  assert.equal(asked, 'gmail.con');
+  const body = await res.json();
+  assert.deepEqual(Object.keys(body.errors), ['email']);
+  assert.equal(sent.length, 0);
+});
+
+test('a bot is never looked up', async () => {
+  let looked = false;
+  mailer.domainOk = async () => ((looked = true), true);
+  await post({ ...fresh, website: 'x' });
+  assert.equal(looked, false);
 });
