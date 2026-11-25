@@ -9,11 +9,15 @@
    - SMTP_PASS   that mailbox's password
    - CONTACT_TO  where messages go; several addresses separated by commas
 
+   An address whose domain cannot receive mail (a typo such as gmail.con, or a made-up domain) is
+   sent back as an email error, so the visitor can correct it before writing to nobody.
+
    A bot that fills in the hidden "website" field, or sends within 3 seconds of the page loading,
    gets the same answer as a person but nothing is sent. The page reports how long it has been open
    ("elapsed", in ms, measured on its own clock), so a visitor whose clock is set wrong is not taken
    for a bot. Pages from before that field send "loadedAt" (their clock) and are checked against ours. */
 
+import { Resolver } from 'node:dns/promises';
 import nodemailer from 'nodemailer';
 
 declare const process: { env: Record<string, string | undefined> };
@@ -66,8 +70,46 @@ export function compose({ topic, name, email, message }: Message) {
   };
 }
 
-/** The transport maker, replaceable in tests so no mail server is reached. */
-export const mailer = { createTransport: nodemailer.createTransport.bind(nodemailer) };
+/* Whether the domain after the @ can receive mail at all: it has a mail server (MX), or, failing
+   that, an address record (mail's old fallback). The same rule as iqrasti.no (lib/kontakt/domene.ts).
+   Only a definite "no" refuses: the domain does not exist, or says it takes no mail. If DNS itself
+   is in trouble (a timeout, a failing server), the visitor is let through rather than blocked. */
+type Dns = {
+  resolveMx(domain: string): Promise<{ exchange: string }[]>;
+  resolve4(domain: string): Promise<unknown[]>;
+  resolve6(domain: string): Promise<unknown[]>;
+};
+
+const NO = new Set(['ENOTFOUND', 'ENODATA', 'NXDOMAIN']);
+const code = (e: unknown) => (e as { code?: string })?.code ?? '';
+
+let resolver: Dns | undefined;
+const defaultDns = () => (resolver ??= new Resolver({ timeout: 2500, tries: 2 }));
+
+export async function mailDomainOk(domain: string, dns: Dns = defaultDns()): Promise<boolean> {
+  try {
+    const mx = await dns.resolveMx(domain);
+    return mx.some((r) => r.exchange && r.exchange !== '.');
+  } catch (e) {
+    if (!NO.has(code(e))) return true;
+    if (code(e) !== 'ENODATA') return false;
+  }
+  // No MX record, but the name exists: an A or AAAA record still receives mail.
+  for (const look of [() => dns.resolve4(domain), () => dns.resolve6(domain)]) {
+    try {
+      if ((await look()).length) return true;
+    } catch (e) {
+      if (!NO.has(code(e))) return true;
+    }
+  }
+  return false;
+}
+
+/** The transport maker and the domain check, replaceable in tests so no mail server or DNS is reached. */
+export const mailer = {
+  createTransport: nodemailer.createTransport.bind(nodemailer),
+  domainOk: (domain: string) => mailDomainOk(domain),
+};
 
 /** Five sends per address per quarter hour. Kept in memory, so on Vercel each instance counts on its own. */
 export const RATE = { max: 5, windowMs: 15 * 60 * 1000 };
@@ -104,6 +146,11 @@ export async function POST(request: Request): Promise<Response> {
   const checked = check(body);
   if (checked.kind === 'spam') return json(200, { ok: true });
   if (checked.kind === 'invalid') return json(422, { error: 'invalid', errors: checked.errors });
+
+  const domain = checked.message.email.slice(checked.message.email.lastIndexOf('@') + 1);
+  if (!(await mailer.domainOk(domain))) {
+    return json(422, { error: 'invalid', errors: { email: 'This address cannot receive email. Check the part after the @.' } });
+  }
 
   const user = process.env.SMTP_USER?.trim();
   const pass = process.env.SMTP_PASS; // as given: a password may begin or end with a space
