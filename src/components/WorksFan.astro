@@ -170,6 +170,12 @@ const hands = (['en', 'ar', 'so'] as const).map((lang) => ({ lang, books: books.
     visibility: visible;
   }
 
+  /* A hidden hand's covers are not drawn at all, so the browser does not fetch them with the
+     page; the script brings them in once the page has loaded (fan.ts never measures them). */
+  .fan__hand:not(.is-on):not(.is-leaving) :global(img) {
+    display: none;
+  }
+
   /* Every cover turns about one point far below the hand, as a hand of cards does. */
   .fan__card {
     --v: 1;
@@ -318,4 +324,12 @@ const hands = (['en', 'ar', 'so'] as const).map((lang) => ({ lang, books: books.
 
 <script>
   import '../scripts/fan';
+
+  /* The other hands' covers come in quietly after the page has loaded, so turning to another
+     language never shows a blank card. */
+  const warm = () =>
+    document.querySelectorAll<HTMLImageElement>('.fan__hand img[loading="lazy"]').forEach((img) => (img.loading = 'eager'));
+  const later = () => ('requestIdleCallback' in window ? requestIdleCallback(warm, { timeout: 3000 }) : setTimeout(warm, 1500));
+  if (document.readyState === 'complete') later();
+  else addEventListener('load', later, { once: true });
 </script>

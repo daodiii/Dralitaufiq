@@ -11,10 +11,16 @@ import BooksVitrine from '../components/books/BooksVitrine.astro';
 import Pile from '../components/books/Pile.astro';
 import BookSheet from '../components/books/BookSheet.astro';
 import { allBooks } from '../lib/books';
-import { bookHref } from '../lib/vitrine';
+import { getImage } from 'astro:assets';
+import { bookHref, vitrine } from '../lib/vitrine';
 import { personRef } from '../lib/schema';
 
 const books = await allBooks();
+/* The first cover in the vitrine is the page's largest picture on a wide screen. Its <img> is lazy
+   so a phone (which shows the pile instead) never fetches it; wide screens get it early from here,
+   at the same sizes BookStand asks for. */
+const lead = (await vitrine(books)).order[0];
+const leadImg = await getImage({ src: lead.data.cover, widths: [400, 640, 960] });
 /* For search: the page is the collection of his books, each with its own page. */
 const list = {
   '@context': 'https://schema.org',
@@ -32,6 +38,15 @@ const list = {
 
 <Base theme="#0c0b09" title="Books · Prof. Dr. Ali Mohamed Salah" description="All twenty books of Prof. Dr. Ali Mohamed Salah in English, Arabic and Somali: on faith and doubt, marriage and the family, and Islamic law in the West.">
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(list)} />
+  <link
+    rel="preload"
+    as="image"
+    slot="head"
+    imagesrcset={leadImg.srcSet.attribute}
+    imagesizes="(max-width: 1180px) 36vw, 420px"
+    media="(min-width: 760px)"
+    fetchpriority="high"
+  />
   <script is:inline>
     /* A window that reports no width yet (an embedded browser opening hidden) is not a phone. */
     /* A link to one book opens on it: the pile shows it as the page is read (Pile.astro), the vitrine

@@ -37,8 +37,8 @@ const H = page ? 'h1' : 'h2';
           alt={`The cover of ${x.b.data.title}`}
           widths={[400, 640, 960]}
           sizes="(max-width: 760px) 70vw, (max-width: 1180px) 36vw, 420px"
-          loading={page || x.i < 2 ? 'eager' : 'lazy'}
-          fetchpriority={page ? 'high' : undefined}
+          loading={page ? 'eager' : 'lazy'}
+          fetchpriority={page || x.i === 0 ? 'high' : undefined}
           decoding="async"
         />
         <i />
