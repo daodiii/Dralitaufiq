@@ -1,25 +1,46 @@
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { check, compose, POST } from '../api/contact.ts';
+import { check, compose, mailer, POST, resetRateLimit } from '../api/contact.ts';
 
-/* The contact form's sender: what it accepts, what it quietly drops, and what it hands Resend.
-   Resend itself is never called; fetch is replaced for each test. */
+/* The contact form's sender: what it accepts, what it quietly drops, and what it hands Webhuset's
+   SMTP server. No mail server is reached; the transport is replaced for each test. */
 
 declare const process: { env: Record<string, string | undefined> };
 
 const NOW = 1_000_000;
 const good = { topic: 'event', name: 'Amina Hassan', email: 'amina@example.com', message: 'Assalamu alaykum, an invitation to Bergen.', website: '', loadedAt: String(NOW - 10_000) };
 
-const realFetch = globalThis.fetch;
+const realCreate = mailer.createTransport;
 afterEach(() => {
-  globalThis.fetch = realFetch;
-  delete process.env.RESEND_API_KEY;
+  mailer.createTransport = realCreate;
+  resetRateLimit();
+  delete process.env.SMTP_USER;
+  delete process.env.SMTP_PASS;
   delete process.env.CONTACT_TO;
-  delete process.env.CONTACT_FROM;
 });
 
-const post = (body: unknown) =>
-  POST(new Request('http://localhost/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: typeof body === 'string' ? body : JSON.stringify(body) }));
+type Sent = { options: Record<string, unknown>; mail: Record<string, unknown> };
+/** Stands in for nodemailer: records what would be sent, or fails the way a real server can. */
+const fakeSmtp = (fail?: Error) => {
+  const sent: Sent[] = [];
+  mailer.createTransport = ((options: Record<string, unknown>) => ({
+    sendMail: async (mail: Record<string, unknown>) => {
+      if (fail) throw fail;
+      sent.push({ options, mail });
+      return { messageId: 'x' };
+    },
+  })) as unknown as typeof mailer.createTransport;
+  return sent;
+};
+const configure = () => {
+  process.env.SMTP_USER = 'skjema@example.no';
+  process.env.SMTP_PASS = 'hemmelig';
+  process.env.CONTACT_TO = 'ali.private@example.com';
+};
+
+const post = (body: unknown, ip = '203.0.113.7') =>
+  POST(new Request('http://localhost/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip }, body: typeof body === 'string' ? body : JSON.stringify(body) }));
+const fresh = { ...good, loadedAt: '', elapsed: '20000' };
 
 test('a complete message passes, trimmed', () => {
   const r = check({ ...good, name: '  Amina Hassan ' }, NOW);
@@ -61,54 +82,57 @@ test('an unknown topic becomes "other", and a name cannot break onto a second li
   }
 });
 
-test('a good message goes to Resend with the visitor as Reply-To', async () => {
-  process.env.RESEND_API_KEY = 're_test';
-  process.env.CONTACT_TO = 'office@example.com, ali@example.com';
-  let sent: { url: string; init: RequestInit } | undefined;
-  globalThis.fetch = (async (url: string, init: RequestInit) => {
-    sent = { url, init };
-    return new Response('{"id":"x"}', { status: 200 });
-  }) as typeof fetch;
-
-  const res = await post({ ...good, loadedAt: String(Date.now() - 10_000) });
+test('a good message leaves through Webhuset as the mailbox, with the visitor as Reply-To', async () => {
+  configure();
+  process.env.CONTACT_TO = 'ali.private@example.com, office@example.com';
+  const sent = fakeSmtp();
+  const res = await post(fresh);
   assert.equal(res.status, 200);
-  assert.equal(sent?.url, 'https://api.resend.com/emails');
-  assert.equal((sent?.init.headers as Record<string, string>).Authorization, 'Bearer re_test');
-  const body = JSON.parse(String(sent?.init.body));
-  assert.deepEqual(body.to, ['office@example.com', 'ali@example.com']);
-  assert.equal(body.reply_to, 'amina@example.com');
-  assert.equal(body.subject, 'Website: A lecture or event, from Amina Hassan');
-  assert.match(body.text, /invitation to Bergen/);
+  assert.equal(sent.length, 1);
+  const { options, mail } = sent[0];
+  assert.equal(options.host, 'smtp.webhuset.no');
+  assert.equal(options.port, 465);
+  assert.equal(options.secure, true);
+  assert.deepEqual(options.auth, { user: 'skjema@example.no', pass: 'hemmelig' });
+  assert.deepEqual(mail.from, { name: 'alimohamedsalah.com', address: 'skjema@example.no' });
+  assert.deepEqual(mail.to, ['ali.private@example.com', 'office@example.com']);
+  assert.deepEqual(mail.replyTo, { name: 'Amina Hassan', address: 'amina@example.com' });
+  assert.equal(mail.subject, 'Website: A lecture or event, from Amina Hassan');
+  assert.match(String(mail.text), /invitation to Bergen/);
 });
 
 test('a bot is told it worked, and nothing is sent', async () => {
-  process.env.RESEND_API_KEY = 're_test';
-  process.env.CONTACT_TO = 'office@example.com';
-  let called = false;
-  globalThis.fetch = (async () => ((called = true), new Response('{}'))) as typeof fetch;
-  const res = await post({ ...good, website: 'x', loadedAt: String(Date.now() - 10_000) });
+  configure();
+  const sent = fakeSmtp();
+  const res = await post({ ...fresh, website: 'x' });
   assert.equal(res.status, 200);
-  assert.equal(called, false);
+  assert.equal(sent.length, 0);
 });
 
-test('bad JSON is 400, an invalid message 422, missing settings 500, a Resend failure 502', async () => {
+test('bad JSON is 400, an invalid message 422, missing settings 500, an SMTP failure 502', async () => {
   assert.equal((await post('{not json')).status, 400);
-  assert.equal((await post({ ...good, email: 'x', loadedAt: String(Date.now() - 10_000) })).status, 422);
-  assert.equal((await post({ ...good, loadedAt: String(Date.now() - 10_000) })).status, 500);
+  assert.equal((await post({ ...fresh, email: 'x' })).status, 422);
+  const none = fakeSmtp();
+  assert.equal((await post(fresh)).status, 500);
+  process.env.SMTP_USER = 'skjema@example.no';
+  process.env.SMTP_PASS = '   ';
+  process.env.CONTACT_TO = 'ali.private@example.com';
+  assert.equal((await post(fresh)).status, 500, 'a blank password counts as missing');
+  assert.equal(none.length, 0);
 
-  process.env.RESEND_API_KEY = 're_test';
-  process.env.CONTACT_TO = 'office@example.com';
-  globalThis.fetch = (async () => new Response('{"message":"domain not verified"}', { status: 403 })) as typeof fetch;
-  assert.equal((await post({ ...good, loadedAt: String(Date.now() - 10_000) })).status, 502);
-});
-
-test('Resend out of reach is a 502 too, not a crash', async () => {
-  process.env.RESEND_API_KEY = 're_test';
-  process.env.CONTACT_TO = 'office@example.com';
-  globalThis.fetch = (async () => {
-    throw new TypeError('fetch failed');
-  }) as typeof fetch;
-  const res = await post({ ...good, elapsed: '20000' });
+  configure();
+  fakeSmtp(Object.assign(new Error('Invalid login: 535 Authentication failed'), { code: 'EAUTH' }));
+  const res = await post(fresh);
   assert.equal(res.status, 502);
   assert.deepEqual(await res.json(), { error: 'send-failed' });
+});
+
+test('five sends per address per quarter hour; the sixth is refused, another address is not', async () => {
+  configure();
+  const sent = fakeSmtp();
+  for (let i = 0; i < 5; i++) assert.equal((await post(fresh)).status, 200);
+  const sixth = await post(fresh);
+  assert.equal(sixth.status, 429);
+  assert.equal((await post(fresh, '198.51.100.9')).status, 200);
+  assert.equal(sent.length, 6);
 });
