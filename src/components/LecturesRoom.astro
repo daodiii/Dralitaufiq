@@ -24,7 +24,7 @@ const pl = (key: string) => data[key].pl;
 const QURAN_EXTRA = new Set([17, 18]);
 
 const photo = (name: string, width: number = 480) => `/lecture-portraits/${name}-${width}.webp`;
-const photoSet = (name: string) => [480, 960, 1600].map((w) => `${photo(name, w)} ${w}w`).join(', ');
+const photoSet = (name: string) => [240, 480, 960, 1600].map((w) => `${photo(name, w)} ${w}w`).join(', ');
 
 const pic = (l: Lesson) => {
   const p = pictureOf(l);
@@ -115,7 +115,7 @@ const prophet = (s: string) => s.split('ﷺ');
         series.map((x, i) => (
           <a class:list={['lr-prog__row', i === 0 && 'is-on']} href={`#s-${x.key}`}>
             <span class="lr-fr">
-              <img src={x.small.src} alt="" width="320" height="180" loading="lazy" />
+              <img src={x.small.src} srcset={photoSet(x.photoName)} sizes="112px" alt="" width="320" height="180" loading="lazy" />
             </span>
             <span class="lr-prog__txt">
               <b>{x.s.title}</b>

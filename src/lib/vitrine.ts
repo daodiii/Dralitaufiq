@@ -51,7 +51,10 @@ export async function vitrine(books: Book[]) {
       sub: d.subtitle,
       en: d.language !== 'en' && d.titleEn && d.titleEn !== d.subtitle ? d.titleEn : null,
       role: d.role !== 'Author' ? d.role : null,
-      colo: [d.publisher, d.year, `${d.pages} pages`].filter(Boolean).join(' · ') + (d.badge ? '. New in 2026' : ''),
+      colo:
+        d.badge === 'Coming soon'
+          ? [d.badge, d.publisher].filter(Boolean).join(' · ')
+          : [d.publisher, d.year, d.pages && `${d.pages} pages`].filter(Boolean).join(' · ') + (d.badge ? '. New in 2026' : ''),
     };
   });
   return { groups, order, view, v: (id: string) => view.find((x) => x.b.id === id)! };

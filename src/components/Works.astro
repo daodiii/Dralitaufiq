@@ -69,10 +69,10 @@ const href = (id: string) => `/books/${id}`;
                 <p class="works__meta">
                   {d.badge ? (
                     <>
-                      <em>{d.badge}</em> · {d.year}
+                      <em>{d.badge}</em>{d.year && ` · ${d.year}`}
                     </>
                   ) : (
-                    `${languageLabel[d.language]} · ${d.year}`
+                    [languageLabel[d.language], d.year].filter(Boolean).join(' · ')
                   )}
                 </p>
                 <h3 class:list={['works__title', ar && 'is-ar']} lang={d.language} dir={ar ? 'rtl' : 'ltr'}>
@@ -82,16 +82,18 @@ const href = (id: string) => `/books/${id}`;
                 {d.role !== 'Author' && <p class="works__role">{d.role}</p>}
               </div>
               <a class="works__cover" href={href(b.id)} tabindex="-1" aria-hidden="true">
-                <Image src={d.cover} alt="" widths={[360, 540, 720]} sizes="340px" loading={i === 0 ? 'eager' : 'lazy'} />
+                <Image src={d.cover} alt="" widths={[360, 540, 720]} sizes="340px" loading="lazy" />
               </a>
               <div class="works__btns">
-                  <a class="btn" href={d.amazon[0].url} target="_blank" rel="noopener">
-                    Buy on Amazon
-                    <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-                      <path d="M4 12L12 4M6 4h6v6" />
-                    </svg>
-                  </a>
-                  <a class="btn btn--ghost" href={href(b.id)}>
+                  {d.amazon[0] && (
+                    <a class="btn" href={d.amazon[0].url} target="_blank" rel="noopener">
+                      Buy on Amazon
+                      <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                        <path d="M4 12L12 4M6 4h6v6" />
+                      </svg>
+                    </a>
+                  )}
+                  <a class:list={['btn', d.amazon[0] && 'btn--ghost']} href={href(b.id)}>
                     About this book
                   </a>
                 </div>

@@ -130,12 +130,14 @@ const books = await Promise.all(
               {blurb.text}
             </p>
             <div class="pview__acts" dir="ltr">
-              <a class="btn" href={d.amazon[0].url} target="_blank" rel="noopener">
-                {amazonLabel(d.amazon[0].label)}
-                <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-                  <path d="M4 12L12 4M6 4h6v6" />
-                </svg>
-              </a>
+              {d.amazon[0] && (
+                <a class="btn" href={d.amazon[0].url} target="_blank" rel="noopener">
+                  {amazonLabel(d.amazon[0].label)}
+                  <svg class="btn__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+                    <path d="M4 12L12 4M6 4h6v6" />
+                  </svg>
+                </a>
+              )}
               <button class="link" type="button" data-sheet={b.id}>
                 About this book
               </button>

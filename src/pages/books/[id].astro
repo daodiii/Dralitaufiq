@@ -43,7 +43,9 @@ const title =
 /* The opening of the description in the book's own language, carried on through its next
    paragraphs (and its English title) until it says enough, cut at a word near 155 characters. */
 const b = blurb(x.b, 30);
-const more = [b.text, ...x.all.filter((p) => p.text !== b.text && p.dir === b.dir).map((p) => p.text), d.titleEn ?? '', d.subtitle ?? ''];
+// The blurb is the opening of its paragraph: carry on with the rest of that paragraph, not all of it again.
+const after = (t: string) => (t.startsWith(b.text) ? t.slice(b.text.length).trim() : t);
+const more = [b.text, ...x.all.filter((p) => p.dir === b.dir).map((p) => after(p.text)), d.titleEn ?? '', d.subtitle ?? ''];
 let said = '';
 for (const t of more) if (said.length < 120 && t && !said.includes(t)) said = said ? `${said} ${t}` : t;
 const description = said.length > 158 ? `${said.slice(0, 155).replace(/\s+\S*$/, '')}…` : said;
@@ -63,15 +65,14 @@ const book = {
   ...(d.subtitle ? { alternativeHeadline: d.subtitle } : {}),
   [role]: person,
   inLanguage: d.language,
-  isbn: d.ean,
-  numberOfPages: d.pages,
-  bookFormat: 'https://schema.org/Paperback',
+  ...(d.ean ? { isbn: d.ean, bookFormat: 'https://schema.org/Paperback' } : {}),
+  ...(d.pages ? { numberOfPages: d.pages } : {}),
   ...(d.publisher ? { publisher: { '@type': 'Organization', name: d.publisher } } : {}),
   ...(d.year ? { datePublished: String(d.year) } : {}),
   image: new URL(cover.src, Astro.site).href,
   description: b.text,
   url,
-  sameAs: d.amazon.map((a) => a.url),
+  ...(d.amazon.length ? { sameAs: d.amazon.map((a) => a.url) } : {}),
 };
 const crumbs = {
   '@context': 'https://schema.org',

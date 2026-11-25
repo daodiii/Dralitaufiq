@@ -455,9 +455,38 @@
     }
   },
   {
+    "id": "sinaat-al-yaqin",
+    "ean": null,
+    "order": 12,
+    "title": "صناعة اليقين",
+    "subtitle": null,
+    "titleLatin": "Ṣināʿat al-Yaqīn",
+    "titleEn": "The Making of Certainty",
+    "language": "ar",
+    "role": "Author",
+    "series": null,
+    "publisher": null,
+    "year": null,
+    "badge": "Coming soon",
+    "cover": "../assets/covers/sinaat-al-yaqin.jpg",
+    "coverWidth": 700,
+    "coverHeight": 1000,
+    "description": [
+      "دراسة نقدية في جذور الشك وإشكالات الإلحاد المعاصر: كتابات رموز الإلحاد الجديد أنموذجًا.",
+      "A critical study of the roots of doubt and the problems of contemporary atheism, taking the writings of the leading figures of the New Atheism as its case. Coming soon."
+    ],
+    "amazon": [],
+    "pages": null,
+    "size": {
+      "w": 16.99,
+      "h": 24.41,
+      "t": 2.0
+    }
+  },
+  {
     "id": "fiqh-al-mahjar-fi-al-gharb",
     "ean": "9788269427509",
-    "order": 12,
+    "order": 13,
     "title": "فقه المهجر في الغرب",
     "subtitle": "تأصيل وتنزيل في ضوء الواقع النرويجي",
     "titleLatin": "Fiqh al-Mahjar fī al-Gharb",
@@ -497,7 +526,7 @@
   {
     "id": "al-hiwar-al-dini-al-ibrahimi",
     "ean": "9781912411740",
-    "order": 13,
+    "order": 14,
     "title": "الحوار الديني الإبراهيمي في ميزان القرآن",
     "subtitle": null,
     "titleLatin": "al-Ḥiwār al-Dīnī al-Ibrāhīmī fī Mīzān al-Qurʾān",
@@ -537,7 +566,7 @@
   {
     "id": "al-islam-wal-diyanatan",
     "ean": "9788269367713",
-    "order": 14,
+    "order": 15,
     "title": "الإسلام والديانتان اليهودية والمسيحية",
     "subtitle": "مقارنات في الأصول العقدية",
     "titleLatin": "al-Islām wal-Diyānatān al-Yahūdiyyah wal-Masīḥiyyah",
@@ -574,7 +603,7 @@
   {
     "id": "al-takmilah",
     "ean": "9781912411764",
-    "order": 15,
+    "order": 16,
     "title": "التكملة في تحقيق أحاديث من جمع الفوائد للهيثمي",
     "subtitle": "قسم التفسير",
     "titleLatin": "al-Takmilah fī Taḥqīq Aḥādīth min Jamʿ al-Fawāʾid lil-Haythamī",
@@ -615,7 +644,7 @@
   {
     "id": "ibraahimiyadda",
     "ean": "9788269427585",
-    "order": 16,
+    "order": 17,
     "title": "Ibraahimiyadda",
     "subtitle": "Siyaasada & Diinta Cusub ee Qarnigan",
     "titleLatin": null,
@@ -649,7 +678,7 @@
   {
     "id": "dawada-nafta",
     "ean": "9788269367775",
-    "order": 17,
+    "order": 18,
     "title": "Dawada Nafta",
     "subtitle": null,
     "titleLatin": null,
@@ -684,7 +713,7 @@
   {
     "id": "bogsiin",
     "ean": "9788269427530",
-    "order": 18,
+    "order": 19,
     "title": "Bogsiin",
     "subtitle": "Sidee Looga Hortagaa Ka Shakinta Diinta",
     "titleLatin": null,
@@ -720,7 +749,7 @@
   {
     "id": "wacyi",
     "ean": "9788269367782",
-    "order": 19,
+    "order": 20,
     "title": "Wacyi",
     "subtitle": "Nolosha Qofka Muslimka ah ee Maanta iyo Berri",
     "titleLatin": null,
