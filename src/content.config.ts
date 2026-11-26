@@ -9,6 +9,8 @@ const books = defineCollection({
       /* A book announced before publication (badge "Coming soon") has no ISBN, listing or page count yet. */
       ean: z.string().nullable(),
       order: z.number(),
+      /* One volume of a work in several, each its own book: shown on the spines (library.ts volumeMark). */
+      volume: z.number().optional(),
       title: z.string(),
       subtitle: z.string().nullable(),
       titleLatin: z.string().nullable(),

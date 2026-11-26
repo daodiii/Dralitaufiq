@@ -168,6 +168,12 @@ export function titles(b: Book) {
   };
 }
 
+/* A volume's mark on a spine, in the book's own script: "المجلد ٢", "Volume 2". */
+export function volumeMark(d: Book['data']) {
+  if (!d.volume) return null;
+  return d.language === 'ar' ? `المجلد ${String(d.volume).replace(/\d/g, (n) => '٠١٢٣٤٥٦٧٨٩'[+n])}` : `Volume ${d.volume}`;
+}
+
 export const amazonLabel = (label: string) => `${label} on Amazon`;
 
 /* ---------- groups ---------- */

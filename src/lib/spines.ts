@@ -4,6 +4,7 @@
 import path from 'node:path';
 import sharp from 'sharp';
 import { languageName, type Book } from './books';
+import { volumeMark } from './library';
 import raw from '../data/books.json';
 
 export interface SpineInfo {
@@ -41,7 +42,7 @@ export async function spineInfo(b: Book): Promise<SpineInfo> {
     order: d.order,
     lang: d.language,
     title: d.title,
-    short: d.language === 'ar' ? d.title.split(' ').slice(0, 3).join(' ') : d.title.replace(/\s*ﷺ/, ''),
+    short: [d.language === 'ar' ? d.title.split(' ').slice(0, 3).join(' ') : d.title.replace(/\s*ﷺ/, ''), volumeMark(d)].filter(Boolean).join(' · '),
     colour: `rgb(${r} ${g} ${bl})`,
     ink: lum < 0.19 ? 'rgb(250 246 236)' : 'rgb(12 11 9)',
     t: d.size.t,

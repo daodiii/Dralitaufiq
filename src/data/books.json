@@ -527,10 +527,11 @@
     "id": "al-hiwar-al-dini-al-ibrahimi",
     "ean": "9781912411740",
     "order": 14,
+    "volume": 1,
     "title": "الحوار الديني الإبراهيمي في ميزان القرآن",
-    "subtitle": null,
+    "subtitle": "المجلد الأول",
     "titleLatin": "al-Ḥiwār al-Dīnī al-Ibrāhīmī fī Mīzān al-Qurʾān",
-    "titleEn": "Abrahamic Interfaith Dialogue in the Balance of the Qurʾān",
+    "titleEn": "Abrahamic Interfaith Dialogue in the Balance of the Qurʾān, Volume 1",
     "language": "ar",
     "role": "Author",
     "series": null,
@@ -548,12 +549,8 @@
     ],
     "amazon": [
       {
-        "label": "Volume 1",
+        "label": "Paperback",
         "url": "https://www.amazon.co.uk/dp/1912411741"
-      },
-      {
-        "label": "Volume 2",
-        "url": "https://www.amazon.co.uk/dp/191241175X"
       }
     ],
     "pages": 394,
@@ -564,9 +561,46 @@
     }
   },
   {
+    "id": "al-hiwar-al-dini-al-ibrahimi-2",
+    "ean": "9781912411757",
+    "order": 15,
+    "volume": 2,
+    "title": "الحوار الديني الإبراهيمي في ميزان القرآن",
+    "subtitle": "المجلد الثاني",
+    "titleLatin": "al-Ḥiwār al-Dīnī al-Ibrāhīmī fī Mīzān al-Qurʾān",
+    "titleEn": "Abrahamic Interfaith Dialogue in the Balance of the Qurʾān, Volume 2",
+    "language": "ar",
+    "role": "Author",
+    "series": null,
+    "publisher": "Looh Press",
+    "year": 2023,
+    "badge": null,
+    "cover": "../assets/covers/al-hiwar-al-dini-al-ibrahimi-2.jpg",
+    "coverWidth": 946,
+    "coverHeight": 1360,
+    "description": [
+      "يمثل الحوار ركنا أساسيًا من أركان الدعوة الإسلامية؛ ولأهميته تكررت الآيات القرآنية الداعية إليه، فأصبح الحوار مع أهل الكتاب مسؤولية دعوية ملقاة على عواتق المسلمين، ذلك الحوار المبني على التسامح والهادف إلى كل غرض نبيل، فهناك أصل يجمع أتباع الديانات الإبراهيمية (اليهودية والمسيحية والإسلامية)، ويظهر ذلك الأصل من قوله تعالى ﴿تَعَالَوْا إِلَىٰ كَلِمَةٍ سَوَاءٍ بَيْنَنَا وَبَيْنَكُمْ﴾، فتلك هي الدعوة الإبراهيمية بمفهومها الشامل وفيها يتضح موقف القرآن من الحوار مع أهل الكتاب.",
+      "The Quranic Perspective on Abrahamic Faiths Trialogue. This Ph.D. dissertation delves into the Quranic viewpoint regarding the trialogue among Abrahamic faiths, a topic of significant concern in today's interconnected world. This research addresses the intricate religious issues associated with this trialogue and underscores the necessity for a meticulous examination from a theological standpoint.",
+      "The study draws upon the Quran, prophetic traditions, and the works of classical and contemporary Muslim scholars to shed light on this subject. It systematically explores the foundational principles, operational methods, and underlying mechanisms that underpin successful dialogue.",
+      "One of the central findings of this research is that dialogue emerges as the most fitting approach for Muslims to engage with individuals of other faiths. This engagement, referred to as Dawa, allows Muslims to communicate their beliefs and values while respecting the identities of others. This approach fosters an environment of peaceful coexistence and mutual understanding among diverse religious communities. Importantly, the research emphasizes that the value of dialogue extends beyond the specific outcomes it may or may not produce; it is a meaningful process in itself."
+    ],
+    "amazon": [
+      {
+        "label": "Paperback",
+        "url": "https://www.amazon.co.uk/dp/191241175X"
+      }
+    ],
+    "pages": 400,
+    "size": {
+      "w": 16.99,
+      "h": 24.41,
+      "t": 2.08
+    }
+  },
+  {
     "id": "al-islam-wal-diyanatan",
     "ean": "9788269367713",
-    "order": 15,
+    "order": 16,
     "title": "الإسلام والديانتان اليهودية والمسيحية",
     "subtitle": "مقارنات في الأصول العقدية",
     "titleLatin": "al-Islām wal-Diyānatān al-Yahūdiyyah wal-Masīḥiyyah",
@@ -603,7 +637,7 @@
   {
     "id": "al-takmilah",
     "ean": "9781912411764",
-    "order": 16,
+    "order": 17,
     "title": "التكملة في تحقيق أحاديث من جمع الفوائد للهيثمي",
     "subtitle": "قسم التفسير",
     "titleLatin": "al-Takmilah fī Taḥqīq Aḥādīth min Jamʿ al-Fawāʾid lil-Haythamī",
@@ -644,7 +678,7 @@
   {
     "id": "ibraahimiyadda",
     "ean": "9788269427585",
-    "order": 17,
+    "order": 18,
     "title": "Ibraahimiyadda",
     "subtitle": "Siyaasada & Diinta Cusub ee Qarnigan",
     "titleLatin": null,
@@ -678,7 +712,7 @@
   {
     "id": "dawada-nafta",
     "ean": "9788269367775",
-    "order": 18,
+    "order": 19,
     "title": "Dawada Nafta",
     "subtitle": null,
     "titleLatin": null,
@@ -713,7 +747,7 @@
   {
     "id": "bogsiin",
     "ean": "9788269427530",
-    "order": 19,
+    "order": 20,
     "title": "Bogsiin",
     "subtitle": "Sidee Looga Hortagaa Ka Shakinta Diinta",
     "titleLatin": null,
@@ -749,7 +783,7 @@
   {
     "id": "wacyi",
     "ean": "9788269367782",
-    "order": 20,
+    "order": 21,
     "title": "Wacyi",
     "subtitle": "Nolosha Qofka Muslimka ah ee Maanta iyo Berri",
     "titleLatin": null,

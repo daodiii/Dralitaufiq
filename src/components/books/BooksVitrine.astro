@@ -10,6 +10,7 @@
 import '../../styles/vitrine.css';
 import type { Book } from '../../lib/books';
 import { vitrine } from '../../lib/vitrine';
+import { volumeMark } from '../../lib/library';
 import BookStand from './BookStand.astro';
 import { Image } from 'astro:assets';
 
@@ -37,6 +38,7 @@ const prophet = (s: string) => s.split('ﷺ');
                 <a class="vt__sp" href={`#bk-${b.id}`} style={`height:${x.h}px;width:${x.w}px;background:${x.colour};color:${x.ink}`}>
                   <span class:list={[x.rtl && 'is-ar']} lang={b.data.language}>
                     {prophet(b.data.title).map((p, i) => (i ? [<bdi>ﷺ</bdi>, p] : p))}
+                    {volumeMark(b.data) && ` · ${volumeMark(b.data)}`}
                   </span>
                 </a>
               );
