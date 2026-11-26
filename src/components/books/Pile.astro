@@ -14,7 +14,7 @@
 import { getImage } from 'astro:assets';
 import type { Book } from '../../lib/books';
 import { languageLabel, languageName, shortRole } from '../../lib/books';
-import { amazonLabel, blurb, bookStyle, ordered, titles } from '../../lib/library';
+import { amazonLabel, blurb, bookStyle, ordered, titles, volumeMark } from '../../lib/library';
 import profile from '../../data/profile.json';
 
 interface Props {
@@ -85,7 +85,7 @@ const books = await Promise.all(
             </span>
             <span class="pile__spine" dir={rtl ? 'rtl' : 'ltr'} aria-hidden="true">
               <span class="pile__t" lang={d.language}>
-                {d.title}
+                {[d.title, volumeMark(d)].filter(Boolean).join(' · ')}
               </span>
               <span class="pile__a" lang={rtl ? 'ar' : undefined}>
                 {author[d.language]}
